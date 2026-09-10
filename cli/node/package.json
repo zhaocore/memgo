@@ -19,10 +19,10 @@
     "node": ">=18.0.0"
   },
   "license": "Apache-2.0",
-  "author": "memgo.ai <founders@memgo.ai>",
+  "author": "zhaocore",
   "repository": {
     "type": "git",
-    "url": "https://github.com/memgoai/memgo",
+    "url": "https://github.com/zhaocore/memgo",
     "directory": "cli/node"
   },
   "keywords": [
