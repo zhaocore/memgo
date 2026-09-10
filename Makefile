@@ -47,7 +47,7 @@ up:
 	@make -s wait-api
 
 up-dashboard:
-	cd deploy && podman compose $(ENV_FILE) -f docker-compose.yaml --profile dashboard up -d --build
+	cd deploy && API_HOST_PORT=$(API_PORT) podman compose $(ENV_FILE) -f docker-compose.yaml --profile dashboard up -d --build
 
 # 对照开关: 上游 python server 起同一套栈
 up-py:

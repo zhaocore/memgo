@@ -1,0 +1,11 @@
+# 构建上下文瘦身 + 防泄密: .env/密钥/本机工具产物永不入镜像层
+.git
+.codegraph
+.env
+.env.*
+!.env.example
+bin
+node_modules
+dashboard/.next
+docs
+tests

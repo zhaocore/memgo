@@ -99,4 +99,4 @@ CONTRACT_IMPL=go make contract  # 同一套测试打 Go server（goldens 不变�
 
 - AsyncMemory / reranker / spaCy NER（实体抽取取无 spaCy 回退 = 恒空，与契约基线一致）——接入会改变行为，须连带更新契约基线
 - CLI：agent-rush / agent-mode / init 邮箱验证流程 / plugin_sync
-- Dashboard 未部署冒烟（合同兼容已由契约套件保证；UI 流程待 `make up-dashboard` 手工验证）
+- Dashboard：已逐字迁入本仓库 `dashboard/`（2026-09-10），`make up-dashboard` 本地构建；UI 全流程冒烟进行中（合同兼容由契约套件保证）

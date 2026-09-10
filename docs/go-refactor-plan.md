@@ -36,7 +36,7 @@
 | `mem0/utils/entity_extraction.py` + main.py 内 entity 方法 | **Go 重写** | entity 端点与 search 实体加成依赖 |
 | `server/`（FastAPI，1660 行） | **Go 重写** | 重构重点 |
 | `server/alembic/versions/001-006` | **翻译为 goose SQL 迁移** | 表结构保持一致 |
-| `server/dashboard/`（Next.js） | **不动** | 只依赖 HTTP 合同 |
+| `server/dashboard/`（Next.js） | **迁入本仓库（2026-09-10 用户变更，原"不动"）** | 复制非移动，mem0 仓库零改动；dashboard 只依赖 HTTP 合同，随仓库交付独立部署物 |
 | `mem0-ts/`（TypeScript SDK） | **不动** | 本就是 TS，与 py→go 无关 |
 | `mem0/client/`（平台 MemoryClient）、平台 API 本身 | **不迁移** | SaaS 侧不可移植，且 Go CLI 需要的是"平台 HTTP 客户端"而非平台服务端 |
 | `cli/python`（Typer）+ `cli/node`（Commander） | **逐字迁入本仓库（2026-09-10 用户变更）+ Go CLI，三 CLI 同仓交付** | 迁移后 python 199/199、node 150/150 测试全绿；mem0 仓库 cli/ 依旧零改动（复制非移动） |
@@ -139,6 +139,7 @@ MemGo/
 │   ├── backend/                  # Backend 接口 + platform.go + oss.go（对齐 cli/python backend/base.py 面）
 │   ├── config/                   # CLI 配置与状态文件（对齐 cli/python state.py/config.py 位置与 schema）
 │   └── output/                   # 表格/JSON 输出
+├── dashboard/                    # 上游 Next.js dashboard 逐字迁入（2026-09-10 用户变更）
 ├── tests/
 │   └── contract/                 # 黑盒契约套件（bash/pytest，可打任意实现）
 ├── deploy/
@@ -212,7 +213,7 @@ MemGo/
 > deploy/Dockerfile.server（多阶段 CGO_ENABLED=0）。
 > P2 期间契约发现并修复：keyword search 双 WHERE 静默吞错、LIMIT 占位符偏移、PyFloat 浮点文本形状
 > （Python 0.0/2.0 vs Go 0/2）、BM25 sigmoid libm ULP 差异（归一化 9 位小数）。
-> 待办（显式）：Dashboard 手工冒烟（dashboard 未部署）；compose 服务切换归 P4。
+> 待办（显式）：Dashboard 冒烟移交 P5（见下）。
 
 ### P2 — server/ HTTP 层（完整 doc-02 合同）
 
@@ -293,7 +294,7 @@ MemGo/
 > 5. **存量迁移工具（R6 立项）**：cmd/memgo-migrate —— alembic head 校验 + DDL 探针（5 表 2 索引）+ goose 版本表补录（幂等）。E2E 实测：python 容器 alembic 升级真实库 → Go server 重放失败（预期）→ 工具迁移 → Go server 复用同一库 + register 成功。
 > 6. **收尾核对**：doc-02 逐条交叉核对由 P0 契约套件承担（251 断言 × Python/Go 双实现全绿即逐条核对记录）；行号失配不修（计划既定）。
 >
-> 待办（显式）：Dashboard UI 手工冒烟（`make up-dashboard`，镜像未构建）；platform backend 实测（需真实 api.mem0.ai key）。
+> 待办（显式）：Dashboard 冒烟移交 P5（见下）；platform backend 实测（需真实 api.mem0.ai key）。
 
 ### P4 — 切换与收尾
 
@@ -310,6 +311,26 @@ MemGo/
 - [ ] 契约套件对 Go 实现全绿（含 422/429/openapi 决策已落档）
 - [ ] dashboard 全流程冒烟 + CLI OSS backend 冒烟
 - [ ] `docker compose up` 一键可用，seed 流程走通（setup-status → register → 建 key → add/search 往返）
+
+### P5 — Dashboard 迁入（2026-09-10 用户变更）
+
+> 上游 `server/dashboard`（Next.js，standalone 多阶段镜像）逐字迁入本仓库 `dashboard/`（复制非移动，mem0 仓库零改动）。
+> 组成：src 548K + public 13M + Dockerfile + entrypoint.sh（NEXT_PUBLIC_* 运行时占位替换）。只依赖 HTTP 合同，无 Python/Go 代码耦合。
+
+| # | 任务 | 对应上游 |
+|---|------|----------|
+| 1 | 复制 `server/dashboard` → `dashboard/`（排除 node_modules / .next） | `server/dashboard` |
+| 2 | `deploy/docker-compose.yaml` dashboard 服务改本地构建（build.context 指仓库根 + dockerfile dashboard/Dockerfile），清除外机路径依赖 | deploy/docker-compose.yaml |
+| 3 | `.env.example` 补 dashboard 侧变量注释（NEXT_PUBLIC_* 由 compose 注入，无需用户配置） | — |
+| 4 | 冒烟：`make up-dashboard` 全流程（register → add → dashboard 登录可见记忆/搜索） | — |
+
+**验收**（2026-09-10 实跑）：
+
+- [x] `make up-dashboard` 本地构建镜像并启动成功（node:20-alpine + pnpm build，2GiB VM 未 OOM；三容器 Running）
+- [x] dashboard 对 memgo-server 全流程冒烟通过（2026-09-10 真实 key 复验）—— HTTP 层：`/api/health` ok、登录页 200、register/login/create-key/add/search 全 200 且 search 命中；UI 手工点击由持有凭据者补做（dash-smoke@memgo.local）
+- [x] 仓库内无外机绝对路径残留（compose 改本地 `init-db.sh` + `dashboard/`；仅计划文档"事实来源"指针例外，非运行时面）
+
+> 迁移过程中发现并修复：Dockerfile.server 缺 `COPY internal`（dotenv 包引入后镜像构建即破）；dashboard 构建上下文若指仓库根，`COPY . .` 会把整仓（含 `.env`）打进镜像 —— 已改 context=../dashboard 并补根 `.dockerignore`。Makefile `up-dashboard` 原缺 `API_HOST_PORT` 透传，已补。
 
 ---
 
