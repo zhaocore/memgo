@@ -1,7 +1,7 @@
 {
-  "name": "@memgo/cli",
+  "name": "@zhaots/memgo-cli",
   "version": "0.2.13",
-  "description": "The official CLI for memgo — the memory layer for AI agents",
+  "description": "The node CLI for memgo — the memory layer for AI agents",
   "type": "module",
   "bin": {
     "memgo": "./dist/index.js"
