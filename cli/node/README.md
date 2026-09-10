@@ -12,7 +12,7 @@ The official command-line interface for [memgo](https://memgo.ai) — the memory
 ## Installation
 
 ```bash
-npm install -g @memgo/cli
+npm install -g @zhaots/memgo-cli
 ```
 
 ## Quick start
