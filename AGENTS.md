@@ -17,17 +17,22 @@ MemGo 是 `mem0` 自托管服务从 Python 迁移到 Go 的单模块项目，模
 
 | 路径 | 当前职责 |
 | --- | --- |
-| `cmd/server/main.go` | `memgo-server` 入口；当前是 P0 占位，P2 才实现 HTTP 服务。 |
-| `cmd/memgo/main.go` | Go CLI 入口；当前是 P0 占位，P3 才实现 cobra 命令面。 |
+| `cmd/server/main.go` | `memgo-server` 入口：启动校验、DEFAULT_CONFIG、迁移、HTTP 装配。 |
+| `cmd/migrate/main.go` | 存量 Python (alembic) 部署 → goose 版本表迁移工具。 |
+| `cli/go/` | Go CLI（cobra）：命令面、Backend 接口（platform/OSS）、config、output、telemetry；二进制入口 `cli/go/cmd/memgo/main.go`。 |
+| `cli/python/`、`cli/node/` | 从 mem0 仓库逐字迁入的上游双 CLI（零行为改动；测试入口 make cli-py-test / cli-node-test）。 |
 | `core/config/` | `MemoryConfig` 解析、深合并和敏感配置脱敏。 |
-| `core/llm/` | LLM 端口与 OpenAI、Anthropic 等 provider 客户端。 |
+| `core/llm/`、`core/embedder/` | LLM/embedder 端口与 openai、anthropic、gemini 客户端。 |
 | `core/prompts/` | 上游 prompt 常量及消息拼装；`prompts_gen.go` 是生成文件。 |
-| `tests/contract/` | Python 基线与 Go 实现共用的黑盒 HTTP 契约套件、golden 和 OpenAI 兼容桩。 |
-| `tools/gen_prompts.py` | 从上游 `mem0/configs/prompts.py` 机械生成 Go prompt 常量。 |
+| `core/memory/`、`core/entity/` | 记忆流水线（add/search/get/update/delete/history/reset）与实体抽取/加成。 |
+| `core/vectorstore/`、`core/history/` | pgvector 实现（含过滤翻译）与 SQLite 历史库。 |
+| `server/` | HTTP 层（doc-02 合同）：store+goose 迁移、auth 三层依赖、middleware、api、errpkg。 |
+| `tests/contract/` | Python 基线与 Go 实现共用的黑盒 HTTP 契约套件、golden 和 OpenAI 兼容桩；CLI parity golden 与 OSS 冒烟脚本。 |
+| `tests/bench/` | add/search P95 基线脚本。 |
+| `tools/` | 生成器：gen_prompts.py（prompt 机械搬运）、gen_cli_parity.py（CLI 命令×选项矩阵 golden）。 |
+| `deploy/` | Dockerfile.server、docker-compose.yaml、seed.sh。 |
 | `docs/go-refactor-plan.md` | 迁移范围、目标布局、阶段验收与已知风险。 |
-| `Makefile` | `build`、`test`、`vet`、`lint` 与 Podman 契约测试命令。 |
-
-以下路径属于已确认的目标布局，但当前尚未完整落地：`core/memory/`、`core/embedder/`、`core/vectorstore/`、`core/history/`、`core/entity/`、`server/`、`cli/`、`deploy/`。新增实现必须按此职责边界落位，不得将规划路径写成既有实现。
+| `Makefile` | build/test/vet/lint、Podman 契约与部署栈、三 CLI 测试、迁移工具。 |
 
 ## 后端架构规则
 
@@ -35,7 +40,7 @@ MemGo 是 `mem0` 自托管服务从 Python 迁移到 Go 的单模块项目，模
 - `core/` 是无 HTTP 依赖的记忆引擎。记忆流程、序列化兼容逻辑、配置规则和业务不变量必须放在对应 `core` 包中。
 - 外部系统必须放在明确端口之后：LLM、embedder、向量库、SQLite 历史库、Postgres、遥测和平台 API 都由接口或窄客户端隔离。业务流程依赖端口，不依赖具体 SDK 或 HTTP 请求。
 - `server/` 落地后只承载路由、鉴权、校验、middleware、错误映射和存储编排；`server/store` 只访问应用库，不能持有 pgvector 连接串。
-- `cli/` 落地后以 Backend 接口隔离平台 API 与 OSS server；命令解析、配置状态、输出格式和后端通信分别归位，命令层不得直接拼 HTTP 请求。
+- `cli/go/` 以 Backend 接口隔离平台 API 与 OSS server；命令解析、配置状态、输出格式和后端通信分别归位，命令层不得直接拼 HTTP 请求。`cli/{python,node}` 是迁入的上游资产，除文档外不做行为改动。
 - 维持单 Go module。避免为尚无独立部署、长任务重试或独立伸缩需求的功能拆分服务或 worker。
 - 新增后端代码必须同时新增或更新单元测试。每次变更都必须运行完整单元测试；失败原因不明确时必须报告给用户，不能将失败静默归为既有问题。
 

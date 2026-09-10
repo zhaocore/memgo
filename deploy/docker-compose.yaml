@@ -1,0 +1,71 @@
+# MemGo 生产/开发编排: memgo-server (Go) + pgvector + dashboard (可选 profile)。
+# 与上游 python server 端口表对齐: API 8888, postgres 8432, dashboard 3000。
+# 对照开关: make up-py 用上游 python server 起同一套栈 (tests/contract/compose.contract.yaml)。
+name: memgo
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: on-failure
+    shm_size: "128mb"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d postgres -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - memgo_pg:/var/lib/postgresql/data
+      - /Users/johnson/work/github/mem0/server/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    ports:
+      - "${POSTGRES_HOST_PORT:-8432}:5432"
+
+  memgo-server:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.server
+    restart: on-failure
+    ports:
+      - "${API_HOST_PORT:-8888}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_COLLECTION_NAME=${POSTGRES_COLLECTION_NAME:-memories}
+      - APP_DB_NAME=${APP_DB_NAME:-mem0_app}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:?Set OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+      - MEM0_DEFAULT_LLM_MODEL=${MEM0_DEFAULT_LLM_MODEL:-gpt-5-mini}
+      - MEM0_DEFAULT_EMBEDDER_MODEL=${MEM0_DEFAULT_EMBEDDER_MODEL:-text-embedding-3-small}
+      - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET (openssl rand -base64 48)}
+      - ADMIN_API_KEY=${ADMIN_API_KEY:-}
+      - AUTH_DISABLED=${AUTH_DISABLED:-false}
+      - DASHBOARD_URL=${DASHBOARD_URL:-http://localhost:3000}
+      - MEM0_TELEMETRY=${MEM0_TELEMETRY:-true}
+      - HISTORY_DB_PATH=/app/history/history.db
+    volumes:
+      - memgo_history:/app/history
+
+  dashboard:
+    build:
+      context: /Users/johnson/work/github/mem0/server/dashboard
+    ports:
+      - "${DASHBOARD_HOST_PORT:-3000}:3000"
+    profiles: ["dashboard"]
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8888
+      - API_INTERNAL_URL=http://memgo-server:8000
+      - NEXT_PUBLIC_INSTANCE_NAME=MemGo
+    depends_on:
+      - memgo-server
+
+volumes:
+  memgo_pg:
+  memgo_history:

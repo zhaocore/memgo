@@ -1,0 +1,266 @@
+{
+  "commands": {
+    "add": {
+      "arguments": [
+        "text"
+      ],
+      "options": [
+        "--user-id",
+        "-u",
+        "--agent-id",
+        "--app-id",
+        "--run-id",
+        "--messages",
+        "--file",
+        "-f",
+        "--metadata",
+        "-m",
+        "--immutable",
+        "--no-infer",
+        "--expires",
+        "--categories",
+        "--custom-instructions",
+        "--agent-custom-instructions",
+        "--custom-categories",
+        "--structured-data-schema",
+        "--timestamp",
+        "--output",
+        "-o",
+        "--api-key",
+        "--base-url"
+      ]
+    },
+    "agent-rush": {
+      "subcommands": {
+        "add": {
+          "arguments": [
+            "content"
+          ]
+        },
+        "search": {
+          "arguments": [
+            "query"
+          ]
+        }
+      }
+    },
+    "config": {
+      "subcommands": {
+        "get": {
+          "arguments": [
+            "key"
+          ]
+        },
+        "set": {
+          "arguments": [
+            "key",
+            "value"
+          ]
+        },
+        "show": {
+          "options": [
+            "--output",
+            "-o"
+          ]
+        }
+      }
+    },
+    "delete": {
+      "arguments": [
+        "memory_id"
+      ],
+      "options": [
+        "--all",
+        "--entity",
+        "--project",
+        "--dry-run",
+        "--force",
+        "--delete-linked",
+        "--user-id",
+        "-u",
+        "--agent-id",
+        "--app-id",
+        "--run-id",
+        "--output",
+        "-o",
+        "--api-key",
+        "--base-url"
+      ]
+    },
+    "entity": {
+      "subcommands": {
+        "delete": {
+          "options": [
+            "--user-id",
+            "-u",
+            "--agent-id",
+            "--app-id",
+            "--run-id",
+            "--force",
+            "--dry-run",
+            "--output",
+            "-o",
+            "--api-key",
+            "--base-url"
+          ]
+        },
+        "list": {
+          "arguments": [
+            "entity_type"
+          ],
+          "options": [
+            "--output",
+            "-o",
+            "--api-key",
+            "--base-url"
+          ]
+        }
+      }
+    },
+    "event": {
+      "subcommands": {
+        "list": {
+          "options": [
+            "--output",
+            "-o",
+            "--api-key",
+            "--base-url"
+          ]
+        },
+        "status": {
+          "arguments": [
+            "event_id"
+          ],
+          "options": [
+            "--output",
+            "-o",
+            "--api-key",
+            "--base-url"
+          ]
+        }
+      }
+    },
+    "get": {
+      "arguments": [
+        "memory_id"
+      ],
+      "options": [
+        "--output",
+        "-o",
+        "--api-key",
+        "--base-url"
+      ]
+    },
+    "help": {
+      "options": [
+        "--json"
+      ]
+    },
+    "identify": {
+      "arguments": [
+        "name"
+      ]
+    },
+    "import": {
+      "arguments": [
+        "file_path"
+      ],
+      "options": [
+        "--user-id",
+        "-u",
+        "--agent-id",
+        "--output",
+        "-o",
+        "--api-key",
+        "--base-url"
+      ]
+    },
+    "init": {
+      "options": [
+        "--api-key",
+        "--user-id",
+        "-u",
+        "--email",
+        "--code",
+        "--force",
+        "--agent",
+        "--source",
+        "--agent-caller"
+      ]
+    },
+    "list": {
+      "options": [
+        "--user-id",
+        "-u",
+        "--agent-id",
+        "--app-id",
+        "--run-id",
+        "--page",
+        "--page-size",
+        "--category",
+        "--after",
+        "--before",
+        "--show-expired",
+        "--latest-only",
+        "--output",
+        "-o",
+        "--api-key",
+        "--base-url"
+      ]
+    },
+    "search": {
+      "arguments": [
+        "query"
+      ],
+      "options": [
+        "--user-id",
+        "-u",
+        "--agent-id",
+        "--app-id",
+        "--run-id",
+        "--top-k",
+        "-k",
+        "--limit",
+        "--threshold",
+        "--rerank",
+        "--keyword",
+        "--filter",
+        "--fields",
+        "--show-expired",
+        "--reference-date",
+        "--latest-only",
+        "--output",
+        "-o",
+        "--api-key",
+        "--base-url"
+      ]
+    },
+    "status": {
+      "options": [
+        "--output",
+        "-o",
+        "--api-key",
+        "--base-url"
+      ]
+    },
+    "update": {
+      "arguments": [
+        "memory_id",
+        "text"
+      ],
+      "options": [
+        "--metadata",
+        "-m",
+        "--expires",
+        "--timestamp",
+        "--output",
+        "-o",
+        "--api-key",
+        "--base-url"
+      ]
+    },
+    "version": {},
+    "whoami": {}
+  },
+  "name": "mem0"
+}

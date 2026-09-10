@@ -39,7 +39,7 @@
 | `server/dashboard/`（Next.js） | **不动** | 只依赖 HTTP 合同 |
 | `mem0-ts/`（TypeScript SDK） | **不动** | 本就是 TS，与 py→go 无关 |
 | `mem0/client/`（平台 MemoryClient）、平台 API 本身 | **不迁移** | SaaS 侧不可移植，且 Go CLI 需要的是"平台 HTTP 客户端"而非平台服务端 |
-| `cli/python`（Typer）+ `cli/node`（Commander） | **保留不动；另增 Go CLI（第三实现）** | 双 CLI 是存量资产，option-parity 测试继续守护它们；Go CLI 走并行实现，parity golden 以两边规格为准 |
+| `cli/python`（Typer）+ `cli/node`（Commander） | **逐字迁入本仓库（2026-09-10 用户变更）+ Go CLI，三 CLI 同仓交付** | 迁移后 python 199/199、node 150/150 测试全绿；mem0 仓库 cli/ 依旧零改动（复制非移动） |
 | Python SDK 本体（PyPI mem0ai） | **保留不动** | 存量用户继续可用；Go 版以独立包交付 |
 
 ---
@@ -50,7 +50,7 @@
 |---|------|----------|------|
 | D1 | Go 版 provider 覆盖面 | **内置集对齐 server**：LLM = openai / anthropic / gemini；Embedder = openai / gemini；VectorStore = pgvector；Reranker 暂不做（server 合同未暴露 rerank 参数） | doc-02 §3 `GET /configure/providers` 只暴露这五个；server 合同是硬边界，其余 20+ provider 属 SDK 广度，按需后补 |
 | D2 | HTTP 框架 | `chi` v5 + 标准库 `net/http` | 贴近 stdlib、无反射魔法、422/错误路径完全可控；FastAPI 自动行为（422、openapi）需手写复刻，框架越薄越好 |
-| D3 | 仓库布局 | **单 Go module**：根 `go.mod`（module 名待定，暂用 `memgo`），`cmd/server` + `cmd/memgo`（CLI）+ `server/`、`cli/`、`core/` 包 | 单模块最简单；`server/`、`cli/` 空目录已建，沿用 |
+| D3 | 仓库布局 | **单 Go module**：根 `go.mod`，`cmd/server`（server）+ `cli/go/`（Go CLI, 含 cmd/memgo 入口）+ `server/`、`core/` 包；`cli/{python,node}` 为迁入的上游 CLI（2026-09-10 用户变更后三 CLI 同仓对称布局） | 三 CLI 目录对称：cli/{go,node,python} |
 | D4 | SQLite 驱动 | `modernc.org/sqlite`（纯 Go，无 CGO） | `CGO_ENABLED=0` 交叉编译 + 极小 Docker 镜像 |
 | D5 | 应用库迁移工具 | goose（SQL 迁移文件），alembic 001-006 逐条翻译为 SQL，DDL 逐字一致 | 新部署全新建库即可；存量库迁移见 §8 风险 R6 |
 | D6 | LLM/Embedder 客户端 | 直接 `net/http` 写小型类型化客户端，**不引 langchaingo 等重框架** | 只需 chat + structured JSON 两个能力；依赖最小化，错误分类可控 |
@@ -234,6 +234,26 @@ MemGo/
 - [ ] 并发用例：refresh 并发重放恰一成功；并发 POST /configure 无撕裂
 - [ ] 镜像内无热重载；`make health` 三探全通
 
+### P3 — Go CLI（新增第三实现，上游双 CLI 零改动）✅ 代码完成（2026-09-10）
+
+> 完成记录：cli/ 包（cobra）落地 —— Backend 接口（对齐 backend/base.py 方法面）+ platform backend
+> （api.mem0.ai, Token 鉴权, X-Mem0-* 头, mem0_notice 捕获）+ **OSS backend**（打 MemGo server, X-API-Key,
+> 工厂按 base_url 域名选择）+ config/state（~/.mem0/config.json 同 schema 共享互认 + MEM0_* env 覆盖）+
+> output（text/json/table/quiet/agent 信封）+ telemetry（PostHog 异步 2s）。
+> **三向 parity golden**：tools/gen_cli_parity.py 从 python typer app 内省生成 tests/contract/cli_parity_golden.json，
+> cli/parity_test.go 逐命令逐选项断言（Go 无矩阵外命令/选项；缺席项显式列明）——PASS。
+> OSS 往返冒烟 tests/contract/cli_oss_smoke.sh（**HOME 隔离**，防污染真实 ~/.mem0）10/10 全绿。
+> mem0 仓库 cli/ 目录零改动（git status 核查）。
+>
+> **未迁移项（显式列明，计划 R10）**：
+> 1. `agent-rush` 子命令组（AGENTRUSH 游戏，平台专属交互流）
+> 2. `agent-mode` 交互命令
+> 3. `init` 的 --email/--code 邮箱验证登录流程与 --agent bootstrap 流程（flags 已注册，运行时显式报未迁移；仅支持 --api-key/--user-id 路径）
+> 4. plugin_sync（Claude Code 插件 env 注入）
+> 5. rich 色彩面板/Spinner（Go 输出纯文本 + 基础 ✓/◆/✗ 符号）
+>
+> **待办**：platform backend 实测（whoami + search 打 api.mem0.ai）需真实 API key，用户提供后跑通。
+
 ### P3 — Go CLI（新增第三实现，上游双 CLI 零改动）
 
 > 边界：`cli/python`、`cli/node` 不进本计划任何任务，mem0 仓库不得出现 cli/ 变更。Go CLI 的 OSS backend 打 MemGo server（P2 产物），与上游 CLI（默认打平台 API）同型定位。
@@ -254,6 +274,26 @@ MemGo/
 - [ ] OSS backend：对 MemGo server 跑通 add/search/get/list/update/delete/entity 往返
 - [ ] mem0 仓库 diff 核查：cli/ 目录零改动
 - [ ] 未迁移项（如 agent-mode/agent-rush 交互流程）逐条列出并给理由，不静默缺失
+
+### P3 补充 — 上游双 CLI 迁入本仓库（2026-09-10 用户追加范围）✅
+
+> cli/python、cli/node 从 mem0 仓库**逐字复制**迁入（diff 核验一致；mem0 仓库 cli/ 零改动）。
+> 附带迁入 docs/openapi.json（平台 API 快照，python CLI 的 option-parity 漂移测试依赖 REPO_ROOT/docs/openapi.json）。
+> 验证：python CLI venv 装包后 pytest **199/199** 全绿；node CLI pnpm install + tsup 构建 + vitest **150/150** 全绿 + `mem0 --version` 冒烟。
+> 测试入口：make cli-py-test / cli-node-test / cli-go-test。
+> 注意（环境差异）：pnpm 11 对 package.json 内 pnpm.overrides 字段告警"不再读取"（上游遗留），不影响构建/测试。
+
+### P4 — 切换与收尾 ✅ 完成（2026-09-10）
+
+> 完成记录：
+> 1. **deploy/docker-compose.yaml**（memgo-server 多阶段镜像 + pgvector + dashboard profile）+ Makefile up/up-dashboard/up-py 对照开关/down/bootstrap/wait-api/health 三探/run-local + **deploy/seed.sh**（setup-status → register → key，明文仅此一次）。实跑验收：`make up API_PORT=18888` → `make bootstrap` → seed key add/search 往返 ✓（宿主 8888 被占 → API_PORT 参数化）。
+> 2. **run-local 等价物**：make run-local（CGO_ENABLED=0 裸二进制连外部 Postgres）。
+> 3. **压测基线**（stub 路径 N=50, tests/bench/bench.sh）：Go add P50/P95 = 73/75ms、search = 72/75ms；Python add = 267/281ms、search = 265/270ms（**Go ≈3.6×**；真实 LLM 路径延迟由 LLM 主导，未纳入）。
+> 4. **文档**：README（快速开始/CLI/env 变量表全集/迁移指引/压测基线/已知裁剪）+ 本文档 P0-P4 完成记录。
+> 5. **存量迁移工具（R6 立项）**：cmd/memgo-migrate —— alembic head 校验 + DDL 探针（5 表 2 索引）+ goose 版本表补录（幂等）。E2E 实测：python 容器 alembic 升级真实库 → Go server 重放失败（预期）→ 工具迁移 → Go server 复用同一库 + register 成功。
+> 6. **收尾核对**：doc-02 逐条交叉核对由 P0 契约套件承担（251 断言 × Python/Go 双实现全绿即逐条核对记录）；行号失配不修（计划既定）。
+>
+> 待办（显式）：Dashboard UI 手工冒烟（`make up-dashboard`，镜像未构建）；platform backend 实测（需真实 api.mem0.ai key）。
 
 ### P4 — 切换与收尾
 
