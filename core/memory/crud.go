@@ -388,3 +388,15 @@ func strOr(v any) string {
 	s, _ := v.(string)
 	return s
 }
+
+// DeleteAllParamsByField 按单字段构造 (entity 删除路径用)。
+func DeleteAllParamsByField(field, value string) DeleteAllParams {
+	switch field {
+	case "user_id":
+		return DeleteAllParams{UserID: value}
+	case "agent_id":
+		return DeleteAllParams{AgentID: value}
+	default:
+		return DeleteAllParams{RunID: value}
+	}
+}

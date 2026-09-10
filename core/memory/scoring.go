@@ -1,6 +1,10 @@
 package memory
 
-import "sort"
+import (
+	"sort"
+
+	"github.com/zhao-core/memgo/core/jsonx"
+)
 
 // scoredCandidate 是 score_and_rank 的中间结果。
 type scoredCandidate struct {
@@ -41,13 +45,13 @@ func scoreAndRank(candidates []rankCandidate, bm25Scores, entityBoosts map[strin
 		sc := scoredCandidate{id: c.id, score: combined, payload: c.payload}
 		if explain {
 			sc.details = map[string]any{
-				"semantic_score":     c.score,
-				"bm25_score":         bm25,
-				"entity_boost":       boost,
-				"raw_score":          raw,
-				"max_possible_score": maxPossible,
-				"final_score":        combined,
-				"threshold":          threshold,
+				"semantic_score":     jsonx.PyFloat(c.score),
+				"bm25_score":         jsonx.PyFloat(bm25),
+				"entity_boost":       jsonx.PyFloat(boost),
+				"raw_score":          jsonx.PyFloat(raw),
+				"max_possible_score": jsonx.PyFloat(maxPossible),
+				"final_score":        jsonx.PyFloat(combined),
+				"threshold":          jsonx.PyFloat(threshold),
 			}
 		}
 		scored = append(scored, sc)

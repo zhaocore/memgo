@@ -2,6 +2,20 @@
   "results": [
     {
       "created_at": "<TS>+00:00",
+      "hash": "<HASH>",
+      "id": "<UUID>",
+      "memory": "Alice loves trail running now.",
+      "metadata": {
+        "pref": "trail-running",
+        "source": "contract"
+      },
+      "role": "user",
+      "score": 0.4065,
+      "updated_at": "<TS>+00:00",
+      "user_id": "alice"
+    },
+    {
+      "created_at": "<TS>+00:00",
       "expiration_date": null,
       "hash": "<HASH>",
       "id": "<UUID>",
@@ -10,7 +24,7 @@
         "pref": "swimming"
       },
       "role": "user",
-      "score": 0.5157,
+      "score": 0.3604,
       "updated_at": "<TS>+00:00",
       "user_id": "alice"
     },
@@ -21,21 +35,7 @@
       "memory": "Alice likes hiking in the mountains.",
       "metadata": null,
       "role": "user",
-      "score": 0.5,
-      "updated_at": "<TS>+00:00",
-      "user_id": "alice"
-    },
-    {
-      "created_at": "<TS>+00:00",
-      "hash": "<HASH>",
-      "id": "<UUID>",
-      "memory": "Alice loves trail running now.",
-      "metadata": {
-        "pref": "trail-running",
-        "source": "contract"
-      },
-      "role": "user",
-      "score": 0.5,
+      "score": 0.325,
       "updated_at": "<TS>+00:00",
       "user_id": "alice"
     }

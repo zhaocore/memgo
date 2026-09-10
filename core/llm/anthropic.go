@@ -23,6 +23,11 @@ type AnthropicConfig struct {
 	HTTPClient  *http.Client
 }
 
+// DefaultAnthropicConfig 对齐上游默认 (claude-sonnet-4-6, temp 0.1, max_tokens 2000)。
+func DefaultAnthropicConfig() AnthropicConfig {
+	return AnthropicConfig{Model: "claude-sonnet-4-6", Temperature: 0.1, MaxTokens: 2000}
+}
+
 // NewAnthropic 构造; api_key 回退 ANTHROPIC_API_KEY env, base_url 回退官方端点。
 func NewAnthropic(cfg AnthropicConfig) (*Anthropic, error) {
 	if cfg.APIKey == "" {
@@ -92,7 +97,7 @@ func (a *Anthropic) GenerateResponse(messages []Message, opts GenerateOptions) (
 		return "", fmt.Errorf("anthropic: 响应非 JSON")
 	}
 	if parsed.Error != nil {
-		return "", fmt.Errorf("anthropic: 上游错误 type=%s msg=%s", parsed.Error.Type, parsed.Error.Message)
+		return "", NewStatusError(0, "anthropic: 上游错误 type=%s msg=%s", parsed.Error.Type, parsed.Error.Message)
 	}
 	for _, c := range parsed.Content {
 		if c.Type == "text" {
@@ -125,7 +130,7 @@ func (a *Anthropic) post(body map[string]any) ([]byte, error) {
 		return nil, fmt.Errorf("anthropic: 读响应失败: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return raw, fmt.Errorf("anthropic: 上游错误 status=%d body=%s", resp.StatusCode, string(raw))
+		return raw, NewStatusError(resp.StatusCode, "anthropic: 上游错误 status=%d body=%s", resp.StatusCode, string(raw))
 	}
 	return raw, nil
 }

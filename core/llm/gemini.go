@@ -22,6 +22,11 @@ type GeminiConfig struct {
 	HTTPClient  *http.Client
 }
 
+// DefaultGeminiConfig 对齐上游默认 (gemini-2.0-flash, temp 0.1, max_tokens 2000)。
+func DefaultGeminiConfig() GeminiConfig {
+	return GeminiConfig{Model: "gemini-2.0-flash", Temperature: 0.1, MaxTokens: 2000}
+}
+
 // NewGemini 构造; api_key 回退 GEMINI_API_KEY / GOOGLE_API_KEY env。
 func NewGemini(cfg GeminiConfig) (*Gemini, error) {
 	if cfg.APIKey == "" {

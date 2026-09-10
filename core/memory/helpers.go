@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/zhao-core/memgo/core/jsonx"
 )
 
 // memHash 对齐 hashlib.md5(data.encode()).hexdigest()。
@@ -55,7 +57,7 @@ func validateAndTrimEntityID(value any, name string) (string, error) {
 // validateSearchParams 对齐 _validate_search_params。
 func validateSearchParams(threshold *float64, topK *int) error {
 	if threshold != nil && (*threshold < 0 || *threshold > 1) {
-		return fmt.Errorf("Invalid threshold: %v. Must be between 0 and 1 (inclusive).", *threshold)
+		return fmt.Errorf("Invalid threshold: %s. Must be between 0 and 1 (inclusive).", jsonx.Repr(*threshold))
 	}
 	if topK != nil && *topK < 0 {
 		return fmt.Errorf("Invalid top_k: %d. Must be a non-negative integer.", *topK)

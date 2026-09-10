@@ -147,8 +147,9 @@ type HistoryRow struct {
 func (m *Manager) GetHistory(memoryID string) ([]HistoryRow, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	// CAST 抑制驱动按 DATETIME 声明类型自动转 time.Time (Python sqlite3 返回原文)
 	rows, err := m.db.Query(`SELECT id, memory_id, old_memory, new_memory, event,
-		created_at, updated_at, is_deleted, actor_id, role
+		CAST(created_at AS TEXT), CAST(updated_at AS TEXT), is_deleted, actor_id, role
 		FROM history WHERE memory_id = ?
 		ORDER BY created_at ASC, DATETIME(updated_at) ASC`, memoryID)
 	if err != nil {
@@ -159,10 +160,16 @@ func (m *Manager) GetHistory(memoryID string) ([]HistoryRow, error) {
 	for rows.Next() {
 		var r HistoryRow
 		var deleted int
-		if err := rows.Scan(&r.ID, &r.MemoryID, &r.OldMemory, &r.NewMemory, &r.Event,
-			&r.CreatedAt, &r.UpdatedAt, &deleted, &r.ActorID, &r.Role); err != nil {
+		var id, mid, event sql.NullString
+		var oldM, newM, ca, ua, actor, role sql.NullString
+		if err := rows.Scan(&id, &mid, &oldM, &newM, &event,
+			&ca, &ua, &deleted, &actor, &role); err != nil {
 			return nil, fmt.Errorf("history: 扫描失败: %w", err)
 		}
+		r.ID, r.MemoryID, r.Event = id.String, mid.String, event.String
+		r.OldMemory, r.NewMemory = nullStrPtr(oldM), nullStrPtr(newM)
+		r.CreatedAt, r.UpdatedAt = nullStrPtr(ca), nullStrPtr(ua)
+		r.ActorID, r.Role = nullStrPtr(actor), nullStrPtr(role)
 		r.IsDeleted = deleted != 0
 		out = append(out, r)
 	}
@@ -221,7 +228,7 @@ type MessageRow struct {
 func (m *Manager) GetLastMessages(sessionScope string, limit int) ([]MessageRow, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	rows, err := m.db.Query(`SELECT role, content, name, created_at FROM (
+	rows, err := m.db.Query(`SELECT role, content, name, CAST(created_at AS TEXT) FROM (
 		SELECT role, content, name, created_at FROM messages
 		WHERE session_scope = ? ORDER BY created_at DESC LIMIT ?
 	) ORDER BY created_at ASC`, sessionScope, limit)
@@ -259,4 +266,13 @@ func (m *Manager) Close() error {
 		return m.db.Close()
 	}
 	return nil
+}
+
+// nullStrPtr NullString → *string (保持 DB 原文, 不做时间类型转换)。
+func nullStrPtr(n sql.NullString) *string {
+	if !n.Valid {
+		return nil
+	}
+	v := n.String
+	return &v
 }

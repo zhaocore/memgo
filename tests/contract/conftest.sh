@@ -70,6 +70,9 @@ normalize() {
         if .key == "hash" then .value = "<HASH>"
         elif .key == "latency_ms" then .value = "<LAT>"
         elif .key == "request_id" then .value = "<RID>"
+        elif .key == "history_db_path" then .value = "<HIST>"
+        elif .key == "host" then .value = "<HOST>"
+        elif .key == "port" then .value = "<PORT>"
         elif (.key == "access_token" or .key == "refresh_token") then .value = "<JWT>"
         elif (.key == "key" and (.value|type)=="string" and (.value|startswith("m0sk_"))) then .value = "<KEY>"
         elif .key == "score" and (.value|type)=="number" then .value = ((.value * 10000 | round) / 10000)
@@ -85,6 +88,8 @@ normalize() {
         | gsub(ts_re; "<TS>")
       else . end
     )
+  # 非整数浮点取 9 位小数: 跨语言 libm (math.exp) 的 ULP 级差异属实现细节
+  | walk(if type == "number" and . != floor then ((. * 1000000000 | round) / 1000000000) else . end)
   ' 2>/dev/null || cat
 }
 

@@ -202,6 +202,18 @@ MemGo/
 - [ ] **跨语言对拍**：`infer=false` 全链路与 Python SDK 输出逐字段一致（同输入同输出，含 hash/时间戳格式）；`infer=true` 用录制 stub（固定 LLM 响应）对齐事件序列
 - [ ] prompts 与 Python 版 diff = 0（脚本机械校验）
 
+### P2 — server/ HTTP 层（完整 doc-02 合同）✅ 契约验收通过（2026-09-10）
+
+> 完成记录：**契约套件打 Go server 251/251 全绿**（同一套测试、同一份 goldens，Python 基线零改动）。
+> 产出：server/store（pgx + goose 迁移 001-006 翻译，DDL 对齐 alembic）、server/auth（bcrypt rounds 12 /
+> m0sk_ key / JWT HS256 / jti CAS）、server/middleware（8hex request-id / 请求日志旁路 writer / CORS /
+> per-IP 限流 + slowapi 429 体）、server/api（全部端点 + pydantic 422 形状复刻 + PUT RawMessage presence）、
+> server/errpkg（8 code 分类，provider_timeout 由单测覆盖）、openapi golden 静态 serve、telemetry 状态文件、
+> deploy/Dockerfile.server（多阶段 CGO_ENABLED=0）。
+> P2 期间契约发现并修复：keyword search 双 WHERE 静默吞错、LIMIT 占位符偏移、PyFloat 浮点文本形状
+> （Python 0.0/2.0 vs Go 0/2）、BM25 sigmoid libm ULP 差异（归一化 9 位小数）。
+> 待办（显式）：Dashboard 手工冒烟（dashboard 未部署）；compose 服务切换归 P4。
+
 ### P2 — server/ HTTP 层（完整 doc-02 合同）
 
 | # | 任务 | 对应上游 |

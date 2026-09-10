@@ -2,6 +2,29 @@
   "results": [
     {
       "created_at": "<TS>+00:00",
+      "hash": "<HASH>",
+      "id": "<UUID>",
+      "memory": "Alice loves trail running now.",
+      "metadata": {
+        "pref": "trail-running",
+        "source": "contract"
+      },
+      "role": "user",
+      "score": 0.4065,
+      "score_details": {
+        "bm25_score": 0.0,
+        "entity_boost": 0.0,
+        "final_score": 0.406515468,
+        "max_possible_score": 2.0,
+        "raw_score": 0.813030937,
+        "semantic_score": 0.813030937,
+        "threshold": 0.1
+      },
+      "updated_at": "<TS>+00:00",
+      "user_id": "alice"
+    },
+    {
+      "created_at": "<TS>+00:00",
       "expiration_date": null,
       "hash": "<HASH>",
       "id": "<UUID>",
@@ -10,14 +33,14 @@
         "pref": "swimming"
       },
       "role": "user",
-      "score": 0.5157,
+      "score": 0.3604,
       "score_details": {
-        "bm25_score": 0.0313709322481939,
+        "bm25_score": 0.031370932,
         "entity_boost": 0.0,
-        "final_score": 0.5156854661240969,
+        "final_score": 0.360430111,
         "max_possible_score": 2.0,
-        "raw_score": 1.0313709322481939,
-        "semantic_score": 1.0,
+        "raw_score": 0.720860222,
+        "semantic_score": 0.68948929,
         "threshold": 0.1
       },
       "updated_at": "<TS>+00:00",
@@ -30,37 +53,14 @@
       "memory": "Alice likes hiking in the mountains.",
       "metadata": null,
       "role": "user",
-      "score": 0.5,
+      "score": 0.325,
       "score_details": {
         "bm25_score": 0.0,
         "entity_boost": 0.0,
-        "final_score": 0.5,
+        "final_score": 0.32503699,
         "max_possible_score": 2.0,
-        "raw_score": 1.0,
-        "semantic_score": 1.0,
-        "threshold": 0.1
-      },
-      "updated_at": "<TS>+00:00",
-      "user_id": "alice"
-    },
-    {
-      "created_at": "<TS>+00:00",
-      "hash": "<HASH>",
-      "id": "<UUID>",
-      "memory": "Alice loves trail running now.",
-      "metadata": {
-        "pref": "trail-running",
-        "source": "contract"
-      },
-      "role": "user",
-      "score": 0.5,
-      "score_details": {
-        "bm25_score": 0.0,
-        "entity_boost": 0.0,
-        "final_score": 0.5,
-        "max_possible_score": 2.0,
-        "raw_score": 1.0,
-        "semantic_score": 1.0,
+        "raw_score": 0.650073979,
+        "semantic_score": 0.650073979,
         "threshold": 0.1
       },
       "updated_at": "<TS>+00:00",

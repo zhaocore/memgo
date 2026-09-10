@@ -1,0 +1,19 @@
+# memgo-server 多阶段构建 (计划 P2: CGO_ENABLED=0, 无热重载)
+FROM golang:1.26-alpine AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY cmd ./cmd
+COPY core ./core
+COPY server ./server
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /out/memgo-server ./cmd/server
+
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates && adduser -D -u 10001 memgo
+COPY --from=build /out/memgo-server /usr/local/bin/memgo-server
+USER memgo
+ENV POSTGRES_HOST=postgres POSTGRES_PORT=5432 APP_DB_NAME=mem0_app \
+    HISTORY_DB_PATH=/app/history/history.db PORT=8000
+VOLUME /app/history
+EXPOSE 8000
+ENTRYPOINT ["memgo-server"]

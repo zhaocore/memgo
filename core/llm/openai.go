@@ -140,7 +140,7 @@ func (o *OpenAI) call(body map[string]any) (string, bool, error) {
 			msg = fmt.Sprintf("openai: 上游错误 status=%d type=%s msg=%s", resp.StatusCode, parsed.Error.Type, parsed.Error.Message)
 		}
 		retryable := resp.StatusCode == 429 || resp.StatusCode >= 500
-		return "", retryable, fmt.Errorf("%s", msg)
+		return "", retryable, NewStatusError(resp.StatusCode, "%s", msg)
 	}
 	if len(parsed.Choices) == 0 {
 		return "", false, fmt.Errorf("openai: 响应无 choices")

@@ -8,6 +8,7 @@ import (
 
 	"github.com/zhao-core/memgo/core/config"
 	"github.com/zhao-core/memgo/core/history"
+	"github.com/zhao-core/memgo/core/jsonx"
 )
 
 // newTestMemory 组装桩注入的 Memory (P1 验收: LLM/embedder 接口桩注入)。
@@ -225,7 +226,7 @@ func TestSearchScoringAndShape(t *testing.T) {
 		t.Fatalf("应命中 1 条: %d", len(results))
 	}
 	r := results[0]
-	if r["score"].(float64) < 0.99 {
+	if float64(r["score"].(jsonx.PyFloat)) < 0.99 {
 		t.Errorf("恒定嵌入下 score 应为 1.0 封顶: %v", r["score"])
 	}
 	if _, has := r["metadata"]; !has {
@@ -270,7 +271,7 @@ func TestScoreAndRankThresholdGating(t *testing.T) {
 			t.Errorf("score_details 缺 %s", k)
 		}
 	}
-	if d["max_possible_score"].(float64) != 2.5 {
+	if float64(d["max_possible_score"].(jsonx.PyFloat)) != 2.5 {
 		t.Errorf("semantic+bm25+entity 时 max=2.5: %v", d["max_possible_score"])
 	}
 }

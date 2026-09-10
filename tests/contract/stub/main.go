@@ -8,6 +8,7 @@
 package main
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"io"
 	"log"
@@ -164,23 +165,23 @@ func handleEmbed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// input 兼容 string / []string / [float] (token 数组不区分, 一律按条数返回)
-	count := 1
 	var texts []string
-	if json.Unmarshal(req.Input, &texts) == nil {
-		count = len(texts)
-	} else {
+	if json.Unmarshal(req.Input, &texts) != nil {
 		var one string
 		if json.Unmarshal(req.Input, &one) == nil {
-			count = 1
+			texts = []string{one}
 		}
 	}
-	vec := make([]float64, dims)
-	for i := range vec {
-		vec[i] = 0.1
-	}
+	count := len(texts)
 	data := make([]map[string]any, count)
 	for i := range data {
-		data[i] = map[string]any{"object": "embedding", "index": i, "embedding": vec}
+		var v []float64
+		if i < len(texts) {
+			v = deterministicVector(texts[i])
+		} else {
+			v = deterministicVector("")
+		}
+		data[i] = map[string]any{"object": "embedding", "index": i, "embedding": v}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"object": "list",
@@ -188,6 +189,18 @@ func handleEmbed(w http.ResponseWriter, r *http.Request) {
 		"model":  "stub-embedding",
 		"usage":  map[string]any{"prompt_tokens": 1, "total_tokens": 1},
 	})
+}
+
+// deterministicVector: 以文本 md5 派生确定性向量 (同文本同向量; 异文本异向量 →
+// 检索排序稳定, 跨运行可复现)。值域 [0.01, 0.31] 避免零向量。
+func deterministicVector(text string) []float64 {
+	sum := md5.Sum([]byte(text))
+	vec := make([]float64, dims)
+	for i := range vec {
+		b := sum[i%len(sum)]
+		vec[i] = 0.01 + float64(b)*0.0012
+	}
+	return vec
 }
 
 func main() {

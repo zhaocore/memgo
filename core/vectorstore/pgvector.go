@@ -225,10 +225,15 @@ func (p *PGVector) KeywordSearch(query string, topK int, filters map[string]any)
 	if err != nil {
 		return nil, err
 	}
+	// keyword 模板自带 WHERE (tsvector @@), 过滤条件须以 AND 接续 (对齐 Python filter_clause)
+	andClause := where
+	if andClause != "" {
+		andClause = "AND " + strings.TrimPrefix(andClause, "WHERE ")
+	}
 	tbl := pgx.Identifier{p.cfg.CollectionName}.Sanitize()
 	sqlText := fmt.Sprintf(`SELECT id, ts_rank_cd(to_tsvector('simple', payload->>'text_lemmatized'), plainto_tsquery('simple', $1)) AS score, payload
 		FROM %s WHERE to_tsvector('simple', payload->>'text_lemmatized') @@ plainto_tsquery('simple', $1) %s
-		ORDER BY score DESC LIMIT $%d`, tbl, where, len(args)+3)
+		ORDER BY score DESC LIMIT $%d`, tbl, andClause, len(args)+2) // +1: query 的 $1; +1: limit 自身
 	args = append(args, topK)
 	rows, err := p.pool.Query(context.Background(), sqlText, append([]any{query}, args...)...)
 	if err != nil {

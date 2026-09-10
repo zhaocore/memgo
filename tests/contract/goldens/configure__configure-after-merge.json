@@ -6,7 +6,7 @@
     },
     "provider": "openai"
   },
-  "history_db_path": "/app/history/history.db",
+  "history_db_path": "<HIST>",
   "llm": {
     "config": {
       "api_key": "[redacted]",
@@ -19,9 +19,9 @@
     "config": {
       "collection_name": "memories",
       "dbname": "postgres",
-      "host": "postgres",
+      "host": "<HOST>",
       "password": "[redacted]",
-      "port": 5432,
+      "port": "<PORT>",
       "user": "postgres"
     },
     "provider": "pgvector"

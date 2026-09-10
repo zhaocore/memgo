@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/zhao-core/memgo/core/entity"
+	"github.com/zhao-core/memgo/core/jsonx"
 )
 
 // SearchParams 对齐 Memory.search 参数面 (rerank 由 reranker 未实现而恒 false, 合同未暴露)。
@@ -240,7 +241,9 @@ func (m *Memory) searchVectorStore(query string, filters map[string]any, limit i
 			continue
 		}
 		score := s.score
-		item := serializeMemoryItem(s.id, payload, &score, true)
+		pyScore := jsonx.PyFloat(score)
+		item := serializeMemoryItem(s.id, payload, nil, true)
+		item["score"] = pyScore
 		if explain {
 			item["score_details"] = s.details
 		}
