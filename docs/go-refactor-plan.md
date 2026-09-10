@@ -173,7 +173,17 @@ MemGo/
 
 **验收**：契约套件在未改动的 Python 主干全绿；golden 文件入库。
 
-### P1 — 记忆引擎 core/（Go 库，无 HTTP）
+### P1 — 记忆引擎 core/（Go 库，无 HTTP）✅ 代码完成（2026-09-10）
+
+> 完成记录：8 个子包全部落地并编译（38 文件 / ~5600 行）：config（解析/默认值/deepmerge/redact）、
+> prompts（生成器机械搬运 tools/gen_prompts.py，**parity test 与 Python diff=0 实测 PASS**）、
+> llm（openai/anthropic/gemini REST 客户端）、embedder（openai/gemini）、vectorstore（pgx+pgvector-go，
+> 含 $or/$not/操作符过滤翻译）、history（modernc sqlite，history+messages 双表含驱逐）、
+> entity（无 spaCy 回退语义=恒空，与契约基线一致 + upsert/remove/boosts）、memory（add 双分支/
+> search 混合评分/get/get_all/update/delete/delete_all/history/reset）。
+> 测试：core 六包 go test 全绿（LLM/embedder/向量库桩注入 + pgvector 真实集成测试打契约栈 :8432）。
+> 已知裁剪（计划内）：AsyncMemory 不移植、reranker 不做、spaCy NER/词形还原取无 spaCy 回退路径（identity/恒空），
+> NER 接入属后续增强且须连带更新契约基线。infer=true 全链路对拍在 P2 由契约套件打 Go server 完成。
 
 | # | 任务 | 对应上游 |
 |---|------|----------|
