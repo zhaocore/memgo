@@ -1,0 +1,9 @@
+[
+  {
+    "created_at": "<TS>Z",
+    "id": "agent-carol",
+    "total_memories": 1,
+    "type": "agent",
+    "updated_at": "<TS>Z"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "actor_id": null,
+    "created_at": "<TS>+00:00",
+    "event": "ADD",
+    "id": "<UUID>",
+    "is_deleted": false,
+    "memory_id": "<UUID>",
+    "new_memory": "Alice likes hiking in the mountains.",
+    "old_memory": null,
+    "role": "user",
+    "updated_at": "<TS>+00:00"
+  },
+  {
+    "actor_id": null,
+    "created_at": "<TS>+00:00",
+    "event": "UPDATE",
+    "id": "<UUID>",
+    "is_deleted": false,
+    "memory_id": "<UUID>",
+    "new_memory": "Alice likes hiking in the mountains.",
+    "old_memory": "Alice likes hiking in the mountains.",
+    "role": "user",
+    "updated_at": "<TS>+00:00"
+  },
+  {
+    "actor_id": null,
+    "created_at": "<TS>+00:00",
+    "event": "UPDATE",
+    "id": "<UUID>",
+    "is_deleted": false,
+    "memory_id": "<UUID>",
+    "new_memory": "Alice loves trail running now.",
+    "old_memory": "Alice likes hiking in the mountains.",
+    "role": "user",
+    "updated_at": "<TS>+00:00"
+  }
+]

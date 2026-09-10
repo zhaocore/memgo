@@ -1,0 +1,7 @@
+bin/
+*.test
+coverage.out
+.env
+tests/contract/.state
+tests/contract/openapi/golden.json.tmp
+.DS_Store

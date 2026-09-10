@@ -1,0 +1,11 @@
+{
+  "embedder": [
+    "openai",
+    "gemini"
+  ],
+  "llm": [
+    "openai",
+    "anthropic",
+    "gemini"
+  ]
+}

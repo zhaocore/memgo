@@ -1,0 +1,9 @@
+{
+  "auth_type": "admin_api_key",
+  "created_at": "<TS>Z",
+  "id": "<UUID>",
+  "latency_ms": "<LAT>",
+  "method": "GET",
+  "path": "/auth/me",
+  "status_code": 200
+}

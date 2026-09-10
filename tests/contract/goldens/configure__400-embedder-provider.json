@@ -1,0 +1,3 @@
+{
+  "detail": "Embedder provider 'cohere' is not bundled in this image. Bundled providers: openai, gemini. To use another provider, install its Python package, rebuild the container, and extend BUNDLED_EMBEDDER_PROVIDERS in server/main.py."
+}

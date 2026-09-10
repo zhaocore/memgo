@@ -1,0 +1,5 @@
+{
+  "code": "provider_rate_limited",
+  "detail": "Provider rate limit hit. Retry shortly.",
+  "request_id": "<RID>"
+}

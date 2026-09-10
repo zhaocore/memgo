@@ -1,0 +1,11 @@
+{
+  "results": [
+    {
+      "actor_id": null,
+      "event": "ADD",
+      "id": "<UUID>",
+      "memory": "Alice likes hiking in the mountains.",
+      "role": "user"
+    }
+  ]
+}

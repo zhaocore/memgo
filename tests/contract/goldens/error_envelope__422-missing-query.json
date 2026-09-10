@@ -1,0 +1,13 @@
+{
+  "detail": [
+    {
+      "input": {},
+      "loc": [
+        "body",
+        "query"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    }
+  ]
+}

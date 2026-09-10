@@ -1,0 +1,7 @@
+{
+  "created_at": "<TS>Z",
+  "email": "contract@example.com",
+  "id": "<UUID>",
+  "name": "Contract Admin",
+  "role": "admin"
+}

@@ -1,0 +1,9 @@
+[
+  {
+    "created_at": "<TS>Z",
+    "id": "<UUID>",
+    "key_prefix": "<KEY>",
+    "label": "contract-user-key",
+    "last_used_at": null
+  }
+]

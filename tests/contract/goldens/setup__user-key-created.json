@@ -1,0 +1,7 @@
+{
+  "created_at": "<TS>Z",
+  "id": "<UUID>",
+  "key": "<KEY>",
+  "key_prefix": "<KEY>",
+  "label": "contract-user-key"
+}

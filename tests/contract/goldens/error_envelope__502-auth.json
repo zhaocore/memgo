@@ -1,0 +1,5 @@
+{
+  "code": "provider_auth_failed",
+  "detail": "Provider rejected the request (authentication). Check your LLM provider API key on the Configuration page.",
+  "request_id": "<RID>"
+}

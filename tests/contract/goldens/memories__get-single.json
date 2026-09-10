@@ -1,0 +1,14 @@
+{
+  "created_at": "<TS>+00:00",
+  "hash": "<HASH>",
+  "id": "<UUID>",
+  "memory": "Alice loves trail running now.",
+  "metadata": {
+    "pref": "trail-running",
+    "source": "contract"
+  },
+  "role": "user",
+  "score": null,
+  "updated_at": "<TS>+00:00",
+  "user_id": "alice"
+}

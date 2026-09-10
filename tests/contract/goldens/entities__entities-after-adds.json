@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "<TS>Z",
+    "id": "agent-carol",
+    "total_memories": 1,
+    "type": "agent",
+    "updated_at": "<TS>Z"
+  },
+  {
+    "created_at": "<TS>Z",
+    "id": "entity-agent",
+    "total_memories": 1,
+    "type": "agent",
+    "updated_at": "<TS>Z"
+  },
+  {
+    "created_at": "<TS>Z",
+    "id": "entity-user",
+    "total_memories": 2,
+    "type": "user",
+    "updated_at": "<TS>Z"
+  }
+]

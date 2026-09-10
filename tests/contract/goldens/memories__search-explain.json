@@ -1,0 +1,70 @@
+{
+  "results": [
+    {
+      "created_at": "<TS>+00:00",
+      "expiration_date": null,
+      "hash": "<HASH>",
+      "id": "<UUID>",
+      "memory": "Alice enjoys swimming in lakes.",
+      "metadata": {
+        "pref": "swimming"
+      },
+      "role": "user",
+      "score": 0.5157,
+      "score_details": {
+        "bm25_score": 0.0313709322481939,
+        "entity_boost": 0.0,
+        "final_score": 0.5156854661240969,
+        "max_possible_score": 2.0,
+        "raw_score": 1.0313709322481939,
+        "semantic_score": 1.0,
+        "threshold": 0.1
+      },
+      "updated_at": "<TS>+00:00",
+      "user_id": "alice"
+    },
+    {
+      "created_at": "<TS>+00:00",
+      "hash": "<HASH>",
+      "id": "<UUID>",
+      "memory": "Alice likes hiking in the mountains.",
+      "metadata": null,
+      "role": "user",
+      "score": 0.5,
+      "score_details": {
+        "bm25_score": 0.0,
+        "entity_boost": 0.0,
+        "final_score": 0.5,
+        "max_possible_score": 2.0,
+        "raw_score": 1.0,
+        "semantic_score": 1.0,
+        "threshold": 0.1
+      },
+      "updated_at": "<TS>+00:00",
+      "user_id": "alice"
+    },
+    {
+      "created_at": "<TS>+00:00",
+      "hash": "<HASH>",
+      "id": "<UUID>",
+      "memory": "Alice loves trail running now.",
+      "metadata": {
+        "pref": "trail-running",
+        "source": "contract"
+      },
+      "role": "user",
+      "score": 0.5,
+      "score_details": {
+        "bm25_score": 0.0,
+        "entity_boost": 0.0,
+        "final_score": 0.5,
+        "max_possible_score": 2.0,
+        "raw_score": 1.0,
+        "semantic_score": 1.0,
+        "threshold": 0.1
+      },
+      "updated_at": "<TS>+00:00",
+      "user_id": "alice"
+    }
+  ]
+}

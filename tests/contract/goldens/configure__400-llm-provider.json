@@ -1,0 +1,3 @@
+{
+  "detail": "LLM provider 'mistral' is not bundled in this image. Bundled providers: openai, anthropic, gemini. To use another provider, install its Python package, rebuild the container, and extend BUNDLED_LLM_PROVIDERS in server/main.py."
+}

@@ -1,0 +1,5 @@
+{
+  "code": "provider_unavailable",
+  "detail": "Provider is unreachable or returned a server error.",
+  "request_id": "<RID>"
+}

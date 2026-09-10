@@ -1,0 +1,5 @@
+{
+  "code": "provider_bad_request",
+  "detail": "Provider rejected the request as malformed.",
+  "request_id": "<RID>"
+}

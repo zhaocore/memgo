@@ -1,0 +1,30 @@
+{
+  "embedder": {
+    "config": {
+      "api_key": "[redacted]",
+      "model": "text-embedding-3-small"
+    },
+    "provider": "openai"
+  },
+  "history_db_path": "/app/history/history.db",
+  "llm": {
+    "config": {
+      "api_key": "[redacted]",
+      "model": "stub-llm-model",
+      "temperature": 0.2
+    },
+    "provider": "openai"
+  },
+  "vector_store": {
+    "config": {
+      "collection_name": "memories",
+      "dbname": "postgres",
+      "host": "postgres",
+      "password": "[redacted]",
+      "port": 5432,
+      "user": "postgres"
+    },
+    "provider": "pgvector"
+  },
+  "version": "v1.1"
+}

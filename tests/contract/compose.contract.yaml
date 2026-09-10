@@ -1,0 +1,87 @@
+# 契约测试栈 (Podman)。用途: P0 契约套件打 Python server 采 golden / 回归;
+# P2 起同一套件打 Go server (CONTRACT_BASE_URL 指向宿主进程)。
+# 全新库: podman compose -f compose.contract.yaml down -v && up -d --build
+name: memgo-contract
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: contract-pw
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d postgres -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "8432:5432"
+    volumes:
+      - contract_pg:/var/lib/postgresql/data
+      - /Users/johnson/work/github/mem0/server/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+
+  mem0:
+    build:
+      context: /Users/johnson/work/github/mem0
+      dockerfile: server/dev.Dockerfile
+    ports:
+      - "18888:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      JWT_SECRET: contract-jwt-secret-0123456789abcdef
+      ADMIN_API_KEY: contract-admin-key-0123456789
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: contract-pw
+      POSTGRES_COLLECTION_NAME: memories
+      # LLM/embedder 统一打桩 (宿主 stub); Podman 容器内经 host.containers.internal 访问宿主
+      OPENAI_BASE_URL: http://host.containers.internal:8090/v1
+      OPENAI_API_KEY: stub-key
+      APP_DB_NAME: mem0_app
+      DASHBOARD_URL: http://localhost:3000
+      MEM0_TELEMETRY: "false"
+      HISTORY_DB_PATH: /app/history/history.db
+    volumes:
+      - contract_history:/app/history
+    # 不挂载源码、不带 --reload、不 pip 覆盖安装 —— 基线镜像冻结本地 mem0 主干源码
+    command: >
+      sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
+
+  mem0-open:
+    build:
+      context: /Users/johnson/work/github/mem0
+      dockerfile: server/dev.Dockerfile
+    ports:
+      - "18889:8000"
+    depends_on:
+      mem0:
+        condition: service_started
+    environment:
+      AUTH_DISABLED: "true"
+      ADMIN_API_KEY: contract-admin-key-0123456789
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: contract-pw
+      POSTGRES_COLLECTION_NAME: memories
+      OPENAI_BASE_URL: http://host.containers.internal:8090/v1
+      OPENAI_API_KEY: stub-key
+      APP_DB_NAME: mem0_app
+      DASHBOARD_URL: http://localhost:3000
+      MEM0_TELEMETRY: "false"
+      HISTORY_DB_PATH: /app/history-open/history.db
+    volumes:
+      - contract_history_open:/app/history-open
+    # 等主实例迁移完成后启动 (共享 mem0_app 库, 二次 alembic 有锁竞态)
+    command: >
+      sh -c "until curl -sf http://mem0:8000/auth/setup-status; do sleep 1; done; uvicorn main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  contract_pg:
+  contract_history:
+  contract_history_open:

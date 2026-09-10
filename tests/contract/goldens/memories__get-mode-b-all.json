@@ -1,0 +1,100 @@
+{
+  "results": [
+    {
+      "agent_id": null,
+      "created_at": "<TS>+00:00",
+      "expiration_date": null,
+      "hash": "<HASH>",
+      "id": "<UUID>",
+      "memory": "Alice likes hiking in the mountains.",
+      "metadata": {
+        "role": "user",
+        "text_lemmatized": "Alice likes hiking in the mountains."
+      },
+      "run_id": null,
+      "updated_at": "<TS>+00:00",
+      "user_id": "alice"
+    },
+    {
+      "agent_id": null,
+      "created_at": "<TS>+00:00",
+      "expiration_date": "2020-01-01",
+      "hash": "<HASH>",
+      "id": "<UUID>",
+      "memory": "Alice had a dog in 2015.",
+      "metadata": {
+        "role": "user",
+        "text_lemmatized": "Alice had a dog in 2015."
+      },
+      "run_id": null,
+      "updated_at": "<TS>+00:00",
+      "user_id": "alice"
+    },
+    {
+      "agent_id": "agent-carol",
+      "created_at": "<TS>+00:00",
+      "expiration_date": null,
+      "hash": "<HASH>",
+      "id": "<UUID>",
+      "memory": "Carol drives an old van.",
+      "metadata": {
+        "attributed_to": "a-1",
+        "custom": "c1",
+        "role": "user",
+        "text_lemmatized": "Carol drives an old van."
+      },
+      "run_id": null,
+      "updated_at": "<TS>+00:00",
+      "user_id": null
+    },
+    {
+      "agent_id": null,
+      "created_at": "<TS>+00:00",
+      "expiration_date": null,
+      "hash": "<HASH>",
+      "id": "<UUID>",
+      "memory": "Bob speaks French fluently.",
+      "metadata": {
+        "lang": "fr",
+        "role": "user",
+        "text_lemmatized": "Bob speaks French fluently."
+      },
+      "run_id": null,
+      "updated_at": "<TS>+00:00",
+      "user_id": "bob"
+    },
+    {
+      "agent_id": null,
+      "created_at": "<TS>+00:00",
+      "expiration_date": null,
+      "hash": "<HASH>",
+      "id": "<UUID>",
+      "memory": "Alice enjoys swimming in lakes.",
+      "metadata": {
+        "pref": "swimming",
+        "role": "user",
+        "text_lemmatized": "Alice enjoys swimming in lakes."
+      },
+      "run_id": null,
+      "updated_at": "<TS>+00:00",
+      "user_id": "alice"
+    },
+    {
+      "agent_id": null,
+      "created_at": "<TS>+00:00",
+      "expiration_date": null,
+      "hash": "<HASH>",
+      "id": "<UUID>",
+      "memory": "Alice loves trail running now.",
+      "metadata": {
+        "pref": "trail-running",
+        "role": "user",
+        "source": "contract",
+        "text_lemmatized": "Alice loves trail running now."
+      },
+      "run_id": null,
+      "updated_at": "<TS>+00:00",
+      "user_id": "alice"
+    }
+  ]
+}

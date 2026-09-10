@@ -1,0 +1,17 @@
+{
+  "detail": [
+    {
+      "input": {
+        "role": "user"
+      },
+      "loc": [
+        "body",
+        "messages",
+        0,
+        "content"
+      ],
+      "msg": "Field required",
+      "type": "missing"
+    }
+  ]
+}

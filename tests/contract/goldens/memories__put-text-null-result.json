@@ -1,0 +1,14 @@
+{
+  "created_at": "<TS>+00:00",
+  "expiration_date": null,
+  "hash": "<HASH>",
+  "id": "<UUID>",
+  "memory": "Alice enjoys swimming in lakes.",
+  "metadata": {
+    "pref": "swimming"
+  },
+  "role": "user",
+  "score": null,
+  "updated_at": "<TS>+00:00",
+  "user_id": "alice"
+}

@@ -1,0 +1,5 @@
+{
+  "access_token": "<JWT>",
+  "refresh_token": "<JWT>",
+  "token_type": "bearer"
+}
