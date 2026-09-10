@@ -1,16 +1,4 @@
-# MemGo — memgo Python 主体的 Go 重写
-
-把 [memgo](https://github.com/memgoai/memgo) 的自托管主体（记忆引擎 + FastAPI server + CLI）重写为 Go。
-合同基准：memgo 仓库 `architecture/doc-01~05`；本仓库验收 = 同一套黑盒契约测试对 Go 全绿（251/251）。
-
-```
-core/       记忆引擎（无 HTTP 依赖）: config / prompts / llm / embedder / vectorstore / history / entity / memory
-server/     HTTP 层（doc-02 合同）: store+goose迁移 / auth / middleware / api / errpkg
-cli/        memgo CLI（第三实现; 上游 python/node CLI 零改动）
-cmd/        server / memgo / migrate 入口
-tests/      contract/（黑盒契约套件+goldens） bench/（P95 基线）
-deploy/     Dockerfile.server / docker-compose.yaml / seed.sh
-```
+# MemGo
 
 ## 快速开始（一键栈）
 
