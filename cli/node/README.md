@@ -322,6 +322,20 @@ pnpm build
 node dist/index.js --help
 ```
 
+## Self-hosted (OSS) backend
+
+The CLI works against a self-hosted MemGo server: point `--base-url` (or `MEM0_BASE_URL`) at your server and use an API key created on that server. Any base URL other than `api.mem0.ai` selects the OSS backend automatically (`X-API-Key` auth, doc-02 contract).
+
+```bash
+export MEM0_BASE_URL=http://localhost:8888
+export MEM0_API_KEY=m0sk_...
+mem0 status
+mem0 add "I like hiking" -u alice --no-infer
+mem0 search "hiking" -u alice -o table
+```
+
+Platform-only features (app_id, immutable, keyword search, events, entity apps) are rejected with an explicit error on the OSS backend.
+
 ## Documentation
 
 Full documentation is available at [docs.mem0.ai/platform/cli](https://docs.mem0.ai/platform/cli).

@@ -3,6 +3,7 @@
  */
 
 import type { Mem0Config } from "../config.js";
+import { OSSBackend } from "./oss.js";
 import { PlatformBackend } from "./platform.js";
 
 export interface AddOptions {
@@ -138,6 +139,23 @@ export class APIError extends Error {
 	}
 }
 
+/**
+ * OSS 判定对齐 Go CLI factory.go (doc-01 §4.3):
+ * base_url host 是平台域名 (api.mem0.ai) 或为空 → platform, 否则 → OSS。
+ */
+function isPlatformURL(baseURL: string): boolean {
+	let host = "";
+	try {
+		host = new URL(baseURL).hostname;
+	} catch {
+		host = "";
+	}
+	return host === "api.mem0.ai" || host === "";
+}
+
 export function getBackend(config: Mem0Config): Backend {
-	return new PlatformBackend(config.platform);
+	if (isPlatformURL(config.platform.baseUrl)) {
+		return new PlatformBackend(config.platform);
+	}
+	return new OSSBackend(config.platform);
 }

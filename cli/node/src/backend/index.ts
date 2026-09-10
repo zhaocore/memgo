@@ -12,3 +12,4 @@ export type {
 	EntityIds,
 } from "./base.js";
 export { AuthError, NotFoundError, APIError } from "./base.js";
+export { OSSBackend } from "./oss.js";

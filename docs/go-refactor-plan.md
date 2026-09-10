@@ -13,8 +13,8 @@
 **继承的硬约束**（来自 doc-01 头部约束，Go 重构同样适用）：
 
 1. **自托管 REST API 合同不变**——doc-02 是逐端点对照基准，路径/鉴权/响应形状/错误信封/状态码全部保持
-2. **Dashboard（Next.js）零改动**——它只依赖 HTTP 合同，Go server 满足合同即天然兼容
-3. **CLI：上游双 CLI 保留不动，只新增 Go CLI**——python/node 两个 CLI 是存量资产，零改动；Go CLI 是新增的第三个实现，命令、选项、输出行为以双 CLI 为对齐目标
+2. **Dashboard（Next.js）零改动**——它只依赖 HTTP 合同，Go server 满足合同即天然兼容（2026-09-10 用户变更：原样**迁入本仓库** dashboard/，见 §1）
+3. **CLI：上游双 CLI 保留不动，只新增 Go CLI**——python/node 两个 CLI 是存量资产，零改动；Go CLI 是新增的第三个实现，命令、选项、输出行为以双 CLI 为对齐目标（2026-09-10 用户变更：node CLI 新增 OSS backend 支持自部署，见 §1）
 
 **总原则**：
 
@@ -40,6 +40,7 @@
 | `mem0-ts/`（TypeScript SDK） | **不动** | 本就是 TS，与 py→go 无关 |
 | `mem0/client/`（平台 MemoryClient）、平台 API 本身 | **不迁移** | SaaS 侧不可移植，且 Go CLI 需要的是"平台 HTTP 客户端"而非平台服务端 |
 | `cli/python`（Typer）+ `cli/node`（Commander） | **逐字迁入本仓库（2026-09-10 用户变更）+ Go CLI，三 CLI 同仓交付** | 迁移后 python 199/199、node 150/150 测试全绿；mem0 仓库 cli/ 依旧零改动（复制非移动） |
+| `cli/node` OSS backend | **新增（2026-09-10 用户变更，『逐字』豁免一处）** | 自部署支持：backend/oss.ts 对齐 Go backend_oss.go（doc-02 合同 + X-API-Key），工厂按 base_url 非 api.mem0.ai 判定 OSS；node 150/150 仍绿 + 打本机 memgo-server E2E 全过（status/add/search/list/entity/负路径响错/范围 delete） |
 | Python SDK 本体（PyPI mem0ai） | **保留不动** | 存量用户继续可用；Go 版以独立包交付 |
 
 ---
@@ -55,7 +56,7 @@
 | D5 | 应用库迁移工具 | goose（SQL 迁移文件），alembic 001-006 逐条翻译为 SQL，DDL 逐字一致 | 新部署全新建库即可；存量库迁移见 §8 风险 R6 |
 | D6 | LLM/Embedder 客户端 | 直接 `net/http` 写小型类型化客户端，**不引 langchaingo 等重框架** | 只需 chat + structured JSON 两个能力；依赖最小化，错误分类可控 |
 | D7 | 契约测试形态 | **黑盒 HTTP 套件**（bash+jq 或 pytest，与被测实现无进程内耦合），golden 快照采自 Python server | 跨语言重写的唯一可靠安全网；套件同时打 Python（采基线）与 Go（验目标） |
-| D8 | CLI 合并策略 | **上游 python/node 双 CLI 不动；新增 Go CLI 作为第三实现**（cobra），二进制名 `memgo`（避开存量 `mem0` 命令），platform backend 先行、OSS backend 随 server 完成接入；Backend 接口面沿用 cli/python backend/base.py | 三实现并行：parity golden（命令×选项矩阵）成为三向对齐的唯一规范，Go CLI 不得有双 CLI 不存在的选项或命令 |
+| D8 | CLI 合并策略 | **上游 python/node 双 CLI 不动；新增 Go CLI 作为第三实现**（cobra），二进制名 `memgo`（避开存量 `mem0` 命令），platform backend 先行、OSS backend 随 server 完成接入；Backend 接口面沿用 cli/python backend/base.py；node CLI 已补同面 OSS backend（2026-09-10 用户变更） | 三实现并行：parity golden（命令×选项矩阵）成为三向对齐的唯一规范，Go CLI 不得有双 CLI 不存在的选项或命令 |
 
 ---
 
