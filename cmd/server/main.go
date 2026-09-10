@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/zhao-core/memgo/internal/dotenv"
 	"github.com/zhao-core/memgo/server/api"
 	"github.com/zhao-core/memgo/server/store"
 )
@@ -30,6 +31,10 @@ func envTrue(k string) bool {
 }
 
 func main() {
+	if err := dotenv.Load(); err != nil {
+		log.Fatal(err)
+	}
+
 	authDisabled := envTrue("AUTH_DISABLED")
 	jwtSecret := os.Getenv("JWT_SECRET")
 	adminKey := os.Getenv("ADMIN_API_KEY")

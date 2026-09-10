@@ -38,13 +38,16 @@ DEPLOY_STACK := deploy/docker-compose.yaml
 # 宿主 API 端口 (8888 被占的机器用 API_PORT=18888 make up)
 API_PORT ?= 8888
 
+# 根目录 .env 传给 compose 插值 (存在才传; 缺 :? 变量时 compose 自行报错)
+ENV_FILE := $(if $(wildcard .env),--env-file ../.env,)
+
 # 一键起栈 (memgo-server + pgvector; dashboard 用 --profile dashboard)
 up:
-	cd deploy && API_HOST_PORT=$(API_PORT) podman compose -f docker-compose.yaml up -d --build
+	cd deploy && API_HOST_PORT=$(API_PORT) podman compose $(ENV_FILE) -f docker-compose.yaml up -d --build
 	@make -s wait-api
 
 up-dashboard:
-	cd deploy && podman compose -f docker-compose.yaml --profile dashboard up -d --build
+	cd deploy && podman compose $(ENV_FILE) -f docker-compose.yaml --profile dashboard up -d --build
 
 # 对照开关: 上游 python server 起同一套栈
 up-py:

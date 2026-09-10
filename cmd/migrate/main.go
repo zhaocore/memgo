@@ -13,6 +13,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/zhao-core/memgo/internal/dotenv"
 	"github.com/zhao-core/memgo/server/store"
 )
 
@@ -23,6 +24,10 @@ const alembicHead = "006"
 var appliedMigrations = []int64{1, 2, 3, 4, 5, 6}
 
 func main() {
+	if err := dotenv.Load(); err != nil {
+		fail("%v", err)
+	}
+
 	dsn := os.Getenv("APP_DB_DSN")
 	if dsn == "" {
 		dsn = store.DSN()
