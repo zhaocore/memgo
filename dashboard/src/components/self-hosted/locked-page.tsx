@@ -18,8 +18,8 @@ export function LockedPage({
   utmMedium,
 }: LockedPageProps) {
   const utm = `utm_source=oss&utm_medium=${utmMedium}`;
-  const cloudUrl = `https://app.mem0.ai?${utm}`;
-  const salesUrl = `https://app.mem0.ai/enterprise?${utm}`;
+  const cloudUrl = `https://app.memgo.ai?${utm}`;
+  const salesUrl = `https://app.memgo.ai/enterprise?${utm}`;
 
   return (
     <div className="space-y-6">
@@ -41,7 +41,7 @@ export function LockedPage({
         <CardContent className="flex flex-col sm:flex-row items-center gap-4 py-6">
           <div className="flex-1">
             <p className="text-sm font-medium">
-              This feature is available in Mem0 Cloud and Enterprise.
+              This feature is available in MemGo Cloud and Enterprise.
             </p>
           </div>
           <div className="flex gap-3">

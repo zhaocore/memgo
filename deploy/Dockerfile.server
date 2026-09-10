@@ -13,7 +13,7 @@ FROM alpine:3.20
 RUN apk add --no-cache ca-certificates && adduser -D -u 10001 memgo
 COPY --from=build /out/memgo-server /usr/local/bin/memgo-server
 USER memgo
-ENV POSTGRES_HOST=postgres POSTGRES_PORT=5432 APP_DB_NAME=mem0_app \
+ENV POSTGRES_HOST=postgres POSTGRES_PORT=5432 APP_DB_NAME=memgo_app \
     HISTORY_DB_PATH=/app/history/history.db PORT=8000
 VOLUME /app/history
 EXPOSE 8000

@@ -64,7 +64,7 @@ describe("updateShellRc — exists-only contract", () => {
 	let tmpDir: string;
 
 	beforeEach(() => {
-		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mem0-test-"));
+		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "memgo-test-"));
 	});
 	afterEach(() => {
 		fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -72,9 +72,9 @@ describe("updateShellRc — exists-only contract", () => {
 
 	it("updates existing export and preserves trailing newline", () => {
 		const rc = path.join(tmpDir, ".zshrc");
-		fs.writeFileSync(rc, 'export MEM0_API_KEY="old"\n');
+		fs.writeFileSync(rc, 'export MEMGO_API_KEY="old"\n');
 		expect(updateShellRc(rc, "newkey")).toBe(true);
-		expect(fs.readFileSync(rc, "utf-8")).toBe('export MEM0_API_KEY="newkey"\n');
+		expect(fs.readFileSync(rc, "utf-8")).toBe('export MEMGO_API_KEY="newkey"\n');
 	});
 
 	it("does NOT create a new export when none exists", () => {
@@ -89,7 +89,7 @@ describe("updateShellRc — exists-only contract", () => {
 		const original =
 			"# my zshrc\n" +
 			"alias ll='ls -la'\n" +
-			"export MEM0_API_KEY='old'\n" +
+			"export MEMGO_API_KEY='old'\n" +
 			"export OTHER=keepme\n";
 		fs.writeFileSync(rc, original);
 		updateShellRc(rc, "newkey");
@@ -97,12 +97,12 @@ describe("updateShellRc — exists-only contract", () => {
 		expect(after).toContain("alias ll='ls -la'\n");
 		expect(after).toContain("export OTHER=keepme\n");
 		expect(after).toContain("# my zshrc\n");
-		expect(after).toContain('export MEM0_API_KEY="newkey"\n');
+		expect(after).toContain('export MEMGO_API_KEY="newkey"\n');
 	});
 
 	it("is idempotent when value already matches", () => {
 		const rc = path.join(tmpDir, ".zshrc");
-		fs.writeFileSync(rc, 'export MEM0_API_KEY="same"\n');
+		fs.writeFileSync(rc, 'export MEMGO_API_KEY="same"\n');
 		expect(updateShellRc(rc, "same")).toBe(false);
 	});
 
@@ -118,7 +118,7 @@ describe("updateClaudeSettings — never creates entries", () => {
 	let tmpDir: string;
 
 	beforeEach(() => {
-		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mem0-test-"));
+		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "memgo-test-"));
 	});
 	afterEach(() => {
 		fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -133,7 +133,7 @@ describe("updateClaudeSettings — never creates entries", () => {
 		});
 	});
 
-	it("does not create MEM0_API_KEY entry in existing env block", () => {
+	it("does not create MEMGO_API_KEY entry in existing env block", () => {
 		const settings = path.join(tmpDir, "settings.json");
 		fs.writeFileSync(settings, JSON.stringify({ env: { OTHER_KEY: "x" } }));
 		expect(updateClaudeSettings(settings, "newkey")).toBe(false);
@@ -143,11 +143,11 @@ describe("updateClaudeSettings — never creates entries", () => {
 		const settings = path.join(tmpDir, "settings.json");
 		fs.writeFileSync(
 			settings,
-			JSON.stringify({ env: { MEM0_API_KEY: "old", OTHER: "y" } }, null, 2),
+			JSON.stringify({ env: { MEMGO_API_KEY: "old", OTHER: "y" } }, null, 2),
 		);
 		expect(updateClaudeSettings(settings, "fresh")).toBe(true);
 		const data = JSON.parse(fs.readFileSync(settings, "utf-8"));
-		expect(data.env.MEM0_API_KEY).toBe("fresh");
+		expect(data.env.MEMGO_API_KEY).toBe("fresh");
 		expect(data.env.OTHER).toBe("y");
 	});
 
@@ -155,7 +155,7 @@ describe("updateClaudeSettings — never creates entries", () => {
 		const settings = path.join(tmpDir, "settings.json");
 		fs.writeFileSync(
 			settings,
-			JSON.stringify({ env: { MEM0_API_KEY: "same" } }),
+			JSON.stringify({ env: { MEMGO_API_KEY: "same" } }),
 		);
 		expect(updateClaudeSettings(settings, "same")).toBe(false);
 	});

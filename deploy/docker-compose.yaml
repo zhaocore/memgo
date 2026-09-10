@@ -39,16 +39,16 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_COLLECTION_NAME=${POSTGRES_COLLECTION_NAME:-memories}
-      - APP_DB_NAME=${APP_DB_NAME:-mem0_app}
+      - APP_DB_NAME=${APP_DB_NAME:-memgo_app}
       - OPENAI_API_KEY=${OPENAI_API_KEY:?Set OPENAI_API_KEY}
       - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
-      - MEM0_DEFAULT_LLM_MODEL=${MEM0_DEFAULT_LLM_MODEL:-gpt-5-mini}
-      - MEM0_DEFAULT_EMBEDDER_MODEL=${MEM0_DEFAULT_EMBEDDER_MODEL:-text-embedding-3-small}
+      - MEMGO_DEFAULT_LLM_MODEL=${MEMGO_DEFAULT_LLM_MODEL:-gpt-5-mini}
+      - MEMGO_DEFAULT_EMBEDDER_MODEL=${MEMGO_DEFAULT_EMBEDDER_MODEL:-text-embedding-3-small}
       - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET (openssl rand -base64 48)}
       - ADMIN_API_KEY=${ADMIN_API_KEY:-}
       - AUTH_DISABLED=${AUTH_DISABLED:-false}
       - DASHBOARD_URL=${DASHBOARD_URL:-http://localhost:3000}
-      - MEM0_TELEMETRY=${MEM0_TELEMETRY:-true}
+      - MEMGO_TELEMETRY=${MEMGO_TELEMETRY:-true}
       - HISTORY_DB_PATH=/app/history/history.db
     volumes:
       - memgo_history:/app/history

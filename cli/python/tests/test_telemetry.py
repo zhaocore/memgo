@@ -7,9 +7,9 @@ import json
 import subprocess
 import sys
 
-from mem0_cli.config import Mem0Config, save_config
-from mem0_cli.telemetry import capture_event
-from mem0_cli.telemetry_sender import _load_context
+from memgo_cli.config import MemGoConfig, save_config
+from memgo_cli.telemetry import capture_event
+from memgo_cli.telemetry_sender import _load_context
 
 
 class _CaptureStdin:
@@ -30,7 +30,7 @@ class _DummyProcess:
 
 
 def test_capture_event_writes_context_to_stdin_not_argv(isolate_config, monkeypatch):
-    config = Mem0Config()
+    config = MemGoConfig()
     config.platform.api_key = "m0-test-secret"
     config.telemetry.anonymous_id = "cli-anon-test"
     save_config(config)
@@ -43,12 +43,12 @@ def test_capture_event_writes_context_to_stdin_not_argv(isolate_config, monkeypa
         captured["kwargs"] = kwargs
         return proc
 
-    monkeypatch.setattr("mem0_cli.telemetry.subprocess.Popen", fake_popen)
+    monkeypatch.setattr("memgo_cli.telemetry.subprocess.Popen", fake_popen)
 
     capture_event("unit_test_event", {"case": "stdin-secret"})
 
     argv = captured["args"]
-    assert argv == [sys.executable, "-m", "mem0_cli.telemetry_sender"]
+    assert argv == [sys.executable, "-m", "memgo_cli.telemetry_sender"]
     assert all("m0-test-secret" not in arg for arg in argv)
 
     kwargs = captured["kwargs"]
@@ -56,7 +56,7 @@ def test_capture_event_writes_context_to_stdin_not_argv(isolate_config, monkeypa
     assert kwargs["text"] is True
 
     ctx = json.loads(proc.stdin.buffer)
-    assert ctx["mem0_api_key"] == "m0-test-secret"
+    assert ctx["memgo_api_key"] == "m0-test-secret"
     assert ctx["payload"]["event"] == "unit_test_event"
 
     assert proc.stdin.closed

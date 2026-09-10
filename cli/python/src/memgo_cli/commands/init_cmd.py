@@ -1,4 +1,4 @@
-"""mem0 init — interactive setup wizard."""
+"""memgo init — interactive setup wizard."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import typer
 from rich.console import Console
 from rich.prompt import Prompt
 
-from mem0_cli.branding import (
+from memgo_cli.branding import (
     BRAND_COLOR,
     DIM_COLOR,
     print_banner,
@@ -19,10 +19,10 @@ from mem0_cli.branding import (
     print_info,
     print_success,
 )
-from mem0_cli.config import (
+from memgo_cli.config import (
     CONFIG_FILE,
     DEFAULT_BASE_URL,
-    Mem0Config,
+    MemGoConfig,
     load_config,
     save_config,
 )
@@ -134,8 +134,8 @@ def _email_login(
     """
     url = base_url.rstrip("/")
     _source_headers = {
-        "X-Mem0-Source": "cli",
-        "X-Mem0-Client-Language": "python",
+        "X-MemGo-Source": "cli",
+        "X-MemGo-Client-Language": "python",
     }
 
     with httpx.Client(timeout=30.0) as client:
@@ -165,7 +165,7 @@ def _email_login(
                 print_error(
                     err_console,
                     "No --code provided and terminal is non-interactive.",
-                    hint="Run: mem0 init --email <email> --code <code>",
+                    hint="Run: memgo init --email <email> --code <code>",
                 )
                 raise typer.Exit(1)
             console.print()
@@ -205,7 +205,7 @@ def run_init(
     agent: bool = False,
     agent_caller: str | None = None,
 ) -> None:
-    """Interactive setup wizard for mem0 CLI.
+    """Interactive setup wizard for memgo CLI.
 
     When both *api_key* and *user_id* are supplied, all prompts are skipped
     (non-interactive mode).  When running in a non-TTY without the required
@@ -222,10 +222,10 @@ def run_init(
         claim device-flow against the existing key instead of minting a new
         email-based key.
     """
-    from mem0_cli.agent_detect import detect_agent_caller
-    from mem0_cli.commands.agent_mode_cmd import bootstrap_via_backend, claim_via_otp
-    from mem0_cli.state import is_agent_mode as _global_agent_mode
-    from mem0_cli.telemetry import capture_event
+    from memgo_cli.agent_detect import detect_agent_caller
+    from memgo_cli.commands.agent_mode_cmd import bootstrap_via_backend, claim_via_otp
+    from memgo_cli.state import is_agent_mode as _global_agent_mode
+    from memgo_cli.telemetry import capture_event
 
     def _fire_init(mode: str, *, claimed: bool = False) -> None:
         """Fire cli.init telemetry with M1-M6 properties."""
@@ -239,9 +239,9 @@ def run_init(
             props["claimed_agent_mode"] = True
         capture_event("cli.init", props)
 
-    config = Mem0Config()
+    config = MemGoConfig()
 
-    base_url = os.environ.get("MEM0_BASE_URL", config.platform.base_url or DEFAULT_BASE_URL)
+    base_url = os.environ.get("MEMGO_BASE_URL", config.platform.base_url or DEFAULT_BASE_URL)
     config.platform.base_url = base_url
 
     if code and not email:
@@ -265,8 +265,8 @@ def run_init(
     # is no valid key to reuse — in that case overwriting is correct.
     _agent_ctx = agent or _global_agent_mode() or (detect_agent_caller() is not None)
     if not api_key and not email and _agent_ctx:
-        from mem0_cli.output import format_json_envelope
-        from mem0_cli.state import is_agent_mode as _is_json_mode
+        from memgo_cli.output import format_json_envelope
+        from memgo_cli.state import is_agent_mode as _is_json_mode
 
         def _emit_reuse(source: str) -> None:
             if _is_json_mode():
@@ -277,12 +277,12 @@ def run_init(
                         "api_key_saved": False,
                         "api_key_source": source,
                         "agent_mode": False,
-                        "message": "Existing Mem0 API key found and reused. No Agent Mode key was created.",
+                        "message": "Existing MemGo API key found and reused. No Agent Mode key was created.",
                     },
                 )
             else:
                 msg = (
-                    "Existing MEM0_API_KEY is valid; reusing it. No new Agent Mode key was minted."
+                    "Existing MEMGO_API_KEY is valid; reusing it. No new Agent Mode key was minted."
                     if source == "env"
                     else "Existing API key in config is valid; reusing it. No new Agent Mode key was minted."
                 )
@@ -315,8 +315,8 @@ def run_init(
             except httpx.HTTPError:
                 pass
 
-        # Rule 1: env MEM0_API_KEY valid → reuse, no new key.
-        _env_key = (os.environ.get("MEM0_API_KEY") or "").strip()
+        # Rule 1: env MEMGO_API_KEY valid → reuse, no new key.
+        _env_key = (os.environ.get("MEMGO_API_KEY") or "").strip()
         if _env_key and _ping_key(_env_key, base_url):
             _maybe_identify(_env_key)
             _emit_reuse("env")
@@ -342,7 +342,7 @@ def run_init(
     if not force and CONFIG_FILE.exists():
         existing = load_config()
         if existing.platform.api_key:
-            from mem0_cli.config import redact_key
+            from memgo_cli.config import redact_key
 
             console.print(
                 f"\n  [{BRAND_COLOR}]Existing configuration found[/] "
@@ -385,17 +385,17 @@ def run_init(
         config.platform.user_email = email
         config.platform.created_via = "email"
         config.defaults.user_id = (
-            user_id or os.environ.get("USER") or os.environ.get("USERNAME") or "mem0-cli"
+            user_id or os.environ.get("USER") or os.environ.get("USERNAME") or "memgo-cli"
         )
 
         save_config(config)
 
         console.print()
-        print_success(console, "Authenticated! Configuration saved to ~/.mem0/config.json")
+        print_success(console, "Authenticated! Configuration saved to ~/.memgo/config.json")
         console.print()
         console.print(f"  [{DIM_COLOR}]Get started:[/]")
-        console.print(f'  [{DIM_COLOR}]  mem0 add "I prefer dark mode"[/]')
-        console.print(f'  [{DIM_COLOR}]  mem0 search "preferences"[/]')
+        console.print(f'  [{DIM_COLOR}]  memgo add "I prefer dark mode"[/]')
+        console.print(f'  [{DIM_COLOR}]  memgo search "preferences"[/]')
         console.print()
         return
 
@@ -409,10 +409,10 @@ def run_init(
             print_error(
                 err_console,
                 "Non-interactive terminal detected and --api-key is required.",
-                hint="Run: mem0 init --api-key <key>, --email <addr>, or --agent for unattended Agent Mode bootstrap.",
+                hint="Run: memgo init --api-key <key>, --email <addr>, or --agent for unattended Agent Mode bootstrap.",
             )
             raise typer.Exit(1)
-        user_id = user_id or os.environ.get("USER") or os.environ.get("USERNAME") or "mem0-cli"
+        user_id = user_id or os.environ.get("USER") or os.environ.get("USERNAME") or "memgo-cli"
 
     # Fully non-interactive when both flags provided
     if api_key and user_id:
@@ -421,12 +421,12 @@ def run_init(
         config.defaults.user_id = user_id
         _validate_platform(config)
         save_config(config)
-        print_success(console, "Configuration saved to ~/.mem0/config.json")
+        print_success(console, "Configuration saved to ~/.memgo/config.json")
         return
 
     print_banner(console)
     console.print()
-    print_info(console, "Welcome! Let's set up your mem0 CLI.\n")
+    print_info(console, "Welcome! Let's set up your memgo CLI.\n")
 
     # If no flags at all, ask user how they want to authenticate
     if not api_key:
@@ -460,17 +460,17 @@ def run_init(
             config.platform.user_email = email_addr
             config.platform.created_via = "email"
             config.defaults.user_id = (
-                user_id or os.environ.get("USER") or os.environ.get("USERNAME") or "mem0-cli"
+                user_id or os.environ.get("USER") or os.environ.get("USERNAME") or "memgo-cli"
             )
 
             save_config(config)
 
             console.print()
-            print_success(console, "Authenticated! Configuration saved to ~/.mem0/config.json")
+            print_success(console, "Authenticated! Configuration saved to ~/.memgo/config.json")
             console.print()
             console.print(f"  [{DIM_COLOR}]Get started:[/]")
-            console.print(f'  [{DIM_COLOR}]  mem0 add "I prefer dark mode"[/]')
-            console.print(f'  [{DIM_COLOR}]  mem0 search "preferences"[/]')
+            console.print(f'  [{DIM_COLOR}]  memgo add "I prefer dark mode"[/]')
+            console.print(f'  [{DIM_COLOR}]  memgo search "preferences"[/]')
             console.print()
             return
 
@@ -490,23 +490,23 @@ def run_init(
 
     save_config(config)
     console.print()
-    print_success(console, "Configuration saved to ~/.mem0/config.json")
+    print_success(console, "Configuration saved to ~/.memgo/config.json")
     console.print()
     console.print(f"  [{DIM_COLOR}]Get started:[/]")
     if config.defaults.user_id:
-        console.print(f'  [{DIM_COLOR}]  mem0 add "I prefer dark mode"[/]')
-        console.print(f'  [{DIM_COLOR}]  mem0 search "preferences"[/]')
+        console.print(f'  [{DIM_COLOR}]  memgo add "I prefer dark mode"[/]')
+        console.print(f'  [{DIM_COLOR}]  memgo search "preferences"[/]')
     else:
-        console.print(f'  [{DIM_COLOR}]  mem0 add "I prefer dark mode" --user-id alice[/]')
-        console.print(f'  [{DIM_COLOR}]  mem0 search "preferences" --user-id alice[/]')
+        console.print(f'  [{DIM_COLOR}]  memgo add "I prefer dark mode" --user-id alice[/]')
+        console.print(f'  [{DIM_COLOR}]  memgo search "preferences" --user-id alice[/]')
     console.print()
 
 
-def _setup_platform(config: Mem0Config) -> None:
+def _setup_platform(config: MemGoConfig) -> None:
     """Platform setup flow."""
     console.print()
     console.print(
-        f"  [{DIM_COLOR}]Get your API key at https://app.mem0.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-python[/]"
+        f"  [{DIM_COLOR}]Get your API key at https://app.memgo.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-python[/]"
     )
     console.print()
 
@@ -520,12 +520,12 @@ def _setup_platform(config: Mem0Config) -> None:
     config.platform.created_via = "api_key"
 
 
-def _setup_defaults(config: Mem0Config) -> None:
+def _setup_defaults(config: MemGoConfig) -> None:
     """Collect default entity IDs."""
     console.print()
     print_info(console, "Set default entity IDs (press Enter to skip).\n")
 
-    _default_user = os.environ.get("USER") or os.environ.get("USERNAME") or "mem0-cli"
+    _default_user = os.environ.get("USER") or os.environ.get("USERNAME") or "memgo-cli"
     user_id = Prompt.ask(
         f"  [{BRAND_COLOR}]Default User ID[/] [{DIM_COLOR}](recommended)[/]",
         default=_default_user,
@@ -534,12 +534,12 @@ def _setup_defaults(config: Mem0Config) -> None:
         config.defaults.user_id = user_id
 
 
-def _validate_platform(config: Mem0Config) -> None:
+def _validate_platform(config: MemGoConfig) -> None:
     """Validate platform connection after all inputs are collected."""
     console.print()
     print_info(console, "Validating connection...")
     try:
-        from mem0_cli.backend.platform import PlatformBackend
+        from memgo_cli.backend.platform import PlatformBackend
 
         backend = PlatformBackend(config.platform)
         status = backend.status(
@@ -547,7 +547,7 @@ def _validate_platform(config: Mem0Config) -> None:
             agent_id=config.defaults.agent_id or None,
         )
         if status.get("connected"):
-            print_success(console, "Connected to mem0 Platform!")
+            print_success(console, "Connected to memgo Platform!")
             # Cache user_email from ping response for telemetry distinct_id
             try:
                 ping_data = backend.ping()
@@ -560,7 +560,7 @@ def _validate_platform(config: Mem0Config) -> None:
             print_error(
                 err_console,
                 f"Could not connect: {status.get('error', 'Unknown error')}",
-                hint="Visit https://app.mem0.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-python to get a new key, then run mem0 init again.",
+                hint="Visit https://app.memgo.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-python to get a new key, then run memgo init again.",
             )
     except Exception as e:
         print_error(err_console, f"Connection test failed: {e}")

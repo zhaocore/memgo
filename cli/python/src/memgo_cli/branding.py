@@ -1,4 +1,4 @@
-"""Branding and ASCII art for mem0 CLI."""
+"""Branding and ASCII art for memgo CLI."""
 
 import os
 import sys
@@ -22,7 +22,7 @@ LOGO = r"""
 ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝ ╚═════╝      ╚═════╝╚══════╝╚═╝
 """
 
-LOGO_MINI = "◆ mem0"
+LOGO_MINI = "◆ memgo"
 
 TAGLINE = "The Memory Layer for AI Agents"
 
@@ -42,8 +42,8 @@ def _sym(fancy: str, plain: str) -> str:
 
 
 def print_banner(console: Console) -> None:
-    """Print the mem0 welcome banner."""
-    from mem0_cli.state import is_agent_mode
+    """Print the memgo welcome banner."""
+    from memgo_cli.state import is_agent_mode
 
     if is_agent_mode():
         return
@@ -65,7 +65,7 @@ def print_banner(console: Console) -> None:
 
 
 def print_success(console: Console, message: str) -> None:
-    from mem0_cli.state import is_agent_mode
+    from memgo_cli.state import is_agent_mode
 
     if is_agent_mode():
         return
@@ -74,7 +74,7 @@ def print_success(console: Console, message: str) -> None:
 
 
 def print_error(console: Console, message: str, hint: str | None = None) -> None:
-    from mem0_cli.state import get_current_command, is_agent_mode
+    from memgo_cli.state import get_current_command, is_agent_mode
 
     if is_agent_mode():
         import json as _json
@@ -96,7 +96,7 @@ def print_error(console: Console, message: str, hint: str | None = None) -> None
 
 
 def print_warning(console: Console, message: str) -> None:
-    from mem0_cli.state import is_agent_mode
+    from memgo_cli.state import is_agent_mode
 
     if is_agent_mode():
         return
@@ -105,7 +105,7 @@ def print_warning(console: Console, message: str) -> None:
 
 
 def print_info(console: Console, message: str) -> None:
-    from mem0_cli.state import is_agent_mode
+    from memgo_cli.state import is_agent_mode
 
     if is_agent_mode():
         return
@@ -122,7 +122,7 @@ def timed_status(console: Console, message: str):
     kept for backward compatibility but is not used for spinner output.
     In agent mode the spinner is suppressed entirely.
     """
-    from mem0_cli.state import is_agent_mode
+    from memgo_cli.state import is_agent_mode
 
     class _Ctx:
         def __init__(self):
@@ -147,8 +147,8 @@ def timed_status(console: Console, message: str):
             print_error(_err, f"{ctx.error_msg} ({elapsed:.2f}s)")
             if "Authentication failed" in ctx.error_msg:
                 _err.print(
-                    f"  [{DIM_COLOR}]Run [bold]mem0 init[/bold] to reconfigure your API key"
-                    f" · [bold]https://app.mem0.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-python[/bold][/]"
+                    f"  [{DIM_COLOR}]Run [bold]memgo init[/bold] to reconfigure your API key"
+                    f" · [bold]https://app.memgo.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-python[/bold][/]"
                 )
         raise
     else:
@@ -159,7 +159,7 @@ def timed_status(console: Console, message: str):
 
 def print_scope(console: Console, **ids: str | None) -> None:
     """Show active entity scope if any IDs are set."""
-    from mem0_cli.state import is_agent_mode
+    from memgo_cli.state import is_agent_mode
 
     if is_agent_mode():
         return
@@ -173,6 +173,6 @@ def print_scope(console: Console, **ids: str | None) -> None:
 
 
 def _get_version() -> str:
-    from mem0_cli import __version__
+    from memgo_cli import __version__
 
     return __version__

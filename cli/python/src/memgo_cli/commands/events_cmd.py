@@ -7,8 +7,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from mem0_cli.backend.base import Backend
-from mem0_cli.branding import (
+from memgo_cli.backend.base import Backend
+from memgo_cli.branding import (
     ACCENT_COLOR,
     BRAND_COLOR,
     DIM_COLOR,
@@ -18,7 +18,7 @@ from mem0_cli.branding import (
     print_info,
     timed_status,
 )
-from mem0_cli.output import format_agent_envelope, format_json
+from memgo_cli.output import format_agent_envelope, format_json
 
 console = Console()
 err_console = Console(stderr=True)
@@ -37,7 +37,7 @@ def _status_styled(status: str) -> str:
 
 def cmd_event_list(backend: Backend, *, output: str = "table") -> None:
     """List recent background events."""
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("event list")
     if is_agent_mode():
@@ -103,7 +103,7 @@ def cmd_event_list(backend: Backend, *, output: str = "table") -> None:
 
 def cmd_event_status(backend: Backend, event_id: str, *, output: str = "text") -> None:
     """Get the status of a specific background event."""
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("event status")
     if is_agent_mode():

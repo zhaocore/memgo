@@ -15,7 +15,7 @@ func buildVectorStore(pc config.ProviderConfig) (vectorstore.VectorStore, error)
 	case "pgvector":
 		return vectorstore.NewPGVector(vectorstore.PGVectorConfig{
 			DBName:             parseStr(pc.Config, "dbname", "postgres"),
-			CollectionName:     parseStr(pc.Config, "collection_name", "mem0"),
+			CollectionName:     parseStr(pc.Config, "collection_name", "memgo"),
 			EmbeddingModelDims: parseInt(pc.Config, "embedding_model_dims", 1536),
 			User:               parseStr(pc.Config, "user", "postgres"),
 			Password:           parseStr(pc.Config, "password", ""),

@@ -26,7 +26,7 @@ func (s *Server) serveRedoc(w http.ResponseWriter, r *http.Request) {
 }
 
 const docsHTML = `<!doctype html>
-<html><head><title>Mem0 REST APIs - Swagger UI</title>
+<html><head><title>memgo REST APIs - Swagger UI</title>
 <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"></head>
 <body><div id="swagger-ui"></div>
 <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
@@ -34,7 +34,7 @@ const docsHTML = `<!doctype html>
 </body></html>`
 
 const redocHTML = `<!doctype html>
-<html><head><title>Mem0 REST APIs - ReDoc</title></head>
+<html><head><title>memgo REST APIs - ReDoc</title></head>
 <body><redoc spec-url="/openapi.json"></redoc>
 <script src="https://unpkg.com/redoc@2/bundles/redoc.standalone.js"></script>
 </body></html>`

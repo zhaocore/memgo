@@ -59,10 +59,10 @@ export async function cmdStatus(
 		if (String(result.error).includes("Authentication failed")) {
 			lines.push("");
 			lines.push(
-				`  ${dim("Run")} ${brand("mem0 init")} ${dim("to reconfigure your API key")}`,
+				`  ${dim("Run")} ${brand("memgo init")} ${dim("to reconfigure your API key")}`,
 			);
 			lines.push(
-				`  ${dim("Get a key at")} ${brand("https://app.mem0.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-node")}`,
+				`  ${dim("Get a key at")} ${brand("https://app.memgo.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-node")}`,
 			);
 		}
 	}

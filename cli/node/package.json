@@ -1,10 +1,10 @@
 {
-  "name": "@mem0/cli",
+  "name": "@memgo/cli",
   "version": "0.2.13",
-  "description": "The official CLI for mem0 — the memory layer for AI agents",
+  "description": "The official CLI for memgo — the memory layer for AI agents",
   "type": "module",
   "bin": {
-    "mem0": "./dist/index.js"
+    "memgo": "./dist/index.js"
   },
   "scripts": {
     "build": "tsup",
@@ -19,13 +19,19 @@
     "node": ">=18.0.0"
   },
   "license": "Apache-2.0",
-  "author": "mem0.ai <founders@mem0.ai>",
+  "author": "memgo.ai <founders@memgo.ai>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mem0ai/mem0",
+    "url": "https://github.com/memgoai/memgo",
     "directory": "cli/node"
   },
-  "keywords": ["mem0", "memory", "ai", "agents", "cli"],
+  "keywords": [
+    "memgo",
+    "memory",
+    "ai",
+    "agents",
+    "cli"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -44,15 +50,5 @@
     "vitest": "^4.1.0",
     "@biomejs/biome": "^1.7.0",
     "@types/node": "^20.0.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "jws@4.0.0": "4.0.1",
-      "langsmith@<0.6.0": "^0.6.0",
-      "tar-fs@>=2.0.0 <2.1.4": "^2.1.4",
-      "picomatch@<2.3.2": "^2.3.2",
-      "esbuild": ">=0.28.1",
-      "postcss@<8.5.18": ">=8.5.18 <9.0.0"
-    }
   }
 }

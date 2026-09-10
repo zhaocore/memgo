@@ -1,4 +1,4 @@
-// Package history: SQLite 历史库, 逐列对齐 mem0/memory/storage.py (history + messages 表)。
+// Package history: SQLite 历史库, 逐列对齐 memgo/memory/storage.py (history + messages 表)。
 package history
 
 import (

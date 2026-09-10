@@ -1,6 +1,6 @@
 // memgo-migrate: 存量 Python (alembic) 部署 → Go server (goose) 版本表迁移工具。
 //
-// 原理: Python 部署的 mem0_app 已由 alembic 001-006 建表 (alembic_version 表记 head)。
+// 原理: Python 部署的 memgo_app 已由 alembic 001-006 建表 (alembic_version 表记 head)。
 // Go server 用 goose, 版本记于 goose_db_version —— 首次启动会试图重放 001, DDL 已存在即失败。
 // 本工具读取 alembic_version, 确认 DDL 面 (幂等探针), 然后把 001-006 补录进 goose_db_version,
 // 使 goose.Up 成为无操作。反向 (goose → alembic) 不支持: Python server 与 Go server 不应混跑同一库。

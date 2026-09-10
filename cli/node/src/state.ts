@@ -26,7 +26,7 @@ export function setCurrentCommand(name: string): void {
 }
 
 /**
- * Stash a Mem0 backend notice (Agent Mode unclaimed reminder) for end-of-
+ * Stash a MemGo backend notice (Agent Mode unclaimed reminder) for end-of-
  * command surfacing. Called from the platform backend after each response so
  * the notice prints once per command regardless of how many sub-requests
  * fired. Last-write-wins is fine — the message text is identical.

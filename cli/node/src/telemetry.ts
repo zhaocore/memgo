@@ -5,7 +5,7 @@
  * (telemetry-sender.cjs). The parent CLI process exits immediately;
  * the child handles email resolution, caching, and the HTTP POST.
  *
- * Disable with: MEM0_TELEMETRY=false
+ * Disable with: MEMGO_TELEMETRY=false
  */
 
 import { spawn } from "node:child_process";
@@ -23,7 +23,7 @@ const SENDER_SCRIPT = path.join(__dirname, "..", "telemetry-sender.cjs");
 
 function isTelemetryEnabled(): boolean {
 	try {
-		return process.env.MEM0_TELEMETRY !== "false";
+		return process.env.MEMGO_TELEMETRY !== "false";
 	} catch {
 		return true;
 	}
@@ -32,7 +32,7 @@ function isTelemetryEnabled(): boolean {
 /**
  * Return a persistent per-machine anonymous ID, generating one if needed.
  *
- * Stored in ~/.mem0/config.json under `telemetry.anonymous_id` so that
+ * Stored in ~/.memgo/config.json under `telemetry.anonymous_id` so that
  * repeat runs on the same machine share one PostHog identity instead of
  * collapsing into a single shared fallback string.
  */
@@ -139,8 +139,8 @@ export function captureEvent(
 			payload,
 			posthogHost: POSTHOG_HOST,
 			needsEmail: !distinctId || !distinctId.includes("@"),
-			mem0ApiKey: config.platform.apiKey || "",
-			mem0BaseUrl: config.platform.baseUrl || "https://api.mem0.ai",
+			memgoApiKey: config.platform.apiKey || "",
+			memgoBaseUrl: config.platform.baseUrl || "https://api.memgo.ai",
 			configPath: CONFIG_FILE,
 			anonDistinctIdToAlias: anonIdToAlias,
 		};

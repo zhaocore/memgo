@@ -225,7 +225,7 @@ export function richFormatHelp(cmd: Command, helper: Help): string {
 	const usage = helper.commandUsage(cmd);
 	lines.push("");
 	if (isRoot) {
-		// Root: "Usage: mem0 <command> [options]" — <command> yellow, [options] bold
+		// Root: "Usage: memgo <command> [options]" — <command> yellow, [options] bold
 		lines.push(
 			` ${yellow("Usage:")} ${bold(cmd.name())} ${yellow("<command>")} ${bold("[options]")}`,
 		);

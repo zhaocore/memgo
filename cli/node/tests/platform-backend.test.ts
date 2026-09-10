@@ -1,5 +1,5 @@
 /**
- * Tests for the Platform backend (mem0 Platform API client).
+ * Tests for the Platform backend (memgo Platform API client).
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -220,9 +220,9 @@ describe("PlatformBackend path encoding", () => {
 
 		const urls = fetchMock.mock.calls.map((call) => call[0]);
 		expect(urls).toEqual([
-			"https://api.mem0.ai/v1/memories/mem%2Fa%3Fb%23c/?source=CLI",
-			"https://api.mem0.ai/v1/memories/mem%2Fa%3Fb%23c/",
-			"https://api.mem0.ai/v1/memories/mem%2Fa%3Fb%23c/?source=CLI",
+			"https://api.memgo.ai/v1/memories/mem%2Fa%3Fb%23c/?source=CLI",
+			"https://api.memgo.ai/v1/memories/mem%2Fa%3Fb%23c/",
+			"https://api.memgo.ai/v1/memories/mem%2Fa%3Fb%23c/?source=CLI",
 		]);
 	});
 
@@ -235,8 +235,8 @@ describe("PlatformBackend path encoding", () => {
 
 		const urls = fetchMock.mock.calls.map((call) => call[0]);
 		expect(urls).toEqual([
-			"https://api.mem0.ai/v2/entities/user/org%2Fteam%3Factive%23frag/?source=CLI",
-			"https://api.mem0.ai/v1/event/evt%2Fa%3Fb%23c/",
+			"https://api.memgo.ai/v2/entities/user/org%2Fteam%3Factive%23frag/?source=CLI",
+			"https://api.memgo.ai/v1/event/evt%2Fa%3Fb%23c/",
 		]);
 	});
 });

@@ -4,13 +4,13 @@
 
 import readline from "node:readline";
 import { colors, printError, printInfo, printSuccess } from "../branding.js";
-import { type Mem0Config, saveConfig } from "../config.js";
+import { type MemGoConfig, saveConfig } from "../config.js";
 
 const { brand, dim } = colors;
 
 const SOURCE_HEADERS = {
-	"X-Mem0-Source": "cli",
-	"X-Mem0-Client-Language": "node",
+	"X-MemGo-Source": "cli",
+	"X-MemGo-Client-Language": "node",
 } as const;
 
 export interface BootstrapEnvelope {
@@ -21,7 +21,7 @@ export interface BootstrapEnvelope {
 	mcp_url?: string;
 	smoke_test_url?: string;
 	claim_command?: string;
-	mem0_notice?: string;
+	memgo_notice?: string;
 }
 
 function isValidEnvelope(v: unknown): v is BootstrapEnvelope {
@@ -38,22 +38,22 @@ function isValidEnvelope(v: unknown): v is BootstrapEnvelope {
 /**
  * POST /api/v1/auth/agent_mode/ and mutate config in place.
  *
- * @param config - Mem0Config mutated in place with the new platform values.
+ * @param config - MemGoConfig mutated in place with the new platform values.
  * @param source - `--source` flag passthrough (analytics tag, free-form).
  * @param agentCaller - Self-declared agent identity passed via `--agent-caller`
  *   (e.g. `claude-code`, `cursor`). May be null when the caller omitted the
- *   flag; the agent can backfill later via `mem0 identify <name>`. Sent to the
+ *   flag; the agent can backfill later via `memgo identify <name>`. Sent to the
  *   backend in the request body and saved into `platform.agentCaller` for
  *   local introspection.
  */
 export async function bootstrapViaBackend(
-	config: Mem0Config,
+	config: MemGoConfig,
 	{
 		source,
 		agentCaller,
 	}: { source?: string | null; agentCaller?: string | null } = {},
 ): Promise<void> {
-	const baseUrl = (config.platform.baseUrl || "https://api.mem0.ai").replace(
+	const baseUrl = (config.platform.baseUrl || "https://api.memgo.ai").replace(
 		/\/+$/,
 		"",
 	);
@@ -74,7 +74,7 @@ export async function bootstrapViaBackend(
 		});
 	} catch (err) {
 		printError(
-			`Network error contacting Mem0: ${err instanceof Error ? err.message : String(err)}`,
+			`Network error contacting MemGo: ${err instanceof Error ? err.message : String(err)}`,
 		);
 		process.exit(1);
 	}
@@ -137,17 +137,17 @@ export async function bootstrapViaBackend(
 	printSuccess(
 		`Agent Mode active. Default user_id: ${envelope.default_user_id}`,
 	);
-	if (envelope.mem0_notice) {
-		console.log(`\n\x1b[33m🔔 ${envelope.mem0_notice}\x1b[0m\n`);
+	if (envelope.memgo_notice) {
+		console.log(`\n\x1b[33m🔔 ${envelope.memgo_notice}\x1b[0m\n`);
 	} else {
 		// Fallback for older backends without the unified notice field.
-		const claimCmd = envelope.claim_command ?? "mem0 init --email <your-email>";
+		const claimCmd = envelope.claim_command ?? "memgo init --email <your-email>";
 		console.log(`  ${dim(`To claim this account later: ${claimCmd}`)}`);
 	}
 
 	if (!agentCaller) {
 		console.log(
-			`  ${dim("If you are an AI agent, identify yourself: `mem0 identify <your-name>` (e.g. claude-code, cursor).")}`,
+			`  ${dim("If you are an AI agent, identify yourself: `memgo identify <your-name>` (e.g. claude-code, cursor).")}`,
 		);
 	}
 }
@@ -161,16 +161,16 @@ export async function bootstrapViaBackend(
  * inline and returns the claim result.
  */
 export async function claimViaOtp(
-	config: Mem0Config,
+	config: MemGoConfig,
 	{ email, code }: { email: string; code?: string },
 ): Promise<void> {
-	const baseUrl = (config.platform.baseUrl || "https://api.mem0.ai").replace(
+	const baseUrl = (config.platform.baseUrl || "https://api.memgo.ai").replace(
 		/\/+$/,
 		"",
 	);
 	if (!config.platform.apiKey || !config.platform.agentMode) {
 		printError(
-			"This command requires an active Agent Mode config. Run `mem0 init` first.",
+			"This command requires an active Agent Mode config. Run `memgo init` first.",
 		);
 		process.exit(1);
 	}
@@ -206,7 +206,7 @@ export async function claimViaOtp(
 		if (!process.stdin.isTTY) {
 			printError(
 				"No --code provided and terminal is non-interactive.",
-				`Re-run: mem0 init --email ${email} --code <code>`,
+				`Re-run: memgo init --email ${email} --code <code>`,
 			);
 			process.exit(1);
 		}
@@ -247,7 +247,7 @@ export async function claimViaOtp(
 		printError(`Claim failed: ${detail}`);
 		if (errCode === "email_already_claimed") {
 			console.log(
-				`  ${dim("Tip: this email already has a Mem0 account. Sign in at app.mem0.ai with your existing credentials.")}`,
+				`  ${dim("Tip: this email already has a MemGo account. Sign in at app.memgo.ai with your existing credentials.")}`,
 			);
 		}
 		process.exit(1);

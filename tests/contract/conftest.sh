@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# 契约套件公共库 —— 合同基准: mem0/architecture/doc-02(逐端点) + doc-03 §3.3(鉴权回退链)。
 # 用法: run.sh source 本文件, 各套件脚本定义 suite() 函数, run.sh 顺序执行。
 # 所有 golden 比对前先经 normalize() 抹平易变字段(id/时间戳/token/hash/分数/latency)。
 

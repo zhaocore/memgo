@@ -1,5 +1,5 @@
-"""Allow running with `python -m mem0_cli`."""
+"""Allow running with `python -m memgo_cli`."""
 
-from mem0_cli.app import main
+from memgo_cli.app import main
 
 main()

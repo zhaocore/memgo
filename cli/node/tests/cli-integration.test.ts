@@ -13,9 +13,9 @@ function run(
   opts: { home?: string; env?: Record<string, string> } = {},
 ): { stdout: string; stderr: string; exitCode: number } {
   const env = { ...process.env };
-  // Strip MEM0_ env vars
+  // Strip MEMGO_ env vars
   for (const key of Object.keys(env)) {
-    if (key.startsWith("MEM0_")) delete env[key];
+    if (key.startsWith("MEMGO_")) delete env[key];
   }
   if (opts.home) env.HOME = opts.home;
   if (opts.env) Object.assign(env, opts.env);
@@ -39,7 +39,7 @@ describe("CLI Integration — help and version", () => {
   it("shows help with --help", () => {
     const result = run(["--help"]);
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain("mem0");
+    expect(result.stdout).toContain("memgo");
     expect(result.stdout).toContain("add");
     expect(result.stdout).toContain("search");
   });
@@ -47,7 +47,7 @@ describe("CLI Integration — help and version", () => {
   it("prints the version with --version", () => {
     const flag = run(["--version"]);
     expect(flag.exitCode).toBe(0);
-    expect(flag.stdout).toContain("Mem0");
+    expect(flag.stdout).toContain("MemGo");
   });
 
   it("version subcommand output matches --version output byte-for-byte", () => {
@@ -65,7 +65,7 @@ describe("CLI Integration — help and version", () => {
       const parsed = JSON.parse(result.stdout);
       // spec may have cli.name or top-level name
       const name = parsed.name ?? parsed.cli?.name;
-      expect(name).toBe("mem0");
+      expect(name).toBe("memgo");
     },
   );
 
@@ -151,7 +151,7 @@ describe("CLI Integration — help and version", () => {
 
 describe("CLI Integration — isolated (clean home)", () => {
   function cleanHome(): string {
-    return fs.mkdtempSync(path.join(os.tmpdir(), "mem0-test-"));
+    return fs.mkdtempSync(path.join(os.tmpdir(), "memgo-test-"));
   }
 
   it("add without API key errors", () => {

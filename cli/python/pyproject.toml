@@ -3,16 +3,16 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "mem0-cli"
+name = "memgo-cli"
 version = "0.2.12"
-description = "The official CLI for mem0 — the memory layer for AI agents"
+description = "The official CLI for memgo — the memory layer for AI agents"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [
-    { name = "mem0.ai", email = "founders@mem0.ai" },
+    { name = "memgo.ai", email = "founders@memgo.ai" },
 ]
-keywords = ["mem0", "memory", "ai", "agents", "cli"]
+keywords = ["memgo", "memory", "ai", "agents", "cli"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -31,7 +31,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-oss = ["mem0ai>=0.1.0"]
+oss = ["memgoai>=0.1.0"]
 dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21",
@@ -39,13 +39,13 @@ dev = [
 ]
 
 [project.scripts]
-mem0 = "mem0_cli.app:main"
+memgo = "memgo_cli.app:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mem0_cli"]
+packages = ["src/memgo_cli"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/mem0_cli"]
+include = ["src/memgo_cli"]
 
 [tool.ruff]
 target-version = "py310"
@@ -69,7 +69,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["mem0_cli"]
+known-first-party = ["memgo_cli"]
 
 [tool.ruff.format]
 quote-style = "double"

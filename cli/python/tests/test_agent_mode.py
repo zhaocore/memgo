@@ -1,4 +1,4 @@
-"""Parity tests for `mem0 init --agent` (Agent Mode bootstrap).
+"""Parity tests for `memgo init --agent` (Agent Mode bootstrap).
 
 Mirror of ``cli/node/tests/agent-mode.test.ts`` — both files MUST stay in
 sync so that the Python and Node CLIs expose an identical surface for the
@@ -29,14 +29,14 @@ def _strip_ansi(text: str) -> str:
 def _run(args: list[str], home_dir: str | None = None) -> subprocess.CompletedProcess:
     env = os.environ.copy()
     for key in list(env.keys()):
-        if key.startswith("MEM0_"):
+        if key.startswith("MEMGO_"):
             del env[key]
     env.pop("FORCE_COLOR", None)
     env["PYTHONIOENCODING"] = "utf-8"
     if home_dir:
         env["HOME"] = home_dir
     result = subprocess.run(
-        [sys.executable, "-m", "mem0_cli", *args],
+        [sys.executable, "-m", "memgo_cli", *args],
         capture_output=True,
         encoding="utf-8",
         env=env,
@@ -56,7 +56,7 @@ def clean_home(tmp_path):
 
 
 class TestInitFlagSurface:
-    """`mem0 init --help` must expose the Agent Mode flags."""
+    """`memgo init --help` must expose the Agent Mode flags."""
 
     def test_init_help_lists_agent_flag(self):
         result = _run(["init", "--help"])
@@ -88,8 +88,8 @@ class TestArgvPreprocessing:
 
     Regression for the bug where the top-level `--agent` JSON-alias was
     stripped from ``sys.argv`` before Typer could bind it to the init
-    subcommand, making ``mem0 init --agent`` indistinguishable from a
-    plain ``mem0 init`` (interactive wizard).
+    subcommand, making ``memgo init --agent`` indistinguishable from a
+    plain ``memgo init`` (interactive wizard).
     """
 
     def test_init_with_agent_reaches_subcommand(self, clean_home):
@@ -98,13 +98,13 @@ class TestArgvPreprocessing:
         # request failing — proving the --agent flag was honored and the
         # bootstrap branch ran, not the interactive wizard.
         result = subprocess.run(
-            [sys.executable, "-m", "mem0_cli", "init", "--agent"],
+            [sys.executable, "-m", "memgo_cli", "init", "--agent"],
             capture_output=True,
             encoding="utf-8",
             env={
-                **{k: v for k, v in os.environ.items() if not k.startswith("MEM0_")},
+                **{k: v for k, v in os.environ.items() if not k.startswith("MEMGO_")},
                 "HOME": clean_home,
-                "MEM0_BASE_URL": "http://127.0.0.1:1",  # blackhole
+                "MEMGO_BASE_URL": "http://127.0.0.1:1",  # blackhole
                 "FORCE_COLOR": "0",
                 "PYTHONIOENCODING": "utf-8",
             },
@@ -123,7 +123,7 @@ class TestArgvPreprocessing:
 
 
 class TestJsonEnvelopeParity:
-    """`mem0 init --agent --json` should produce a JSON envelope on success.
+    """`memgo init --agent --json` should produce a JSON envelope on success.
 
     Without a live backend we can only assert the failure shape: when the
     backend is unreachable, the CLI must still exit non-zero AND not crash
@@ -133,13 +133,13 @@ class TestJsonEnvelopeParity:
 
     def test_init_agent_json_no_traceback_on_network_failure(self, clean_home):
         result = subprocess.run(
-            [sys.executable, "-m", "mem0_cli", "init", "--agent", "--json"],
+            [sys.executable, "-m", "memgo_cli", "init", "--agent", "--json"],
             capture_output=True,
             encoding="utf-8",
             env={
-                **{k: v for k, v in os.environ.items() if not k.startswith("MEM0_")},
+                **{k: v for k, v in os.environ.items() if not k.startswith("MEMGO_")},
                 "HOME": clean_home,
-                "MEM0_BASE_URL": "http://127.0.0.1:1",
+                "MEMGO_BASE_URL": "http://127.0.0.1:1",
                 "FORCE_COLOR": "0",
                 "PYTHONIOENCODING": "utf-8",
             },
@@ -151,7 +151,7 @@ class TestJsonEnvelopeParity:
 
 
 class TestInitInCommandList:
-    """`mem0 --help` must list `init` so agents walking the top-level help
+    """`memgo --help` must list `init` so agents walking the top-level help
     can discover the Agent Mode entrypoint without prior knowledge."""
 
     def test_top_level_help_lists_init(self):

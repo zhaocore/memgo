@@ -1,8 +1,8 @@
 /**
- * mem0 identify — declare which agent owns the current agent-mode key.
+ * memgo identify — declare which agent owns the current agent-mode key.
  *
- * Used when `mem0 init --agent` ran without --agent-caller, so the backend
- * saved agent_caller=NULL. The agent re-runs `mem0 identify <name>` to PATCH
+ * Used when `memgo init --agent` ran without --agent-caller, so the backend
+ * saved agent_caller=NULL. The agent re-runs `memgo identify <name>` to PATCH
  * its own row with its real identity. Idempotent.
  */
 
@@ -10,14 +10,14 @@ import { printError, printSuccess } from "../branding.js";
 import { loadConfig, saveConfig } from "../config.js";
 
 const SOURCE_HEADERS = {
-	"X-Mem0-Source": "cli",
-	"X-Mem0-Client-Language": "node",
+	"X-MemGo-Source": "cli",
+	"X-MemGo-Client-Language": "node",
 } as const;
 
 export async function runIdentify(name: string): Promise<void> {
 	const config = loadConfig();
 	if (!config.platform.apiKey) {
-		printError("No API key configured. Run `mem0 init --agent` first.");
+		printError("No API key configured. Run `memgo init --agent` first.");
 		process.exit(1);
 	}
 	if (!config.platform.agentMode) {
@@ -31,7 +31,7 @@ export async function runIdentify(name: string): Promise<void> {
 		process.exit(1);
 	}
 
-	const baseUrl = (config.platform.baseUrl || "https://api.mem0.ai").replace(
+	const baseUrl = (config.platform.baseUrl || "https://api.memgo.ai").replace(
 		/\/+$/,
 		"",
 	);

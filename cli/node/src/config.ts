@@ -1,10 +1,10 @@
 /**
- * Configuration management for mem0 CLI.
+ * Configuration management for memgo CLI.
  *
  * Config precedence (highest to lowest):
  * 1. CLI flags (--api-key, --base-url, etc.)
- * 2. Environment variables (MEM0_API_KEY, etc.)
- * 3. Config file (~/.mem0/config.json)
+ * 2. Environment variables (MEMGO_API_KEY, etc.)
+ * 3. Config file (~/.memgo/config.json)
  * 4. Defaults
  */
 
@@ -12,9 +12,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-export const CONFIG_DIR = path.join(os.homedir(), ".mem0");
+export const CONFIG_DIR = path.join(os.homedir(), ".memgo");
 export const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
-export const DEFAULT_BASE_URL = "https://api.mem0.ai";
+export const DEFAULT_BASE_URL = "https://api.memgo.ai";
 export const CONFIG_VERSION = 1;
 
 export interface PlatformConfig {
@@ -42,11 +42,11 @@ export interface TelemetryConfig {
 
 export interface AgentRushConfig {
 	// ISO timestamp the human acknowledged the "memories are public" warning.
-	// Empty until first interactive `mem0 agent-rush add`.
+	// Empty until first interactive `memgo agent-rush add`.
 	acknowledgedAt: string;
 }
 
-export interface Mem0Config {
+export interface MemGoConfig {
 	version: number;
 	defaults: DefaultsConfig;
 	platform: PlatformConfig;
@@ -54,7 +54,7 @@ export interface Mem0Config {
 	agentRush: AgentRushConfig;
 }
 
-export function createDefaultConfig(): Mem0Config {
+export function createDefaultConfig(): MemGoConfig {
 	return {
 		version: CONFIG_VERSION,
 		defaults: {
@@ -87,7 +87,7 @@ export function ensureConfigDir(): string {
 	return CONFIG_DIR;
 }
 
-export function loadConfig(): Mem0Config {
+export function loadConfig(): MemGoConfig {
 	const config = createDefaultConfig();
 
 	if (fs.existsSync(CONFIG_FILE)) {
@@ -118,20 +118,20 @@ export function loadConfig(): Mem0Config {
 	}
 
 	// Environment variable overrides
-	if (process.env.MEM0_API_KEY)
-		config.platform.apiKey = process.env.MEM0_API_KEY;
-	if (process.env.MEM0_BASE_URL)
-		config.platform.baseUrl = process.env.MEM0_BASE_URL;
-	if (process.env.MEM0_USER_ID)
-		config.defaults.userId = process.env.MEM0_USER_ID;
-	if (process.env.MEM0_AGENT_ID)
-		config.defaults.agentId = process.env.MEM0_AGENT_ID;
-	if (process.env.MEM0_APP_ID) config.defaults.appId = process.env.MEM0_APP_ID;
-	if (process.env.MEM0_RUN_ID) config.defaults.runId = process.env.MEM0_RUN_ID;
+	if (process.env.MEMGO_API_KEY)
+		config.platform.apiKey = process.env.MEMGO_API_KEY;
+	if (process.env.MEMGO_BASE_URL)
+		config.platform.baseUrl = process.env.MEMGO_BASE_URL;
+	if (process.env.MEMGO_USER_ID)
+		config.defaults.userId = process.env.MEMGO_USER_ID;
+	if (process.env.MEMGO_AGENT_ID)
+		config.defaults.agentId = process.env.MEMGO_AGENT_ID;
+	if (process.env.MEMGO_APP_ID) config.defaults.appId = process.env.MEMGO_APP_ID;
+	if (process.env.MEMGO_RUN_ID) config.defaults.runId = process.env.MEMGO_RUN_ID;
 	return config;
 }
 
-export function saveConfig(config: Mem0Config): void {
+export function saveConfig(config: MemGoConfig): void {
 	ensureConfigDir();
 
 	const data = {
@@ -185,7 +185,7 @@ export function redactKey(key: string): string {
 }
 
 /** Key map from dotted config path to the config object fields. */
-const KEY_MAP: Record<string, [keyof Mem0Config, string]> = {
+const KEY_MAP: Record<string, [keyof MemGoConfig, string]> = {
 	"platform.api_key": ["platform", "apiKey"],
 	"platform.base_url": ["platform", "baseUrl"],
 	"platform.user_email": ["platform", "userEmail"],
@@ -203,7 +203,7 @@ const KEY_MAP: Record<string, [keyof Mem0Config, string]> = {
 	run_id: ["defaults", "runId"],
 };
 
-export function getNestedValue(config: Mem0Config, dottedKey: string): unknown {
+export function getNestedValue(config: MemGoConfig, dottedKey: string): unknown {
 	const mapping = KEY_MAP[dottedKey];
 	if (!mapping) return undefined;
 	const [section, field] = mapping;
@@ -211,7 +211,7 @@ export function getNestedValue(config: Mem0Config, dottedKey: string): unknown {
 }
 
 export function setNestedValue(
-	config: Mem0Config,
+	config: MemGoConfig,
 	dottedKey: string,
 	value: string,
 ): boolean {

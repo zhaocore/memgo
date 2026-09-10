@@ -1,4 +1,4 @@
-// Package store: 应用库 (mem0_app) 访问层 + goose 迁移。
+// Package store: 应用库 (memgo_app) 访问层 + goose 迁移。
 // 红线: server 表永不进 pgvector 记忆库 (双库拓扑, doc-01 §5.5)。
 package store
 
@@ -23,7 +23,7 @@ func DSN() string {
 	port := envOr("POSTGRES_PORT", "5432")
 	user := envOr("POSTGRES_USER", "postgres")
 	password := envOr("POSTGRES_PASSWORD", "postgres")
-	db := envOr("APP_DB_NAME", "mem0_app")
+	db := envOr("APP_DB_NAME", "memgo_app")
 	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, host, port, db)
 }
 

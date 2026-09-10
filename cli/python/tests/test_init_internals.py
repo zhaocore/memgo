@@ -21,8 +21,8 @@ from unittest.mock import MagicMock
 import httpx
 import pytest
 
-from mem0_cli.commands.init_cmd import _ping_key
-from mem0_cli.plugin_sync import _update_claude_settings, _update_shell_rc
+from memgo_cli.commands.init_cmd import _ping_key
+from memgo_cli.plugin_sync import _update_claude_settings, _update_shell_rc
 
 # ── _ping_key ──────────────────────────────────────────────────────────────
 
@@ -75,10 +75,10 @@ def test_ping_key_timeout_prefers_reuse(monkeypatch: pytest.MonkeyPatch) -> None
 
 def test_shell_rc_updates_existing_export_preserves_trailing_newline(tmp_path) -> None:
     rc = tmp_path / ".zshrc"
-    rc.write_text('export MEM0_API_KEY="old"\n', encoding="utf-8")
+    rc.write_text('export MEMGO_API_KEY="old"\n', encoding="utf-8")
     changed = _update_shell_rc(rc, "newkey")
     assert changed is True
-    assert rc.read_text(encoding="utf-8") == 'export MEM0_API_KEY="newkey"\n'
+    assert rc.read_text(encoding="utf-8") == 'export MEMGO_API_KEY="newkey"\n'
 
 
 def test_shell_rc_does_not_create_new_export(tmp_path) -> None:
@@ -91,19 +91,19 @@ def test_shell_rc_does_not_create_new_export(tmp_path) -> None:
 
 def test_shell_rc_preserves_surrounding_content(tmp_path) -> None:
     rc = tmp_path / ".zshrc"
-    original = "# my zshrc\nalias ll='ls -la'\nexport MEM0_API_KEY='old'\nexport OTHER=keepme\n"
+    original = "# my zshrc\nalias ll='ls -la'\nexport MEMGO_API_KEY='old'\nexport OTHER=keepme\n"
     rc.write_text(original, encoding="utf-8")
     _update_shell_rc(rc, "newkey")
     after = rc.read_text(encoding="utf-8")
     assert "alias ll='ls -la'\n" in after
     assert "export OTHER=keepme\n" in after
     assert "# my zshrc\n" in after
-    assert 'export MEM0_API_KEY="newkey"\n' in after
+    assert 'export MEMGO_API_KEY="newkey"\n' in after
 
 
 def test_shell_rc_idempotent_when_already_matching(tmp_path) -> None:
     rc = tmp_path / ".zshrc"
-    rc.write_text('export MEM0_API_KEY="same"\n', encoding="utf-8")
+    rc.write_text('export MEMGO_API_KEY="same"\n', encoding="utf-8")
     assert _update_shell_rc(rc, "same") is False
 
 
@@ -126,7 +126,7 @@ def test_claude_settings_does_not_create_env_block(tmp_path) -> None:
     assert json.loads(settings.read_text(encoding="utf-8")) == {"otherKey": 1}
 
 
-def test_claude_settings_does_not_create_mem0_entry_in_existing_env(tmp_path) -> None:
+def test_claude_settings_does_not_create_memgo_entry_in_existing_env(tmp_path) -> None:
     import json
 
     settings = tmp_path / "settings.json"
@@ -140,13 +140,13 @@ def test_claude_settings_updates_existing_entry(tmp_path) -> None:
 
     settings = tmp_path / "settings.json"
     settings.write_text(
-        json.dumps({"env": {"MEM0_API_KEY": "old", "OTHER": "y"}}, indent=2),
+        json.dumps({"env": {"MEMGO_API_KEY": "old", "OTHER": "y"}}, indent=2),
         encoding="utf-8",
     )
     changed = _update_claude_settings(settings, "fresh")
     assert changed is True
     data = json.loads(settings.read_text(encoding="utf-8"))
-    assert data["env"]["MEM0_API_KEY"] == "fresh"
+    assert data["env"]["MEMGO_API_KEY"] == "fresh"
     assert data["env"]["OTHER"] == "y"  # other keys preserved
 
 
@@ -154,7 +154,7 @@ def test_claude_settings_idempotent(tmp_path) -> None:
     import json
 
     settings = tmp_path / "settings.json"
-    settings.write_text(json.dumps({"env": {"MEM0_API_KEY": "same"}}), encoding="utf-8")
+    settings.write_text(json.dumps({"env": {"MEMGO_API_KEY": "same"}}), encoding="utf-8")
     assert _update_claude_settings(settings, "same") is False
 
 
@@ -169,8 +169,8 @@ def test_claude_settings_malformed_json_is_noop(tmp_path) -> None:
 
 def test_bootstrap_403_permission_surfaces_ratelimit(monkeypatch, capsys) -> None:
     """DRF 403 'You do not have permission' must be translated to the daily limit message."""
-    from mem0_cli.commands.agent_mode_cmd import bootstrap_via_backend
-    from mem0_cli.config import Mem0Config
+    from memgo_cli.commands.agent_mode_cmd import bootstrap_via_backend
+    from memgo_cli.config import MemGoConfig
 
     fake_resp = MagicMock()
     fake_resp.status_code = 403
@@ -193,8 +193,8 @@ def test_bootstrap_403_permission_surfaces_ratelimit(monkeypatch, capsys) -> Non
             return fake_resp
 
     monkeypatch.setattr(httpx, "Client", _Client)
-    cfg = Mem0Config()
-    cfg.platform.base_url = "https://api.mem0.ai"
+    cfg = MemGoConfig()
+    cfg.platform.base_url = "https://api.memgo.ai"
     import typer
 
     with pytest.raises(typer.Exit):

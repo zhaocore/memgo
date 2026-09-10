@@ -50,7 +50,7 @@ const STEP_TITLES = [
   "Test your setup",
 ];
 const SUPPORTED_PROVIDERS_URL =
-  "https://docs.mem0.ai/open-source/setup#supported-providers";
+  "https://docs.memgo.ai/open-source/setup#supported-providers";
 
 const USE_CASE_PRESETS = [
   "Personal assistant",

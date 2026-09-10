@@ -6,7 +6,7 @@ from io import StringIO
 
 from rich.console import Console
 
-from mem0_cli.branding import print_banner, print_error, print_info, print_success, print_warning
+from memgo_cli.branding import print_banner, print_error, print_info, print_success, print_warning
 
 
 def _make_console() -> tuple[Console, StringIO]:
@@ -19,7 +19,7 @@ class TestBranding:
         console, buf = _make_console()
         print_banner(console)
         output = buf.getvalue()
-        # Banner contains the mem0 ASCII art and tagline
+        # Banner contains the memgo ASCII art and tagline
         assert "Memory Layer" in output or "mem" in output.lower()
 
     def test_print_success(self):

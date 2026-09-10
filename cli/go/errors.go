@@ -11,7 +11,7 @@ func backendErr(err error) error {
 	if errors.As(err, &ae) {
 		switch ae.Kind {
 		case "auth":
-			printError(ae.Msg, "Run 'memgo init' or set MEM0_API_KEY environment variable.")
+			printError(ae.Msg, "Run 'memgo init' or set MEMGO_API_KEY environment variable.")
 		case "not_found":
 			printError(ae.Msg, "")
 		default:

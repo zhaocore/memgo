@@ -1,4 +1,4 @@
-// Package memory: 记忆引擎 (mem0/memory/main.py 同步 Memory 的 Go 等价, 无 HTTP 依赖)。
+// Package memory: 记忆引擎 (memgo/memory/main.py 同步 Memory 的 Go 等价, 无 HTTP 依赖)。
 // 行为对齐以契约基线 (tests/contract goldens) 为准。
 package memory
 

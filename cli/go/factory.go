@@ -11,5 +11,5 @@ func GetBackend(cfg *Config) Backend {
 // isPlatformURL 判定平台域名。
 func isPlatformURL(baseURL string) bool {
 	host := hostOf(baseURL)
-	return host == "api.mem0.ai" || host == ""
+	return host == "api.memgo.ai" || host == ""
 }

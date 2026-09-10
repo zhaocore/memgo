@@ -1,4 +1,4 @@
-"""Shared fixtures for mem0 CLI tests."""
+"""Shared fixtures for memgo CLI tests."""
 
 from __future__ import annotations
 
@@ -7,22 +7,22 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from mem0_cli.backend.base import Backend
-from mem0_cli.config import Mem0Config
+from memgo_cli.backend.base import Backend
+from memgo_cli.config import MemGoConfig
 
 
 @pytest.fixture(autouse=True)
 def isolate_config(tmp_path, monkeypatch):
     """Redirect config to a temp directory so tests don't touch real config."""
-    fake_config_dir = tmp_path / ".mem0"
+    fake_config_dir = tmp_path / ".memgo"
     fake_config_file = fake_config_dir / "config.json"
-    monkeypatch.setattr("mem0_cli.config.CONFIG_DIR", fake_config_dir)
-    monkeypatch.setattr("mem0_cli.config.CONFIG_FILE", fake_config_file)
+    monkeypatch.setattr("memgo_cli.config.CONFIG_DIR", fake_config_dir)
+    monkeypatch.setattr("memgo_cli.config.CONFIG_FILE", fake_config_file)
     # Also patch the commands that import config
-    monkeypatch.setattr("mem0_cli.commands.config_cmd.CONFIG_DIR", fake_config_dir, raising=False)
-    # Clear any MEM0 env vars
+    monkeypatch.setattr("memgo_cli.commands.config_cmd.CONFIG_DIR", fake_config_dir, raising=False)
+    # Clear any MEMGO env vars
     for key in list(os.environ.keys()):
-        if key.startswith("MEM0_"):
+        if key.startswith("MEMGO_"):
             monkeypatch.delenv(key, raising=False)
     return fake_config_dir
 
@@ -89,7 +89,7 @@ def mock_backend():
     backend.status.return_value = {
         "connected": True,
         "backend": "platform",
-        "base_url": "https://api.mem0.ai",
+        "base_url": "https://api.memgo.ai",
     }
     backend.delete_entities.return_value = {"message": "Entity deleted"}
     backend.entities.return_value = [
@@ -140,7 +140,7 @@ def mock_backend():
 @pytest.fixture
 def sample_config():
     """Return a sample config object."""
-    config = Mem0Config()
+    config = MemGoConfig()
     config.platform.api_key = "m0-test-key-12345678"
-    config.platform.base_url = "https://api.mem0.ai"
+    config.platform.base_url = "https://api.memgo.ai"
     return config

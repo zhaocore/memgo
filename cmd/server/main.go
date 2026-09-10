@@ -65,14 +65,14 @@ func main() {
 			"config": map[string]any{
 				"api_key":     os.Getenv("OPENAI_API_KEY"),
 				"temperature": 0.2,
-				"model":       envOr("MEM0_DEFAULT_LLM_MODEL", "gpt-5-mini"),
+				"model":       envOr("MEMGO_DEFAULT_LLM_MODEL", "gpt-5-mini"),
 			},
 		},
 		"embedder": map[string]any{
 			"provider": "openai",
 			"config": map[string]any{
 				"api_key": os.Getenv("OPENAI_API_KEY"),
-				"model":   envOr("MEM0_DEFAULT_EMBEDDER_MODEL", "text-embedding-3-small"),
+				"model":   envOr("MEMGO_DEFAULT_EMBEDDER_MODEL", "text-embedding-3-small"),
 			},
 		},
 		"history_db_path": envOr("HISTORY_DB_PATH", "/app/history/history.db"),

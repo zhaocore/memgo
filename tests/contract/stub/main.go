@@ -135,7 +135,7 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 		// generate-instructions: 服务端按 "INSTRUCTIONS:"/"TEST_MESSAGE:" 切分解析
 		content = "INSTRUCTIONS: Prioritize workout routines, dietary preferences and schedule constraints.\nTEST_MESSAGE: I prefer morning runs and a vegetarian diet."
 	default:
-		// 抽取/决策类: mem0 期望 {"memory":[{"text":...}]} (json_object 模式)
+		// 抽取/决策类: memgo 期望 {"memory":[{"text":...}]} (json_object 模式)
 		content = `{"memory":[{"text":"stub fact one"},{"text":"stub fact two"}]}`
 	}
 

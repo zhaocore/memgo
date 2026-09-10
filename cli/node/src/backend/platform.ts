@@ -1,5 +1,5 @@
 /**
- * Platform (SaaS) backend — communicates with api.mem0.ai.
+ * Platform (SaaS) backend — communicates with api.memgo.ai.
  */
 
 import type { PlatformConfig } from "../config.js";
@@ -31,9 +31,9 @@ export class PlatformBackend implements Backend {
 		this.headers = {
 			Authorization: `Token ${config.apiKey}`,
 			"Content-Type": "application/json",
-			"X-Mem0-Source": "cli",
-			"X-Mem0-Client-Language": "node",
-			"X-Mem0-Client-Version": CLI_VERSION,
+			"X-MemGo-Source": "cli",
+			"X-MemGo-Client-Language": "node",
+			"X-MemGo-Client-Version": CLI_VERSION,
 		};
 	}
 
@@ -50,7 +50,7 @@ export class PlatformBackend implements Backend {
 
 		const headers = {
 			...this.headers,
-			"X-Mem0-Caller-Type": isAgentMode() ? "agent" : "user",
+			"X-MemGo-Caller-Type": isAgentMode() ? "agent" : "user",
 		};
 
 		const fetchOpts: RequestInit = {
@@ -106,24 +106,24 @@ export class PlatformBackend implements Backend {
 			data &&
 			typeof data === "object" &&
 			!Array.isArray(data) &&
-			"mem0_notice" in data
+			"memgo_notice" in data
 		) {
-			notice = (data as Record<string, unknown>).mem0_notice as string;
+			notice = (data as Record<string, unknown>).memgo_notice as string;
 			// biome-ignore lint/performance/noDelete: intentional strip so downstream consumers don't see duplicate notice
-			delete (data as Record<string, unknown>).mem0_notice;
+			delete (data as Record<string, unknown>).memgo_notice;
 		} else if (
 			Array.isArray(data) &&
 			data.length > 0 &&
 			typeof data[0] === "object" &&
 			data[0] !== null &&
-			"mem0_notice" in data[0]
+			"memgo_notice" in data[0]
 		) {
-			notice = (data[0] as Record<string, unknown>).mem0_notice as string;
+			notice = (data[0] as Record<string, unknown>).memgo_notice as string;
 			// biome-ignore lint/performance/noDelete: see above.
-			delete (data[0] as Record<string, unknown>).mem0_notice;
+			delete (data[0] as Record<string, unknown>).memgo_notice;
 		}
 		if (!notice) {
-			notice = resp.headers.get("X-Mem0-Notice-Message") ?? null;
+			notice = resp.headers.get("X-MemGo-Notice-Message") ?? null;
 		}
 		captureNotice(notice);
 

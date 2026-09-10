@@ -42,7 +42,7 @@ func newImportCmd() *cobra.Command {
 
 // newConfigCmd config show/get/set。
 func newConfigCmd() *cobra.Command {
-	cfgCmd := &cobra.Command{Use: "config", Short: "Manage mem0 configuration."}
+	cfgCmd := &cobra.Command{Use: "config", Short: "Manage memgo configuration."}
 	cfgCmd.AddCommand(&cobra.Command{
 		Use:   "show",
 		Short: "Display current configuration (secrets redacted).",

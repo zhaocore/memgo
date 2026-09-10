@@ -8,8 +8,8 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from mem0_cli.backend.base import Backend
-from mem0_cli.branding import (
+from memgo_cli.backend.base import Backend
+from memgo_cli.branding import (
     ACCENT_COLOR,
     BRAND_COLOR,
     DIM_COLOR,
@@ -18,7 +18,7 @@ from mem0_cli.branding import (
     print_success,
     timed_status,
 )
-from mem0_cli.output import format_agent_envelope, format_json
+from memgo_cli.output import format_agent_envelope, format_json
 
 console = Console()
 err_console = Console(stderr=True)
@@ -26,7 +26,7 @@ err_console = Console(stderr=True)
 
 def cmd_entities_list(backend: Backend, entity_type: str, *, output: str) -> None:
     """List entities of a given type."""
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("entity list")
     if is_agent_mode():
@@ -43,7 +43,7 @@ def cmd_entities_list(backend: Backend, entity_type: str, *, output: str) -> Non
         try:
             results = backend.entities(entity_type)
         except Exception as e:
-            print_error(err_console, str(e), hint="This feature may require the mem0 Platform.")
+            print_error(err_console, str(e), hint="This feature may require the memgo Platform.")
             raise typer.Exit(1) from None
     _elapsed = _time.perf_counter() - _start
 
@@ -92,7 +92,7 @@ def cmd_entities_delete(
     output: str,
 ) -> None:
     """Delete an entity and all its memories (cascade delete)."""
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("entity delete")
     if is_agent_mode():

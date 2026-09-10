@@ -1,6 +1,6 @@
 # Python CLI (`cli/python/`)
 
-The `mem0-cli` package on PyPI. Typer-based, entry point `mem0`.
+The `memgo-cli` package on PyPI. Typer-based, entry point `memgo`.
 
 ## Commands
 
@@ -23,7 +23,7 @@ hatch build               # build
   Ignores `E501` (formatter handles it), `B008` (required by Typer's argument defaults),
   and `SIM108`.
 - **Ruff format:** double quotes, space indent, `docstring-code-format = true`.
-- **isort** first-party is `mem0_cli` only.
+- **isort** first-party is `memgo_cli` only.
 - **pytest** for tests.
 - Target version pinned to `py310`.
 
@@ -31,15 +31,15 @@ hatch build               # build
 
 ```
 cli/python/
-├── src/mem0_cli/     package source (src layout)
+├── src/memgo_cli/     package source (src layout)
 └── tests/
 ```
 
-Entry point: `mem0 = "mem0_cli.app:main"`.
+Entry point: `memgo = "memgo_cli.app:main"`.
 
 ## Dependencies
 
-Typer + Rich + httpx. `mem0ai` is **optional**, exposed through the `[oss]` extra for OSS mode. Do not promote it to a required dependency.
+Typer + Rich + httpx. `memgoai` is **optional**, exposed through the `[oss]` extra for OSS mode. Do not promote it to a required dependency.
 
 ## CI and release
 

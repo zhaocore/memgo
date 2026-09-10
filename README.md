@@ -1,7 +1,7 @@
-# MemGo — mem0 Python 主体的 Go 重写
+# MemGo — memgo Python 主体的 Go 重写
 
-把 [mem0](https://github.com/mem0ai/mem0) 的自托管主体（记忆引擎 + FastAPI server + CLI）重写为 Go。
-合同基准：mem0 仓库 `architecture/doc-01~05`；本仓库验收 = 同一套黑盒契约测试对 Go 全绿（251/251）。
+把 [memgo](https://github.com/memgoai/memgo) 的自托管主体（记忆引擎 + FastAPI server + CLI）重写为 Go。
+合同基准：memgo 仓库 `architecture/doc-01~05`；本仓库验收 = 同一套黑盒契约测试对 Go 全绿（251/251）。
 
 ```
 core/       记忆引擎（无 HTTP 依赖）: config / prompts / llm / embedder / vectorstore / history / entity / memory
@@ -31,7 +31,7 @@ go build -o bin/memgo ./cli/go/cmd/memgo
 bin/memgo init --api-key <key> --user-id alice
 bin/memgo add "I like hiking" -u alice
 bin/memgo search "hiking" -u alice -o table
-# 打自托管 server: MEM0_BASE_URL=http://localhost:8888 (域名非 api.mem0.ai 即走 OSS backend)
+# 打自托管 server: MEMGO_BASE_URL=http://localhost:8888 (域名非 api.memgo.ai 即走 OSS backend)
 ```
 
 命令面与上游 python/node CLI 三向 parity（golden：tests/contract/cli_parity_golden.json）。
@@ -46,33 +46,33 @@ bin/memgo search "hiking" -u alice -o table
 | `AUTH_DISABLED` | false | 仅本地开发 |
 | `POSTGRES_HOST/PORT/DB/USER/PASSWORD` | postgres/5432/postgres/postgres/postgres | **pgvector 记忆库**（postgres 库） |
 | `POSTGRES_COLLECTION_NAME` | memories | 向量 collection |
-| `APP_DB_NAME` | mem0_app | **应用库**（users/api_keys/request_logs/jtis/settings） |
+| `APP_DB_NAME` | memgo_app | **应用库**（users/api_keys/request_logs/jtis/settings） |
 | `OPENAI_API_KEY` | — | 默认 LLM+Embedder（openai） |
 | `OPENAI_BASE_URL` | — | 自托管/打桩端点（LLM 与 embedder 共用） |
-| `MEM0_DEFAULT_LLM_MODEL` | gpt-5-mini | LLM 模型 |
-| `MEM0_DEFAULT_EMBEDDER_MODEL` | text-embedding-3-small | Embedder 模型 |
+| `MEMGO_DEFAULT_LLM_MODEL` | gpt-5-mini | LLM 模型 |
+| `MEMGO_DEFAULT_EMBEDDER_MODEL` | text-embedding-3-small | Embedder 模型 |
 | `HISTORY_DB_PATH` | /app/history/history.db | SQLite 历史库 |
 | `DASHBOARD_URL` | http://localhost:3000 | CORS 允许源 |
-| `MEM0_TELEMETRY` | true | 遥测开关 |
-| `MEM0_TELEMETRY_STATE_PATH` | /app/history/telemetry.json | 遥测状态文件 |
+| `MEMGO_TELEMETRY` | true | 遥测开关 |
+| `MEMGO_TELEMETRY_STATE_PATH` | /app/history/telemetry.json | 遥测状态文件 |
 | `PORT` | 8000 | Go server 监听端口（新增） |
 
-双库拓扑（红线）：**记忆向量只进 pgvector 库（postgres）；server 表只进 mem0_app**。
+双库拓扑（红线）：**记忆向量只进 pgvector 库（postgres）；server 表只进 memgo_app**。
 
 ## 存量 Python 部署迁移（alembic → goose）
 
-Python server 的 mem0_app 由 alembic 管版本；Go server 用 goose。首次切换：
+Python server 的 memgo_app 由 alembic 管版本；Go server 用 goose。首次切换：
 
 ```bash
-# 1. 停 python server（向量库与 mem0_app 数据不动）
+# 1. 停 python server（向量库与 memgo_app 数据不动）
 # 2. 补录 goose 版本表（alembic head=006 校验 + DDL 探针 + 版本补录, 幂等可重跑）
-APP_DB_DSN=postgres://user:pw@host:5432/mem0_app make migrate
+APP_DB_DSN=postgres://user:pw@host:5432/memgo_app make migrate
 # 3. 起 Go server（goose.Up 成为无操作）
 ```
 
 注意事项：
 - 向量库（postgres 库）零改动 —— Go 用同一套 pgvector 表结构（id UUID / vector / payload JSONB）
-- mem0_app 表结构逐字对齐 alembic 001-006（DDL 探针校验）
+- memgo_app 表结构逐字对齐 alembic 001-006（DDL 探针校验）
 - **不要混跑**：goose → alembic 反向不支持；python server 迁移后新加的 alembic 版本不会同步到 goose
 - request_logs BRIN 索引、partial unique admin 索引均在 001-006 翻译范围内
 

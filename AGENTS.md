@@ -13,14 +13,14 @@
 
 ## 仓库现状与地图
 
-MemGo 是 `mem0` 自托管服务从 Python 迁移到 Go 的单模块项目，模块路径为 `github.com/zhao-core/memgo`。目标和分期以 `docs/go-refactor-plan.md` 为准；该计划不是需求真源。
+MemGo 是 `memgo` 自托管服务从 Python 迁移到 Go 的单模块项目，模块路径为 `github.com/zhao-core/memgo`。目标和分期以 `docs/go-refactor-plan.md` 为准；该计划不是需求真源。
 
 | 路径 | 当前职责 |
 | --- | --- |
 | `cmd/server/main.go` | `memgo-server` 入口：启动校验、DEFAULT_CONFIG、迁移、HTTP 装配。 |
 | `cmd/migrate/main.go` | 存量 Python (alembic) 部署 → goose 版本表迁移工具。 |
 | `cli/go/` | Go CLI（cobra）：命令面、Backend 接口（platform/OSS）、config、output、telemetry；二进制入口 `cli/go/cmd/memgo/main.go`。 |
-| `cli/python/`、`cli/node/` | 从 mem0 仓库逐字迁入的上游双 CLI（零行为改动；测试入口 make cli-py-test / cli-node-test）。 |
+| `cli/python/`、`cli/node/` | 从 memgo 仓库逐字迁入的上游双 CLI（零行为改动；测试入口 make cli-py-test / cli-node-test）。 |
 | `core/config/` | `MemoryConfig` 解析、深合并和敏感配置脱敏。 |
 | `core/llm/`、`core/embedder/` | LLM/embedder 端口与 openai、anthropic、gemini 客户端。 |
 | `core/prompts/` | 上游 prompt 常量及消息拼装；`prompts_gen.go` 是生成文件。 |
@@ -55,8 +55,8 @@ MemGo 是 `mem0` 自托管服务从 Python 迁移到 Go 的单模块项目，模
 - 自托管 REST API 的路径、鉴权优先级、状态码、JSON 形状、错误信封、`X-Request-ID`、`WWW-Authenticate` 和 OpenAPI 都是兼容合同。以 `tests/contract/` 的 Python 基线和 `tests/contract/goldens/` 为可执行事实，不得按 Go 惯例自行改形状。
 - `GET /memories` 的两种模式形状不一致也是合同；PUT 必须保留字段缺失、显式 `null` 和有值之间的语义差异。实测基线：仅 `metadata` 不改内容、`expiration_date: null` 清除字段、`text: null` 返回 400、空更新返回 400。
 - `/configure` 是递归 deep-merge，不是整体替换；敏感键递归脱敏；内置 provider 范围固定为 LLM `openai`/`anthropic`/`gemini`、embedder `openai`/`gemini`、vector store `pgvector`，扩大范围必须先记录决策。
-- prompt 文本是行为的一部分。修改上游 prompt 对齐时必须通过 `tools/gen_prompts.py` 生成 `core/prompts/prompts_gen.go`，并执行 `MEM0_SOURCE=<mem0仓库根目录> go test ./core/prompts`。不得手改生成文件。
-- 应用库 `mem0_app` 与 pgvector 记忆库物理分离：用户、API key、refresh JTI、请求日志和 settings 不得进入向量库；记忆向量不得进入应用库。
+- prompt 文本是行为的一部分。修改上游 prompt 对齐时必须通过 `tools/gen_prompts.py` 生成 `core/prompts/prompts_gen.go`，并执行 `MEMGO_SOURCE=<memgo仓库根目录> go test ./core/prompts`。不得手改生成文件。
+- 应用库 `memgo_app` 与 pgvector 记忆库物理分离：用户、API key、refresh JTI、请求日志和 settings 不得进入向量库；记忆向量不得进入应用库。
 - Go CLI 是第三个实现，不能修改上游 Python/Node CLI，也不得新增 parity golden 未定义的命令或选项；缺失功能必须显式列出。
 - 外部 provider 的错误必须保留可分类原因和请求上下文；重试时记录告警，耗尽后返回最后一个明确错误，不能吞错或用回退结果掩盖故障。
 

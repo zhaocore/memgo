@@ -48,7 +48,7 @@ func envelope(command string, data any, count int, scope map[string]any) {
 		env["count"] = count
 	}
 	if n := TakeNotice(); n != "" {
-		env["mem0_notice"] = n
+		env["memgo_notice"] = n
 	}
 	env["data"] = data
 	raw, _ := json.Marshal(env)

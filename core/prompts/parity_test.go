@@ -18,11 +18,11 @@ func init() {
 }
 
 // TestPromptParityWithPython: prompts 与 Python 版 diff = 0 (计划 P1 验收项)。
-// 依赖 mem0 源码位置, 环境变量 MEM0_SOURCE 指向 mem0 仓库根; 未设则跳过。
+// 依赖 memgo 源码位置, 环境变量 MEMGO_SOURCE 指向 memgo 仓库根; 未设则跳过。
 func TestPromptParityWithPython(t *testing.T) {
-	repo := os.Getenv("MEM0_SOURCE")
+	repo := os.Getenv("MEMGO_SOURCE")
 	if repo == "" {
-		t.Skip("MEM0_SOURCE 未设, 跳过跨语言 parity 校验")
+		t.Skip("MEMGO_SOURCE 未设, 跳过跨语言 parity 校验")
 	}
 	src := filepath.Join(repo, "mem0", "configs", "prompts.py")
 	if _, err := os.Stat(src); err != nil {

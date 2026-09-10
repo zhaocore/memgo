@@ -1,5 +1,5 @@
 /**
- * `mem0 agent-rush <add|search> "..."` — wraps the AGENTRUSH platform endpoints.
+ * `memgo agent-rush <add|search> "..."` — wraps the AGENTRUSH platform endpoints.
  * Project routing is implicit (server-side); zero flags needed.
  */
 
@@ -17,11 +17,11 @@ const PII_WARNING = [
 
 const ERROR_HINTS: Record<string, string> = {
 	agentrush_search_first:
-		"Run 3 'mem0 agent-rush search' commands before adding.",
+		"Run 3 'memgo agent-rush search' commands before adding.",
 	agentrush_search_quota: "You've used your 3 lifetime searches.",
 	agentrush_add_quota: "You've used your 3 lifetime adds.",
 	agentrush_not_agent_mode:
-		"Re-run 'mem0 init --agent' to bootstrap an agent-mode key.",
+		"Re-run 'memgo init --agent' to bootstrap an agent-mode key.",
 	agentrush_length: "Memory text must be 50-1000 characters.",
 	agentrush_no_urls: "URLs are not allowed.",
 	agentrush_blocklist: "Content contains a blocked term.",
@@ -35,13 +35,13 @@ async function callEndpoint(
 	body: Record<string, unknown>,
 ): Promise<unknown> {
 	const config = loadConfig();
-	const baseUrl = (config.platform?.baseUrl ?? "https://api.mem0.ai").replace(
+	const baseUrl = (config.platform?.baseUrl ?? "https://api.memgo.ai").replace(
 		/\/+$/,
 		"",
 	);
 
 	if (!config.platform?.apiKey) {
-		printError("Not initialized. Run `mem0 init --agent` first.");
+		printError("Not initialized. Run `memgo init --agent` first.");
 		process.exit(1);
 	}
 
@@ -50,10 +50,10 @@ async function callEndpoint(
 		headers: {
 			Authorization: `Token ${config.platform.apiKey}`,
 			"Content-Type": "application/json",
-			"X-Mem0-Source": "cli",
-			"X-Mem0-Client-Language": "node",
-			"X-Mem0-Client-Version": CLI_VERSION,
-			"X-Mem0-Mode": "agent-rush",
+			"X-MemGo-Source": "cli",
+			"X-MemGo-Client-Language": "node",
+			"X-MemGo-Client-Version": CLI_VERSION,
+			"X-MemGo-Mode": "agent-rush",
 		},
 		body: JSON.stringify(body),
 		signal: AbortSignal.timeout(30_000),

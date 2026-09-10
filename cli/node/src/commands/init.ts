@@ -1,5 +1,5 @@
 /**
- * mem0 init — interactive setup wizard.
+ * memgo init — interactive setup wizard.
  */
 
 import fs from "node:fs";
@@ -15,7 +15,7 @@ import {
 import {
 	CONFIG_FILE,
 	DEFAULT_BASE_URL,
-	type Mem0Config,
+	type MemGoConfig,
 	createDefaultConfig,
 	loadConfig,
 	redactKey,
@@ -104,8 +104,8 @@ async function emailLogin(
 
 	const sourceHeaders = {
 		"Content-Type": "application/json",
-		"X-Mem0-Source": "cli",
-		"X-Mem0-Client-Language": "node",
+		"X-MemGo-Source": "cli",
+		"X-MemGo-Client-Language": "node",
 	};
 
 	if (!codeValue) {
@@ -136,7 +136,7 @@ async function emailLogin(
 		if (!process.stdin.isTTY) {
 			printError(
 				"No --code provided and terminal is non-interactive.",
-				"Run: mem0 init --email <email> --code <code>",
+				"Run: memgo init --email <email> --code <code>",
 			);
 			process.exit(1);
 		}
@@ -243,10 +243,10 @@ function promptLine(label: string, defaultValue?: string): Promise<string> {
 	});
 }
 
-async function setupPlatform(config: Mem0Config): Promise<void> {
+async function setupPlatform(config: MemGoConfig): Promise<void> {
 	console.log();
 	console.log(
-		`  ${dim("Get your API key at https://app.mem0.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-node")}`,
+		`  ${dim("Get your API key at https://app.memgo.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-node")}`,
 	);
 	console.log();
 
@@ -260,11 +260,11 @@ async function setupPlatform(config: Mem0Config): Promise<void> {
 	config.platform.createdVia = "api_key";
 }
 
-async function setupDefaults(config: Mem0Config): Promise<void> {
+async function setupDefaults(config: MemGoConfig): Promise<void> {
 	console.log();
 	printInfo("Set default entity IDs (press Enter to skip).\n");
 
-	const _systemUser = process.env.USER || process.env.USERNAME || "mem0-cli";
+	const _systemUser = process.env.USER || process.env.USERNAME || "memgo-cli";
 	const userId = await promptLine(
 		`  ${brand("Default User ID")} ${dim("(recommended)")}`,
 		_systemUser,
@@ -272,7 +272,7 @@ async function setupDefaults(config: Mem0Config): Promise<void> {
 	if (userId) config.defaults.userId = userId;
 }
 
-async function validatePlatform(config: Mem0Config): Promise<void> {
+async function validatePlatform(config: MemGoConfig): Promise<void> {
 	console.log();
 	printInfo("Validating connection...");
 	try {
@@ -282,7 +282,7 @@ async function validatePlatform(config: Mem0Config): Promise<void> {
 			agentId: config.defaults.agentId || undefined,
 		});
 		if (status.connected) {
-			printSuccess("Connected to mem0 Platform!");
+			printSuccess("Connected to memgo Platform!");
 			// Cache user_email from ping response for telemetry distinct_id
 			try {
 				const pingData = (await backend.ping()) as Record<string, unknown>;
@@ -296,7 +296,7 @@ async function validatePlatform(config: Mem0Config): Promise<void> {
 		} else {
 			printError(
 				`Could not connect: ${status.error ?? "Unknown error"}`,
-				"Visit https://app.mem0.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-node to get a new key, or run mem0 init again.",
+				"Visit https://app.memgo.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-node to get a new key, or run memgo init again.",
 			);
 		}
 	} catch (e) {
@@ -336,7 +336,7 @@ export async function runInit(
 	const config = createDefaultConfig();
 	const savedConfig = loadConfig();
 	const baseUrl =
-		process.env.MEM0_BASE_URL ||
+		process.env.MEMGO_BASE_URL ||
 		savedConfig.platform.baseUrl ||
 		DEFAULT_BASE_URL;
 	config.platform.baseUrl = baseUrl;
@@ -383,19 +383,19 @@ export async function runInit(
 						api_key_source: source,
 						agent_mode: false,
 						message:
-							"Existing Mem0 API key found and reused. No Agent Mode key was created.",
+							"Existing MemGo API key found and reused. No Agent Mode key was created.",
 					},
 				});
 			} else {
 				printSuccess(
 					source === "env"
-						? "Existing MEM0_API_KEY is valid; reusing it. No new Agent Mode key was minted."
+						? "Existing MEMGO_API_KEY is valid; reusing it. No new Agent Mode key was minted."
 						: "Existing API key in config is valid; reusing it. No new Agent Mode key was minted.",
 				);
 			}
 		};
-		// Rule 1: env MEM0_API_KEY valid → reuse, no new key.
-		const envKey = (process.env.MEM0_API_KEY || "").trim();
+		// Rule 1: env MEMGO_API_KEY valid → reuse, no new key.
+		const envKey = (process.env.MEMGO_API_KEY || "").trim();
 		if (envKey && (await pingKey(envKey, baseUrl))) {
 			await maybeIdentify(envKey, baseUrl, opts.agentCaller);
 			emitReuseEnvelope("env");
@@ -487,15 +487,15 @@ export async function runInit(
 		config.platform.userEmail = email;
 		config.platform.createdVia = "email";
 		config.defaults.userId =
-			opts.userId || process.env.USER || process.env.USERNAME || "mem0-cli";
+			opts.userId || process.env.USER || process.env.USERNAME || "memgo-cli";
 
 		saveConfig(config);
 		console.log();
-		printSuccess("Authenticated! Configuration saved to ~/.mem0/config.json");
+		printSuccess("Authenticated! Configuration saved to ~/.memgo/config.json");
 		console.log();
 		console.log(`  ${dim("Get started:")}`);
-		console.log(`  ${dim('  mem0 add "I prefer dark mode"')}`);
-		console.log(`  ${dim('  mem0 search "preferences"')}`);
+		console.log(`  ${dim('  memgo add "I prefer dark mode"')}`);
+		console.log(`  ${dim('  memgo search "preferences"')}`);
 		console.log();
 		return;
 	}
@@ -509,12 +509,12 @@ export async function runInit(
 		if (!opts.apiKey) {
 			printError(
 				"Non-interactive terminal detected and --api-key is required.",
-				"Usage: mem0 init --api-key <key>, --email <addr>, or --agent for unattended Agent Mode bootstrap.",
+				"Usage: memgo init --api-key <key>, --email <addr>, or --agent for unattended Agent Mode bootstrap.",
 			);
 			process.exit(1);
 		}
 		opts.userId =
-			opts.userId || process.env.USER || process.env.USERNAME || "mem0-cli";
+			opts.userId || process.env.USER || process.env.USERNAME || "memgo-cli";
 	}
 
 	// Non-interactive: both flags provided
@@ -524,13 +524,13 @@ export async function runInit(
 		config.defaults.userId = opts.userId;
 		await validatePlatform(config);
 		saveConfig(config);
-		printSuccess("Configuration saved to ~/.mem0/config.json");
+		printSuccess("Configuration saved to ~/.memgo/config.json");
 		return;
 	}
 
 	printBanner();
 	console.log();
-	printInfo("Welcome! Let's set up your mem0 CLI.\n");
+	printInfo("Welcome! Let's set up your memgo CLI.\n");
 
 	// Use provided API key or prompt
 	if (opts.apiKey) {
@@ -570,15 +570,15 @@ export async function runInit(
 			config.platform.userEmail = email;
 			config.platform.createdVia = "email";
 			config.defaults.userId =
-				opts.userId || process.env.USER || process.env.USERNAME || "mem0-cli";
+				opts.userId || process.env.USER || process.env.USERNAME || "memgo-cli";
 
 			saveConfig(config);
 			console.log();
-			printSuccess("Authenticated! Configuration saved to ~/.mem0/config.json");
+			printSuccess("Authenticated! Configuration saved to ~/.memgo/config.json");
 			console.log();
 			console.log(`  ${dim("Get started:")}`);
-			console.log(`  ${dim('  mem0 add "I prefer dark mode"')}`);
-			console.log(`  ${dim('  mem0 search "preferences"')}`);
+			console.log(`  ${dim('  memgo add "I prefer dark mode"')}`);
+			console.log(`  ${dim('  memgo search "preferences"')}`);
 			console.log();
 			return;
 		}
@@ -598,15 +598,15 @@ export async function runInit(
 
 	saveConfig(config);
 	console.log();
-	printSuccess("Configuration saved to ~/.mem0/config.json");
+	printSuccess("Configuration saved to ~/.memgo/config.json");
 	console.log();
 	console.log(`  ${dim("Get started:")}`);
 	if (config.defaults.userId) {
-		console.log(`  ${dim('  mem0 add "I prefer dark mode"')}`);
-		console.log(`  ${dim('  mem0 search "preferences"')}`);
+		console.log(`  ${dim('  memgo add "I prefer dark mode"')}`);
+		console.log(`  ${dim('  memgo search "preferences"')}`);
 	} else {
-		console.log(`  ${dim('  mem0 add "I prefer dark mode" --user-id alice')}`);
-		console.log(`  ${dim('  mem0 search "preferences" --user-id alice')}`);
+		console.log(`  ${dim('  memgo add "I prefer dark mode" --user-id alice')}`);
+		console.log(`  ${dim('  memgo search "preferences" --user-id alice')}`);
 	}
 	console.log();
 }

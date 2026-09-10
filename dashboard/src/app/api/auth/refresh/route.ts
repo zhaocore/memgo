@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { AUTH_ENDPOINTS } from "@/utils/api-endpoints";
 import { getServerApiUrl } from "@/lib/server-api-url";
 
-const COOKIE_NAME = "mem0_refresh_token";
+const COOKIE_NAME = "memgo_refresh_token";
 
 function shouldUseSecureCookie() {
   const dashboardUrl = process.env.DASHBOARD_URL;

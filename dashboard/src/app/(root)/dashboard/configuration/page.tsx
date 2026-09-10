@@ -211,7 +211,7 @@ export default function ConfigurationPage() {
         Need another provider? Install its Python package, rebuild the image,
         and extend the bundled list. See the{" "}
         <a
-          href="https://docs.mem0.ai/open-source/setup#supported-providers"
+          href="https://docs.memgo.ai/open-source/setup#supported-providers"
           target="_blank"
           rel="noopener noreferrer"
           className="underline underline-offset-4 hover:text-onSurface-default-primary"
@@ -231,7 +231,7 @@ export default function ConfigurationPage() {
         id="config-sso"
         message="Looking for SSO / SAML? Available in Enterprise."
         ctaLabel="Contact sales"
-        ctaUrl="https://app.mem0.ai/enterprise?utm_source=oss&utm_medium=dashboard-configuration-sso"
+        ctaUrl="https://app.memgo.ai/enterprise?utm_source=oss&utm_medium=dashboard-configuration-sso"
         variant="enterprise"
       />
     </div>

@@ -1,4 +1,4 @@
-"""Main CLI application — the entrypoint for `mem0`."""
+"""Main CLI application — the entrypoint for `memgo`."""
 
 from __future__ import annotations
 
@@ -12,8 +12,8 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
-from mem0_cli import __version__
-from mem0_cli.branding import BRAND_COLOR, print_error, print_warning
+from memgo_cli import __version__
+from memgo_cli.branding import BRAND_COLOR, print_error, print_warning
 
 console = Console()
 err_console = Console(stderr=True)
@@ -21,8 +21,8 @@ err_console = Console(stderr=True)
 # ── Main app ──────────────────────────────────────────────────────────────
 
 app = typer.Typer(
-    name="mem0",
-    help=f"◆ Mem0 CLI v{__version__} · Python SDK\n\n   The Memory Layer for AI Agents",
+    name="memgo",
+    help=f"◆ MemGo CLI v{__version__} · Python SDK\n\n   The Memory Layer for AI Agents",
     no_args_is_help=True,
     rich_markup_mode="rich",
     pretty_exceptions_enable=False,
@@ -35,7 +35,7 @@ app = typer.Typer(
 
 config_app = typer.Typer(
     name="config",
-    help="Manage mem0 configuration.",
+    help="Manage memgo configuration.",
     no_args_is_help=True,
     rich_markup_mode="rich",
 )
@@ -66,7 +66,7 @@ _validated_user_email: str | None = None
 def _fire_telemetry(command_name: str, extra: dict | None = None) -> None:
     """Fire a PostHog telemetry event (non-blocking, never fails)."""
     try:
-        from mem0_cli.telemetry import capture_event
+        from memgo_cli.telemetry import capture_event
 
         props = {"command": command_name}
         if extra:
@@ -108,9 +108,9 @@ def _get_backend_and_config(
     """
     global _validated_user_email
 
-    from mem0_cli.backend import get_backend
-    from mem0_cli.backend.platform import AuthError
-    from mem0_cli.config import load_config, save_config
+    from memgo_cli.backend import get_backend
+    from memgo_cli.backend.platform import AuthError
+    from memgo_cli.config import load_config, save_config
 
     config = load_config()
 
@@ -123,7 +123,7 @@ def _get_backend_and_config(
         print_error(
             err_console,
             "No API key configured.",
-            hint="Run 'mem0 init' or set MEM0_API_KEY environment variable.",
+            hint="Run 'memgo init' or set MEMGO_API_KEY environment variable.",
         )
         raise typer.Exit(1)
 
@@ -143,7 +143,7 @@ def _get_backend_and_config(
         print_error(
             err_console,
             "Invalid or expired API key.",
-            hint="Run 'mem0 init' or set MEM0_API_KEY environment variable.",
+            hint="Run 'memgo init' or set MEMGO_API_KEY environment variable.",
         )
         raise typer.Exit(1) from None
     except Exception:
@@ -193,7 +193,7 @@ def _resolve_ids(
 
 def _stdin_is_piped() -> bool:
     """Return True only when stdin is an actual pipe or file redirect — not a bare open fd."""
-    from mem0_cli.state import is_agent_mode
+    from memgo_cli.state import is_agent_mode
 
     if is_agent_mode():
         return False
@@ -227,11 +227,11 @@ def main_callback(
     ),
 ) -> None:
     if json_agent:
-        from mem0_cli.state import set_agent_mode
+        from memgo_cli.state import set_agent_mode
 
         set_agent_mode(True)
     if version:
-        from mem0_cli.commands.utils import cmd_version
+        from memgo_cli.commands.utils import cmd_version
 
         _fire_telemetry("version")
         cmd_version()
@@ -240,7 +240,7 @@ def main_callback(
         # Stash the active subcommand name so the JSON error envelope
         # (print_error in agent mode) can report which command failed
         # instead of an empty `"command": ""` field.
-        from mem0_cli.state import set_current_command
+        from memgo_cli.state import set_current_command
 
         set_current_command(ctx.invoked_subcommand)
     if ctx.invoked_subcommand and ctx.invoked_subcommand != "init":
@@ -301,7 +301,7 @@ def add(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -311,11 +311,11 @@ def add(
     """Add a memory from text, messages, file, or stdin.
 
     Examples:
-      mem0 add "I prefer dark mode" --user-id alice
-      echo "text" | mem0 add -u alice
-      mem0 add --file msgs.json -u alice -o json
+      memgo add "I prefer dark mode" --user-id alice
+      echo "text" | memgo add -u alice
+      memgo add --file msgs.json -u alice -o json
     """
-    from mem0_cli.commands.memory import cmd_add
+    from memgo_cli.commands.memory import cmd_add
 
     backend, config = _get_backend_and_config(api_key, base_url)
     ids = _resolve_ids(config, user_id=user_id, agent_id=agent_id, app_id=app_id, run_id=run_id)
@@ -405,7 +405,7 @@ def search(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -415,12 +415,12 @@ def search(
     """Query your memory store — semantic, keyword, or hybrid retrieval.
 
     Examples:
-      mem0 search "preferences" --user-id alice
-      mem0 search "tools" -u alice -o json -k 5
-      echo "preferences" | mem0 search -u alice
-      mem0 search "invoices" -u alice --filter '{"AND": [{"categories": {"in": ["work"]}}]}'
+      memgo search "preferences" --user-id alice
+      memgo search "tools" -u alice -o json -k 5
+      echo "preferences" | memgo search -u alice
+      memgo search "invoices" -u alice --filter '{"AND": [{"categories": {"in": ["work"]}}]}'
     """
-    from mem0_cli.commands.memory import cmd_search
+    from memgo_cli.commands.memory import cmd_search
 
     # STEP 7: stdin fallback for query
     if query is None:
@@ -462,7 +462,7 @@ def get(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -472,10 +472,10 @@ def get(
     """Get a specific memory by ID.
 
     Examples:
-      mem0 get abc-123-def-456
-      mem0 get abc-123-def-456 -o json
+      memgo get abc-123-def-456
+      memgo get abc-123-def-456 -o json
     """
-    from mem0_cli.commands.memory import cmd_get
+    from memgo_cli.commands.memory import cmd_get
 
     backend = _get_backend(api_key, base_url)
     cmd_get(backend, memory_id, output=output)
@@ -527,7 +527,7 @@ def list_cmd(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -537,10 +537,10 @@ def list_cmd(
     """List memories with optional filters.
 
     Examples:
-      mem0 list -u alice
-      mem0 list --category prefs --after 2024-01-01 -o json
+      memgo list -u alice
+      memgo list --category prefs --after 2024-01-01 -o json
     """
-    from mem0_cli.commands.memory import cmd_list
+    from memgo_cli.commands.memory import cmd_list
 
     backend, config = _get_backend_and_config(api_key, base_url)
     ids = _resolve_ids(config, user_id=user_id, agent_id=agent_id, app_id=app_id, run_id=run_id)
@@ -578,7 +578,7 @@ def update(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -588,11 +588,11 @@ def update(
     """Update a memory's text or metadata.
 
     Examples:
-      mem0 update abc-123-def-456 "new text"
-      mem0 update abc-123 --metadata '{{"key":"val"}}'
-      echo "new text" | mem0 update abc-123
+      memgo update abc-123-def-456 "new text"
+      memgo update abc-123 --metadata '{{"key":"val"}}'
+      echo "new text" | memgo update abc-123
     """
-    from mem0_cli.commands.memory import cmd_update
+    from memgo_cli.commands.memory import cmd_update
 
     # STEP 7: stdin fallback for text
     if text is None:
@@ -651,7 +651,7 @@ def delete(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -661,11 +661,11 @@ def delete(
     """Delete a memory, all memories, or an entity.
 
     Examples:
-      mem0 delete abc-123-def-456
-      mem0 delete abc-123 --dry-run
-      mem0 delete --all -u alice --force
-      mem0 delete --all --project --force
-      mem0 delete --entity -u alice --force
+      memgo delete abc-123-def-456
+      memgo delete abc-123 --dry-run
+      memgo delete --all -u alice --force
+      memgo delete --all --project --force
+      memgo delete --entity -u alice --force
     """
     # ── Validate mutual exclusion ────────────────────────────────────
     modes = sum([memory_id is not None, all_, entity])
@@ -679,14 +679,14 @@ def delete(
         print_error(
             err_console,
             "Provide a memory ID, --all, or --entity.",
-            hint="Run 'mem0 delete --help' for usage.",
+            hint="Run 'memgo delete --help' for usage.",
         )
         raise typer.Exit(1)
 
     # ── Dispatch ─────────────────────────────────────────────────────
     if memory_id is not None:
         _fire_telemetry("delete", {"delete_mode": "single"})
-        from mem0_cli.commands.memory import cmd_delete
+        from memgo_cli.commands.memory import cmd_delete
 
         backend = _get_backend(api_key, base_url)
         cmd_delete(
@@ -700,7 +700,7 @@ def delete(
 
     elif all_:
         _fire_telemetry("delete", {"delete_mode": "all"})
-        from mem0_cli.commands.memory import cmd_delete_all
+        from memgo_cli.commands.memory import cmd_delete_all
 
         backend, config = _get_backend_and_config(api_key, base_url)
         ids = _resolve_ids(config, user_id=user_id, agent_id=agent_id, app_id=app_id, run_id=run_id)
@@ -708,7 +708,7 @@ def delete(
 
     else:  # --entity
         _fire_telemetry("delete", {"delete_mode": "entity"})
-        from mem0_cli.commands.entities import cmd_entities_delete
+        from memgo_cli.commands.entities import cmd_entities_delete
 
         backend = _get_backend(api_key, base_url)
         cmd_entities_delete(
@@ -735,10 +735,10 @@ def config_show(
     """Display current configuration (secrets redacted).
 
     Examples:
-      mem0 config show
-      mem0 config show -o json
+      memgo config show
+      memgo config show -o json
     """
-    from mem0_cli.commands.config_cmd import cmd_config_show
+    from memgo_cli.commands.config_cmd import cmd_config_show
 
     cmd_config_show(output=output)
 
@@ -750,10 +750,10 @@ def config_get(
     """Get a configuration value.
 
     Examples:
-      mem0 config get platform.api_key
-      mem0 config get defaults.user_id
+      memgo config get platform.api_key
+      memgo config get defaults.user_id
     """
-    from mem0_cli.commands.config_cmd import cmd_config_get
+    from memgo_cli.commands.config_cmd import cmd_config_get
 
     cmd_config_get(key)
 
@@ -766,10 +766,10 @@ def config_set(
     """Set a configuration value.
 
     Examples:
-      mem0 config set defaults.user_id alice
-      mem0 config set platform.base_url https://custom.api.mem0.ai
+      memgo config set defaults.user_id alice
+      memgo config set platform.base_url https://custom.api.memgo.ai
     """
-    from mem0_cli.commands.config_cmd import cmd_config_set
+    from memgo_cli.commands.config_cmd import cmd_config_set
 
     cmd_config_set(key, value)
 
@@ -787,7 +787,7 @@ def entity_list(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -797,10 +797,10 @@ def entity_list(
     """List all entities of a given type.
 
     Examples:
-      mem0 entity list users
-      mem0 entity list agents -o json
+      memgo entity list users
+      memgo entity list agents -o json
     """
-    from mem0_cli.commands.entities import cmd_entities_list
+    from memgo_cli.commands.entities import cmd_entities_list
 
     backend = _get_backend(api_key, base_url)
     cmd_entities_list(backend, entity_type, output=output)
@@ -827,7 +827,7 @@ def entity_delete(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -837,10 +837,10 @@ def entity_delete(
     """Delete an entity and ALL its memories (cascade).
 
     Examples:
-      mem0 entity delete --user-id alice --force
-      mem0 entity delete -u alice --dry-run
+      memgo entity delete --user-id alice --force
+      memgo entity delete -u alice --dry-run
     """
-    from mem0_cli.commands.entities import cmd_entities_delete
+    from memgo_cli.commands.entities import cmd_entities_delete
 
     backend = _get_backend(api_key, base_url)
     cmd_entities_delete(
@@ -871,7 +871,7 @@ def event_list(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -881,10 +881,10 @@ def event_list(
     """List recent background processing events.
 
     Examples:
-      mem0 event list
-      mem0 event list -o json
+      memgo event list
+      memgo event list -o json
     """
-    from mem0_cli.commands.events_cmd import cmd_event_list
+    from memgo_cli.commands.events_cmd import cmd_event_list
 
     backend = _get_backend(api_key, base_url)
     cmd_event_list(backend, output=output)
@@ -900,7 +900,7 @@ def event_status(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -910,10 +910,10 @@ def event_status(
     """Check the status of a specific background event.
 
     Examples:
-      mem0 event status <event-id>
-      mem0 event status <event-id> -o json
+      memgo event status <event-id>
+      memgo event status <event-id> -o json
     """
-    from mem0_cli.commands.events_cmd import cmd_event_status
+    from memgo_cli.commands.events_cmd import cmd_event_status
 
     backend = _get_backend(api_key, base_url)
     cmd_event_status(backend, event_id, output=output)
@@ -953,17 +953,17 @@ def init(
         help="Self-declared agent identity (e.g. claude-code, cursor). Used with --agent to attribute Agent Mode signups.",
     ),
 ) -> None:
-    """Interactive setup wizard for mem0 CLI.
+    """Interactive setup wizard for memgo CLI.
 
     Examples:
-      mem0 init
-      mem0 init --api-key m0-xxx --user-id alice
-      mem0 init --email alice@company.com
-      mem0 init --email alice@company.com --code 482901
-      mem0 init --agent --agent-caller claude-code   # AI agent self-identifies on Agent Mode bootstrap
-      mem0 init --email alice@company.com  # Claims an existing Agent Mode key when one is present
+      memgo init
+      memgo init --api-key m0-xxx --user-id alice
+      memgo init --email alice@company.com
+      memgo init --email alice@company.com --code 482901
+      memgo init --agent --agent-caller claude-code   # AI agent self-identifies on Agent Mode bootstrap
+      memgo init --email alice@company.com  # Claims an existing Agent Mode key when one is present
     """
-    from mem0_cli.commands.init_cmd import run_init
+    from memgo_cli.commands.init_cmd import run_init
 
     run_init(
         api_key=api_key,
@@ -983,13 +983,13 @@ def identify(
 ) -> None:
     """Tag your active Agent Mode key with the AI agent that's using it.
 
-    Run this once after `mem0 init --agent` if you didn't pass --agent-caller.
+    Run this once after `memgo init --agent` if you didn't pass --agent-caller.
     Idempotent — re-running just overwrites the value.
 
     Example:
-      mem0 identify claude-code
+      memgo identify claude-code
     """
-    from mem0_cli.commands.identify_cmd import run_identify
+    from memgo_cli.commands.identify_cmd import run_identify
 
     run_identify(name)
 
@@ -999,9 +999,9 @@ def whoami_cmd() -> None:
     """Print your AGENTRUSH identifier (default_user_id).
 
     Example:
-      mem0 whoami
+      memgo whoami
     """
-    from mem0_cli.commands.whoami_cmd import run_whoami
+    from memgo_cli.commands.whoami_cmd import run_whoami
 
     run_whoami()
 
@@ -1029,9 +1029,9 @@ def agent_rush_add(
     """Submit a memory to AGENTRUSH.
 
     Example:
-      mem0 agent-rush add "I enjoy solving constraint-satisfaction problems."
+      memgo agent-rush add "I enjoy solving constraint-satisfaction problems."
     """
-    from mem0_cli.commands.agent_rush_cmd import run_agent_rush_add
+    from memgo_cli.commands.agent_rush_cmd import run_agent_rush_add
 
     run_agent_rush_add(content)
 
@@ -1043,9 +1043,9 @@ def agent_rush_search(
     """Search AGENTRUSH memories.
 
     Example:
-      mem0 agent-rush search "constraint satisfaction"
+      memgo agent-rush search "constraint satisfaction"
     """
-    from mem0_cli.commands.agent_rush_cmd import run_agent_rush_search
+    from memgo_cli.commands.agent_rush_cmd import run_agent_rush_search
 
     run_agent_rush_search(query)
 
@@ -1065,7 +1065,7 @@ def status(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -1075,10 +1075,10 @@ def status(
     """Check connectivity and authentication.
 
     Examples:
-      mem0 status
-      mem0 status -o json
+      memgo status
+      memgo status -o json
     """
-    from mem0_cli.commands.utils import cmd_status
+    from memgo_cli.commands.utils import cmd_status
 
     backend, config = _get_backend_and_config(api_key, base_url)
     cmd_status(
@@ -1094,9 +1094,9 @@ def version() -> None:
     """Show version and exit.
 
     Example:
-      mem0 version
+      memgo version
     """
-    from mem0_cli.commands.utils import cmd_version
+    from memgo_cli.commands.utils import cmd_version
 
     cmd_version()
 
@@ -1117,7 +1117,7 @@ def import_cmd(
         None,
         "--api-key",
         help="Override API key.",
-        envvar="MEM0_API_KEY",
+        envvar="MEMGO_API_KEY",
         rich_help_panel="Connection",
     ),
     base_url: str | None = typer.Option(
@@ -1127,10 +1127,10 @@ def import_cmd(
     """Import memories from a JSON file.
 
     Examples:
-      mem0 import data.json --user-id alice
-      mem0 import data.json -u alice -o json
+      memgo import data.json --user-id alice
+      memgo import data.json -u alice -o json
     """
-    from mem0_cli.commands.utils import cmd_import
+    from memgo_cli.commands.utils import cmd_import
 
     backend, config = _get_backend_and_config(api_key, base_url)
     ids = _resolve_ids(config, user_id=user_id, agent_id=agent_id)
@@ -1145,7 +1145,7 @@ def _build_help_json() -> dict:
     commands = {
         "add": {
             "description": "Add a memory from text, messages, file, or stdin.",
-            "usage": "mem0 add <text> [OPTIONS]",
+            "usage": "memgo add <text> [OPTIONS]",
             "arguments": {
                 "text": {"description": "Text content to add as a memory.", "required": False}
             },
@@ -1173,7 +1173,7 @@ def _build_help_json() -> dict:
         },
         "search": {
             "description": "Query your memory store — semantic, keyword, or hybrid retrieval.",
-            "usage": "mem0 search <query> [OPTIONS]",
+            "usage": "memgo search <query> [OPTIONS]",
             "arguments": {"query": {"description": "Search query.", "required": False}},
             "options": {
                 "--user-id, -u": "Filter by user.",
@@ -1197,13 +1197,13 @@ def _build_help_json() -> dict:
         },
         "get": {
             "description": "Get a specific memory by ID.",
-            "usage": "mem0 get <memory_id> [OPTIONS]",
+            "usage": "memgo get <memory_id> [OPTIONS]",
             "arguments": {"memory_id": {"description": "Memory ID to retrieve.", "required": True}},
             "options": {"--output, -o": "Output format: text, json."},
         },
         "list": {
             "description": "List memories with optional filters.",
-            "usage": "mem0 list [OPTIONS]",
+            "usage": "memgo list [OPTIONS]",
             "arguments": {},
             "options": {
                 "--user-id, -u": "Filter by user.",
@@ -1222,7 +1222,7 @@ def _build_help_json() -> dict:
         },
         "update": {
             "description": "Update a memory's text or metadata.",
-            "usage": "mem0 update <memory_id> [text] [OPTIONS]",
+            "usage": "memgo update <memory_id> [text] [OPTIONS]",
             "arguments": {
                 "memory_id": {"description": "Memory ID to update.", "required": True},
                 "text": {"description": "New memory text.", "required": False},
@@ -1236,7 +1236,7 @@ def _build_help_json() -> dict:
         },
         "delete": {
             "description": "Delete a memory, all memories, or an entity.",
-            "usage": "mem0 delete [memory_id] [OPTIONS]",
+            "usage": "memgo delete [memory_id] [OPTIONS]",
             "arguments": {
                 "memory_id": {
                     "description": "Memory ID to delete (omit when using --all or --entity).",
@@ -1259,7 +1259,7 @@ def _build_help_json() -> dict:
         },
         "import": {
             "description": "Import memories from a JSON file.",
-            "usage": "mem0 import <file_path> [OPTIONS]",
+            "usage": "memgo import <file_path> [OPTIONS]",
             "arguments": {"file_path": {"description": "JSON file to import.", "required": True}},
             "options": {
                 "--user-id, -u": "Override user ID.",
@@ -1269,19 +1269,19 @@ def _build_help_json() -> dict:
         },
         "config show": {
             "description": "Display current configuration (secrets redacted).",
-            "usage": "mem0 config show",
+            "usage": "memgo config show",
             "options": {"--output, -o": "Output format: text, json."},
         },
         "config get": {
             "description": "Get a configuration value.",
-            "usage": "mem0 config get <key>",
+            "usage": "memgo config get <key>",
             "arguments": {
                 "key": {"description": "Config key (e.g. platform.api_key).", "required": True}
             },
         },
         "config set": {
             "description": "Set a configuration value.",
-            "usage": "mem0 config set <key> <value>",
+            "usage": "memgo config set <key> <value>",
             "arguments": {
                 "key": {"description": "Config key (e.g. platform.api_key).", "required": True},
                 "value": {"description": "Value to set.", "required": True},
@@ -1292,12 +1292,12 @@ def _build_help_json() -> dict:
             "subcommands": {
                 "list": {
                     "description": "List recent background processing events.",
-                    "usage": "mem0 event list [OPTIONS]",
+                    "usage": "memgo event list [OPTIONS]",
                     "options": {"--output, -o": "Output format: table, json."},
                 },
                 "status": {
                     "description": "Check the status of a specific background event.",
-                    "usage": "mem0 event status <event_id> [OPTIONS]",
+                    "usage": "memgo event status <event_id> [OPTIONS]",
                     "arguments": {
                         "event_id": {"description": "Event ID to inspect.", "required": True}
                     },
@@ -1310,7 +1310,7 @@ def _build_help_json() -> dict:
             "subcommands": {
                 "list": {
                     "description": "List all entities of a given type.",
-                    "usage": "mem0 entity list <entity_type> [OPTIONS]",
+                    "usage": "memgo entity list <entity_type> [OPTIONS]",
                     "arguments": {
                         "entity_type": {
                             "description": "Entity type: users, agents, apps, runs.",
@@ -1321,7 +1321,7 @@ def _build_help_json() -> dict:
                 },
                 "delete": {
                     "description": "Delete an entity and ALL its memories (cascade).",
-                    "usage": "mem0 entity delete [OPTIONS]",
+                    "usage": "memgo entity delete [OPTIONS]",
                     "options": {
                         "--user-id, -u": "User ID.",
                         "--agent-id": "Agent ID.",
@@ -1335,8 +1335,8 @@ def _build_help_json() -> dict:
             },
         },
         "init": {
-            "description": "Interactive setup wizard for mem0 CLI.",
-            "usage": "mem0 init",
+            "description": "Interactive setup wizard for memgo CLI.",
+            "usage": "memgo init",
             "options": {
                 "--api-key": "API key (skip prompt).",
                 "--user-id, -u": "Default user ID (skip prompt).",
@@ -1344,25 +1344,25 @@ def _build_help_json() -> dict:
         },
         "status": {
             "description": "Check connectivity and authentication.",
-            "usage": "mem0 status [OPTIONS]",
+            "usage": "memgo status [OPTIONS]",
             "options": {"--output, -o": "Output format: text, json."},
         },
     }
     return {
-        "name": "mem0",
+        "name": "memgo",
         "version": __version__,
         "description": "The Memory Layer for AI Agents",
         "commands": commands,
         "global_options": {
-            "--api-key": "Override API key (env: MEM0_API_KEY).",
+            "--api-key": "Override API key (env: MEMGO_API_KEY).",
             "--base-url": "Override API base URL.",
             "--json / --agent": "Output as JSON for agent/programmatic use.",
             "--help": "Show help for a command.",
             "--version": "Show version and exit.",
         },
         "help": {
-            "human": "mem0 <command> --help    Get help for a command",
-            "machine": "mem0 help --json         Machine-readable help (for LLM agents)",
+            "human": "memgo <command> --help    Get help for a command",
+            "machine": "memgo help --json         Machine-readable help (for LLM agents)",
         },
     }
 
@@ -1374,18 +1374,18 @@ def help(
     """Show help. Use --json for machine-readable output (for LLM agents).
 
     Examples:
-      mem0 help
-      mem0 help --json
+      memgo help
+      memgo help --json
     """
-    from mem0_cli.state import is_agent_mode
+    from memgo_cli.state import is_agent_mode
 
     if json or is_agent_mode():
         console.print_json(_json.dumps(_build_help_json()))
     else:
         console.print(
-            f"[{BRAND_COLOR}]◆ mem0 CLI[/] v{__version__} — The Memory Layer for AI Agents\n"
+            f"[{BRAND_COLOR}]◆ memgo CLI[/] v{__version__} — The Memory Layer for AI Agents\n"
         )
-        console.print("Usage: mem0 <command> [OPTIONS]\n")
+        console.print("Usage: memgo <command> [OPTIONS]\n")
         console.print("[bold]Commands:[/]")
         console.print("  add              Add a memory from text, messages, file, or stdin")
         console.print("  search           Query your memory store (semantic, keyword, hybrid)")
@@ -1400,8 +1400,8 @@ def help(
         console.print("  init             Interactive setup wizard")
         console.print("  status           Check connectivity and authentication")
         console.print()
-        console.print("  mem0 <command> --help    Get help for a command")
-        console.print("  mem0 help --json         Machine-readable help (for LLM agents)")
+        console.print("  memgo <command> --help    Get help for a command")
+        console.print("  memgo help --json         Machine-readable help (for LLM agents)")
         console.print()
 
 
@@ -1416,13 +1416,13 @@ def main() -> None:
     import sys
 
     # Allow --json/--agent anywhere in the command line (not just before subcommand).
-    # Special case: `mem0 init --agent` is a subcommand flag (Agent Mode bootstrap)
+    # Special case: `memgo init --agent` is a subcommand flag (Agent Mode bootstrap)
     # consumed by init_cmd, not a global JSON-output toggle — leave it in argv.
     argv_rest = sys.argv[1:]
     is_init = "init" in argv_rest
     _global_flags = {"--json"} if is_init else {"--json", "--agent"}
     if any(a in _global_flags for a in argv_rest):
-        from mem0_cli.state import set_agent_mode
+        from memgo_cli.state import set_agent_mode
 
         set_agent_mode(True)
         sys.argv = [sys.argv[0]] + [a for a in argv_rest if a not in _global_flags]
@@ -1434,7 +1434,7 @@ def main() -> None:
         # primary output. In JSON/agent mode the notice is folded into the
         # envelope by format_json_envelope, so skip the stderr banner there
         # to avoid duplicate output.
-        from mem0_cli.state import is_agent_mode, take_notice
+        from memgo_cli.state import is_agent_mode, take_notice
 
         notice = take_notice()
         if notice and not is_agent_mode():

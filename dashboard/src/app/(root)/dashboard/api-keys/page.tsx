@@ -208,7 +208,7 @@ export default function ApiKeysPage() {
           id="api-keys-3"
           message="Managing multiple apps? Cloud offers project-based isolation."
           ctaLabel="Explore Cloud"
-          ctaUrl="https://app.mem0.ai?utm_source=oss&utm_medium=dashboard-api-keys"
+          ctaUrl="https://app.memgo.ai?utm_source=oss&utm_medium=dashboard-api-keys"
           variant="cloud"
         />
       )}
@@ -218,7 +218,7 @@ export default function ApiKeysPage() {
       ) : keys.length === 0 ? (
         <EmptyState
           title="No API keys yet"
-          description="Create your first API key to start using the Mem0 API."
+          description="Create your first API key to start using the MemGo API."
         />
       ) : (
         <Card className="border-memBorder-primary overflow-hidden">

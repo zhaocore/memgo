@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import { DashboardClientLayout } from "./dashboard-client-layout";
 
 export const metadata: Metadata = {
-  title: "Dashboard | Mem0",
-  description: "Mem0 Dashboard",
+  title: "Dashboard | MemGo",
+  description: "MemGo Dashboard",
 };
 
 export default function DashboardLayout({

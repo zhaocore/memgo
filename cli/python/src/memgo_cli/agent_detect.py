@@ -1,6 +1,6 @@
 """Detect whether the CLI is being invoked from inside an AI-agent context.
 
-Used by `mem0 init` to auto-enter Agent Mode (Rule 3 bootstrap) when an
+Used by `memgo init` to auto-enter Agent Mode (Rule 3 bootstrap) when an
 agent runtime env var is present. The return value is a context **trigger
 only** — the canonical agent identity is self-declared by the agent via
 ``--agent-caller <name>`` (Proof Editor-style) and never sniffed from env

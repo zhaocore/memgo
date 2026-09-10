@@ -42,13 +42,13 @@ func getBackendAndConfig(apiKey, baseURL string) (*Config, Backend, error) {
 		cfg.Platform.BaseURL = baseURL
 	}
 	if cfg.Platform.APIKey == "" {
-		printError("No API key configured.", "Run 'memgo init' or set MEM0_API_KEY environment variable.")
+		printError("No API key configured.", "Run 'memgo init' or set MEMGO_API_KEY environment variable.")
 		return nil, nil, errExit
 	}
 	backend := GetBackend(cfg)
 	if _, err := backend.Ping(timeout5s()); err != nil {
 		if ae, ok := err.(*APIError); ok && ae.Kind == "auth" {
-			printError("Invalid or expired API key.", "Run 'memgo init' or set MEM0_API_KEY environment variable.")
+			printError("Invalid or expired API key.", "Run 'memgo init' or set MEMGO_API_KEY environment variable.")
 			return nil, nil, errExit
 		}
 		printInfo("Could not validate API key (network issue). Proceeding anyway.")

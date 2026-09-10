@@ -6,7 +6,7 @@ from io import StringIO
 
 from rich.console import Console
 
-from mem0_cli.output import (
+from memgo_cli.output import (
     format_add_result,
     format_memories_table,
     format_memories_text,

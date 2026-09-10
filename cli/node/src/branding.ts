@@ -1,5 +1,5 @@
 /**
- * Branding and ASCII art for mem0 CLI.
+ * Branding and ASCII art for memgo CLI.
  */
 
 import chalk from "chalk";
@@ -16,7 +16,7 @@ export const LOGO = `
 ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝ ╚═════╝      ╚═════╝╚══════╝╚═╝
 `;
 
-export const LOGO_MINI = "◆ mem0";
+export const LOGO_MINI = "◆ memgo";
 export const TAGLINE = "The Memory Layer for AI Agents";
 
 export const BRAND_COLOR = "#8b5cf6";
@@ -96,7 +96,7 @@ export function printError(message: string, hint?: string): void {
 	const resolvedHint =
 		hint ??
 		(message.includes("Authentication failed")
-			? `Run ${brand("mem0 init")} to reconfigure your API key · https://app.mem0.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-node`
+			? `Run ${brand("memgo init")} to reconfigure your API key · https://app.memgo.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-node`
 			: undefined);
 	if (resolvedHint) {
 		console.error(`  ${dim(resolvedHint)}`);

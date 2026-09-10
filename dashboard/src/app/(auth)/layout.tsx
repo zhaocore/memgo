@@ -6,8 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/lib/auth";
 
 export const metadata = {
-  title: "Mem0 - Log in",
-  description: "Log in to Mem0",
+  title: "MemGo - Log in",
+  description: "Log in to MemGo",
 };
 
 export default function AuthLayout({

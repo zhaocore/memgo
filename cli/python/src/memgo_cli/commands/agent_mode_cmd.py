@@ -12,20 +12,20 @@ import typer
 from rich.console import Console
 from rich.prompt import Prompt
 
-from mem0_cli.branding import (
+from memgo_cli.branding import (
     BRAND_COLOR,
     DIM_COLOR,
     print_error,
     print_success,
 )
-from mem0_cli.config import Mem0Config, save_config
+from memgo_cli.config import MemGoConfig, save_config
 
 console = Console()
 err_console = Console(stderr=True)
 
 _SOURCE_HEADERS = {
-    "X-Mem0-Source": "cli",
-    "X-Mem0-Client-Language": "python",
+    "X-MemGo-Source": "cli",
+    "X-MemGo-Client-Language": "python",
 }
 
 
@@ -50,7 +50,7 @@ def _validate_envelope(envelope: Any) -> None:
 
 
 def bootstrap_via_backend(
-    config: Mem0Config,
+    config: MemGoConfig,
     *,
     source: str | None = None,
     agent_caller: str | None = None,
@@ -58,17 +58,17 @@ def bootstrap_via_backend(
     """POST /api/v1/auth/agent_mode/ and mutate config in place.
 
     Args:
-        config: Mem0Config mutated in place with the new platform values.
+        config: MemGoConfig mutated in place with the new platform values.
         source: ``--source`` flag passthrough (analytics tag, free-form).
         agent_caller: Self-declared agent identity passed via ``--agent-caller``
             (e.g. ``claude-code``, ``cursor``). May be None when the caller
             omitted the flag; the agent can backfill later via
-            ``mem0 identify <name>``. Sent to the backend in the request body
+            ``memgo identify <name>``. Sent to the backend in the request body
             and saved into ``platform.agent_caller`` for local introspection.
 
     Raises typer.Exit(1) on failure.
     """
-    base_url = (config.platform.base_url or "https://api.mem0.ai").rstrip("/")
+    base_url = (config.platform.base_url or "https://api.memgo.ai").rstrip("/")
     body: dict[str, Any] = {}
     if source:
         body["source"] = source
@@ -83,7 +83,7 @@ def bootstrap_via_backend(
                 json=body,
             )
     except httpx.HTTPError as exc:
-        print_error(err_console, f"Network error contacting Mem0: {exc}")
+        print_error(err_console, f"Network error contacting MemGo: {exc}")
         raise typer.Exit(1) from exc
 
     if resp.status_code == 429:
@@ -125,22 +125,22 @@ def bootstrap_via_backend(
     save_config(config)
 
     print_success(console, f"Agent Mode active. Default user_id: {envelope['default_user_id']}")
-    notice = envelope.get("mem0_notice")
+    notice = envelope.get("memgo_notice")
     if notice:
         console.print(f"\n[yellow]🔔 {notice}[/yellow]\n")
     else:
         # Fallback if the backend hasn't deployed the unified notice yet.
-        claim_cmd = envelope.get("claim_command", "mem0 init --email <your-email>")
+        claim_cmd = envelope.get("claim_command", "memgo init --email <your-email>")
         console.print(f"  [{DIM_COLOR}]To claim this account later: {claim_cmd}[/]")
 
     if not agent_caller:
         console.print(
             f"  [{DIM_COLOR}]If you are an AI agent, identify yourself: "
-            f"`mem0 identify <your-name>` (e.g. claude-code, cursor).[/]"
+            f"`memgo identify <your-name>` (e.g. claude-code, cursor).[/]"
         )
 
 
-def claim_via_otp(config: Mem0Config, *, email: str, code: str | None = None) -> None:
+def claim_via_otp(config: MemGoConfig, *, email: str, code: str | None = None) -> None:
     """Claim an existing Agent Mode account via OTP — no browser, no polling.
 
     Reuses the standard email-code flow (`/api/v1/auth/email_code/` then
@@ -151,11 +151,11 @@ def claim_via_otp(config: Mem0Config, *, email: str, code: str | None = None) ->
     On success: flips `platform.agent_mode=false`, sets `claimed_at`, stamps
     `user_email`. The api_key value itself never changes.
     """
-    base_url = (config.platform.base_url or "https://api.mem0.ai").rstrip("/")
+    base_url = (config.platform.base_url or "https://api.memgo.ai").rstrip("/")
     if not config.platform.api_key or not config.platform.agent_mode:
         print_error(
             err_console,
-            "This command requires an active Agent Mode config. Run `mem0 init` first.",
+            "This command requires an active Agent Mode config. Run `memgo init` first.",
         )
         raise typer.Exit(1)
 
@@ -186,7 +186,7 @@ def claim_via_otp(config: Mem0Config, *, email: str, code: str | None = None) ->
                 print_error(
                     err_console,
                     "No --code provided and terminal is non-interactive.",
-                    hint=f"Re-run: mem0 init --email {email} --code <code>",
+                    hint=f"Re-run: memgo init --email {email} --code <code>",
                 )
                 raise typer.Exit(1)
 
@@ -218,7 +218,7 @@ def claim_via_otp(config: Mem0Config, *, email: str, code: str | None = None) ->
         print_error(err_console, f"Claim failed: {detail}")
         if code_str == "email_already_claimed":
             console.print(
-                f"  [{DIM_COLOR}]Tip: this email already has a Mem0 account. Sign in at app.mem0.ai with your existing credentials.[/]"
+                f"  [{DIM_COLOR}]Tip: this email already has a MemGo account. Sign in at app.memgo.ai with your existing credentials.[/]"
             )
         raise typer.Exit(1)
 

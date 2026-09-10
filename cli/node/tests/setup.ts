@@ -1,5 +1,5 @@
 /**
- * Shared test helpers and mock factories for mem0 CLI tests.
+ * Shared test helpers and mock factories for memgo CLI tests.
  */
 
 import { vi } from "vitest";
@@ -64,7 +64,7 @@ export function createMockBackend(): Backend {
     status: vi.fn().mockResolvedValue({
       connected: true,
       backend: "platform",
-      base_url: "https://api.mem0.ai",
+      base_url: "https://api.memgo.ai",
     }),
     deleteEntities: vi.fn().mockResolvedValue({ message: "Entity deleted" }),
     entities: vi.fn().mockResolvedValue([

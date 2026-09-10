@@ -1,9 +1,9 @@
-"""Configuration management for mem0 CLI.
+"""Configuration management for memgo CLI.
 
 Config precedence (highest to lowest):
 1. CLI flags (--api-key, --base-url, etc.)
-2. Environment variables (MEM0_API_KEY, etc.)
-3. Config file (~/.mem0/config.json)
+2. Environment variables (MEMGO_API_KEY, etc.)
+3. Config file (~/.memgo/config.json)
 4. Defaults
 """
 
@@ -16,10 +16,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-CONFIG_DIR = Path.home() / ".mem0"
+CONFIG_DIR = Path.home() / ".memgo"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
-DEFAULT_BASE_URL = "https://api.mem0.ai"
+DEFAULT_BASE_URL = "https://api.memgo.ai"
 CONFIG_VERSION = 1
 
 
@@ -54,12 +54,12 @@ class TelemetryConfig:
 @dataclass
 class AgentRushConfig:
     # ISO timestamp the human acknowledged the "memories are public" warning.
-    # Empty until first interactive `mem0 agent-rush add`.
+    # Empty until first interactive `memgo agent-rush add`.
     acknowledged_at: str = ""
 
 
 @dataclass
-class Mem0Config:
+class MemGoConfig:
     version: int = CONFIG_VERSION
     defaults: DefaultsConfig = field(default_factory=DefaultsConfig)
     platform: PlatformConfig = field(default_factory=PlatformConfig)
@@ -79,15 +79,15 @@ SHORT_KEY_ALIASES: dict[str, str] = {
 
 
 def ensure_config_dir() -> Path:
-    """Create ~/.mem0 directory with secure permissions if it doesn't exist."""
+    """Create ~/.memgo directory with secure permissions if it doesn't exist."""
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     os.chmod(CONFIG_DIR, stat.S_IRWXU)  # 0700
     return CONFIG_DIR
 
 
-def load_config() -> Mem0Config:
+def load_config() -> MemGoConfig:
     """Load config from file, applying env var overrides."""
-    config = Mem0Config()
+    config = MemGoConfig()
 
     if CONFIG_FILE.exists():
         with open(CONFIG_FILE) as f:
@@ -117,34 +117,34 @@ def load_config() -> Mem0Config:
         config.agent_rush.acknowledged_at = agent_rush.get("acknowledged_at", "")
 
     # Environment variable overrides
-    env_key = os.environ.get("MEM0_API_KEY")
+    env_key = os.environ.get("MEMGO_API_KEY")
     if env_key:
         config.platform.api_key = env_key
 
-    env_base = os.environ.get("MEM0_BASE_URL")
+    env_base = os.environ.get("MEMGO_BASE_URL")
     if env_base:
         config.platform.base_url = env_base
 
-    env_user_id = os.environ.get("MEM0_USER_ID")
+    env_user_id = os.environ.get("MEMGO_USER_ID")
     if env_user_id:
         config.defaults.user_id = env_user_id
 
-    env_agent_id = os.environ.get("MEM0_AGENT_ID")
+    env_agent_id = os.environ.get("MEMGO_AGENT_ID")
     if env_agent_id:
         config.defaults.agent_id = env_agent_id
 
-    env_app_id = os.environ.get("MEM0_APP_ID")
+    env_app_id = os.environ.get("MEMGO_APP_ID")
     if env_app_id:
         config.defaults.app_id = env_app_id
 
-    env_run_id = os.environ.get("MEM0_RUN_ID")
+    env_run_id = os.environ.get("MEMGO_RUN_ID")
     if env_run_id:
         config.defaults.run_id = env_run_id
 
     return config
 
 
-def save_config(config: Mem0Config) -> None:
+def save_config(config: MemGoConfig) -> None:
     """Write config to disk with secure permissions."""
     ensure_config_dir()
 
@@ -186,7 +186,7 @@ def save_config(config: Mem0Config) -> None:
     # write, never blocked by plugin-state issues.
     if config.platform.api_key:
         try:
-            from mem0_cli.plugin_sync import sync_api_key
+            from memgo_cli.plugin_sync import sync_api_key
 
             sync_api_key(config.platform.api_key)
         except Exception:
@@ -202,7 +202,7 @@ def redact_key(key: str) -> str:
     return key[:4] + "..." + key[-4:]
 
 
-def get_nested_value(config: Mem0Config, dotted_key: str) -> Any:
+def get_nested_value(config: MemGoConfig, dotted_key: str) -> Any:
     """Get a config value by dotted path, e.g. 'platform.api_key' or short form 'api_key'."""
     dotted_key = SHORT_KEY_ALIASES.get(dotted_key, dotted_key)
     parts = dotted_key.split(".")
@@ -215,7 +215,7 @@ def get_nested_value(config: Mem0Config, dotted_key: str) -> Any:
     return obj
 
 
-def set_nested_value(config: Mem0Config, dotted_key: str, value: str) -> bool:
+def set_nested_value(config: MemGoConfig, dotted_key: str, value: str) -> bool:
     """Set a config value by dotted path. Returns True on success."""
     dotted_key = SHORT_KEY_ALIASES.get(dotted_key, dotted_key)
     parts = dotted_key.split(".")

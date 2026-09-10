@@ -4,7 +4,7 @@ Sends fire-and-forget events to PostHog by spawning a detached subprocess
 (telemetry_sender.py). The parent CLI process exits immediately; the
 subprocess handles email resolution, caching, and the HTTP POST.
 
-Disable with: MEM0_TELEMETRY=false
+Disable with: MEMGO_TELEMETRY=false
 """
 
 from __future__ import annotations
@@ -24,18 +24,18 @@ POSTHOG_HOST = "https://us.i.posthog.com/i/v0/e/"
 
 
 def _is_telemetry_enabled() -> bool:
-    val = os.environ.get("MEM0_TELEMETRY", "true").lower()
+    val = os.environ.get("MEMGO_TELEMETRY", "true").lower()
     return val not in ("false", "0", "no")
 
 
 def _get_or_create_anonymous_id() -> str:
     """Return a persistent per-machine anonymous ID, generating one if needed.
 
-    Stored in ~/.mem0/config.json under `telemetry.anonymous_id` so that
+    Stored in ~/.memgo/config.json under `telemetry.anonymous_id` so that
     repeat runs on the same machine share one PostHog identity instead of
     collapsing into a single shared fallback string.
     """
-    from mem0_cli.config import load_config, save_config
+    from memgo_cli.config import load_config, save_config
 
     config = load_config()
     if config.telemetry.anonymous_id:
@@ -55,7 +55,7 @@ def _get_distinct_id() -> str:
     persistent per-machine anonymous ID.
     """
     try:
-        from mem0_cli.config import load_config
+        from memgo_cli.config import load_config
 
         config = load_config()
         if config.platform.user_email:
@@ -85,8 +85,8 @@ def capture_event(
         return
 
     try:
-        from mem0_cli import __version__
-        from mem0_cli.config import CONFIG_FILE, load_config, save_config
+        from memgo_cli import __version__
+        from memgo_cli.config import CONFIG_FILE, load_config, save_config
 
         config = load_config()
         distinct_id = pre_resolved_email or _get_distinct_id()
@@ -131,14 +131,14 @@ def capture_event(
             "payload": payload,
             "posthog_host": POSTHOG_HOST,
             "needs_email": not distinct_id or "@" not in distinct_id,
-            "mem0_api_key": config.platform.api_key or "",
-            "mem0_base_url": config.platform.base_url or "https://api.mem0.ai",
+            "memgo_api_key": config.platform.api_key or "",
+            "memgo_base_url": config.platform.base_url or "https://api.memgo.ai",
             "config_path": str(CONFIG_FILE),
             "anon_distinct_id_to_alias": anon_id_to_alias,
         }
 
         child = subprocess.Popen(
-            [sys.executable, "-m", "mem0_cli.telemetry_sender"],
+            [sys.executable, "-m", "memgo_cli.telemetry_sender"],
             stdin=subprocess.PIPE,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,

@@ -1,5 +1,4 @@
 // Package vectorstore: VectorStore 接口与 pgvector 实现。
-// 对齐上游 mem0/vector_stores/base.py 接口面 + mem0/vector_stores/pgvector.py 行为
 // (余弦距离 <=>, score=max(0,1-d), payload JSONB 过滤, list 返回嵌套一层)。
 package vectorstore
 

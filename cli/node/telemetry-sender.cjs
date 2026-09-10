@@ -8,7 +8,7 @@
  * of the parent CLI process. It:
  *
  * 1. Resolves the user's email via /v1/ping/ if not already cached
- * 2. Caches the email in ~/.mem0/config.json for future runs
+ * 2. Caches the email in ~/.memgo/config.json for future runs
  * 3. Sends the PostHog event
  *
  * All errors are silently swallowed — this process must never produce output
@@ -81,9 +81,9 @@ function httpsRequest(url, method, headers, body) {
 
 async function resolveAndCacheEmail(ctx, payload) {
 	try {
-		const pingUrl = ctx.mem0BaseUrl.replace(/\/+$/, "") + "/v1/ping/";
+		const pingUrl = ctx.memgoBaseUrl.replace(/\/+$/, "") + "/v1/ping/";
 		const data = await httpsRequest(pingUrl, "GET", {
-			Authorization: "Token " + ctx.mem0ApiKey,
+			Authorization: "Token " + ctx.memgoApiKey,
 			"Content-Type": "application/json",
 		});
 		if (data.user_email) {
@@ -137,7 +137,7 @@ async function main() {
 	const ctx = await loadContext();
 	const payload = ctx.payload;
 
-	if (ctx.needsEmail && ctx.mem0ApiKey) {
+	if (ctx.needsEmail && ctx.memgoApiKey) {
 		await resolveAndCacheEmail(ctx, payload);
 	}
 

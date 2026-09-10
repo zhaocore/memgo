@@ -1,13 +1,13 @@
 """Standalone telemetry sender — runs as a detached subprocess.
 
-Usage: python -m mem0_cli.telemetry_sender   (JSON context is read from stdin;
+Usage: python -m memgo_cli.telemetry_sender   (JSON context is read from stdin;
 a single argv argument is still accepted as a legacy fallback)
 
 This module is spawned by telemetry.capture_event() and runs independently
 of the parent CLI process. It:
 
 1. Resolves the user's email via /v1/ping/ if not already cached
-2. Caches the email in ~/.mem0/config.json for future runs
+2. Caches the email in ~/.memgo/config.json for future runs
 3. Sends the PostHog event
 
 All errors are silently swallowed — this process must never produce output
@@ -35,7 +35,7 @@ def main() -> None:
     ctx = _load_context()
     payload = ctx["payload"]
 
-    if ctx.get("needs_email") and ctx.get("mem0_api_key"):
+    if ctx.get("needs_email") and ctx.get("memgo_api_key"):
         _resolve_and_cache_email(ctx, payload)
 
     # Fire $identify *after* email resolution so PostHog links the stored
@@ -66,11 +66,11 @@ def _send_identify_event(ctx: dict, payload: dict, anon_id: str) -> None:
 def _resolve_and_cache_email(ctx: dict, payload: dict) -> None:
     """Call /v1/ping/ to get the user's email, update the payload, and cache it."""
     try:
-        ping_url = ctx["mem0_base_url"].rstrip("/") + "/v1/ping/"
+        ping_url = ctx["memgo_base_url"].rstrip("/") + "/v1/ping/"
         req = urllib.request.Request(
             ping_url,
             headers={
-                "Authorization": "Token " + ctx["mem0_api_key"],
+                "Authorization": "Token " + ctx["memgo_api_key"],
                 "Content-Type": "application/json",
             },
         )

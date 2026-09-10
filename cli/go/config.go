@@ -1,5 +1,5 @@
 // Package cli: memgo CLI (第三实现, 对齐 cli/python 命令面)。
-// 配置文件路径与 schema 对齐 ~/.mem0/config.json (与 python/node CLI 共享互认)。
+// 配置文件路径与 schema 对齐 ~/.memgo/config.json (与 python/node CLI 共享互认)。
 package cli
 
 import (
@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 )
 
-// Config 对齐 Mem0Config dataclass (schema 与 python CLI 一致)。
+// Config 对齐 MemGoConfig dataclass (schema 与 python CLI 一致)。
 type Config struct {
 	Version   int            `json:"version"`
 	Defaults  DefaultsConfig `json:"defaults"`
@@ -45,7 +45,7 @@ type AgentRushCfg struct {
 }
 
 // DefaultBaseURL 对齐 python DEFAULT_BASE_URL。
-const DefaultBaseURL = "https://api.mem0.ai"
+const DefaultBaseURL = "https://api.memgo.ai"
 
 // ConfigFile 路径 (python 同款)。
 func ConfigFile() string {
@@ -53,7 +53,7 @@ func ConfigFile() string {
 	if err != nil {
 		return "config.json"
 	}
-	return filepath.Join(home, ".mem0", "config.json")
+	return filepath.Join(home, ".memgo", "config.json")
 }
 
 // LoadConfig 读配置 + env 覆盖 (优先级: flag > env > file > 默认)。
@@ -66,22 +66,22 @@ func LoadConfig() *Config {
 			cfg.Platform.BaseURL = DefaultBaseURL
 		}
 	}
-	if v := os.Getenv("MEM0_API_KEY"); v != "" {
+	if v := os.Getenv("MEMGO_API_KEY"); v != "" {
 		cfg.Platform.APIKey = v
 	}
-	if v := os.Getenv("MEM0_BASE_URL"); v != "" {
+	if v := os.Getenv("MEMGO_BASE_URL"); v != "" {
 		cfg.Platform.BaseURL = v
 	}
-	if v := os.Getenv("MEM0_USER_ID"); v != "" {
+	if v := os.Getenv("MEMGO_USER_ID"); v != "" {
 		cfg.Defaults.UserID = v
 	}
-	if v := os.Getenv("MEM0_AGENT_ID"); v != "" {
+	if v := os.Getenv("MEMGO_AGENT_ID"); v != "" {
 		cfg.Defaults.AgentID = v
 	}
-	if v := os.Getenv("MEM0_APP_ID"); v != "" {
+	if v := os.Getenv("MEMGO_APP_ID"); v != "" {
 		cfg.Defaults.AppID = v
 	}
-	if v := os.Getenv("MEM0_RUN_ID"); v != "" {
+	if v := os.Getenv("MEMGO_RUN_ID"); v != "" {
 		cfg.Defaults.RunID = v
 	}
 	return cfg

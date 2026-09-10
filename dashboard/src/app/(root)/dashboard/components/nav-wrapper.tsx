@@ -35,7 +35,7 @@ export default function NavWrapper() {
   );
   const { user, logout } = useAuth();
 
-  const instanceName = process.env.NEXT_PUBLIC_INSTANCE_NAME || "Mem0";
+  const instanceName = process.env.NEXT_PUBLIC_INSTANCE_NAME || "MemGo";
 
   const handleToggle = useCallback(() => {
     dispatch(toggleSidebar());
@@ -157,7 +157,7 @@ export default function NavWrapper() {
           <Tooltip>
             <TooltipTrigger asChild>
               <a
-                href="https://docs.mem0.ai/open-source/overview"
+                href="https://docs.memgo.ai/open-source/overview"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center text-onSurface-default-tertiary hover:text-onSurface-default-secondary"

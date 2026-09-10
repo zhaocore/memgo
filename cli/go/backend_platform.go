@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// PlatformBackend 对齐 cli/python backend/platform.py (api.mem0.ai, Token 鉴权, timeout 30s)。
+// PlatformBackend 对齐 cli/python backend/platform.py (api.memgo.ai, Token 鉴权, timeout 30s)。
 type PlatformBackend struct {
 	baseURL string
 	apiKey  string
@@ -30,7 +30,7 @@ func NewPlatformBackend(cfg *Config) *PlatformBackend {
 // SetAgentMode 切 Caller-Type 头。
 func (b *PlatformBackend) SetAgentMode(v bool) { b.agent = v }
 
-// headers 每请求组装 (X-Mem0-Caller-Type 随 agent 态变化)。
+// headers 每请求组装 (X-MemGo-Caller-Type 随 agent 态变化)。
 func (b *PlatformBackend) headers(ct string) map[string]string {
 	caller := "user"
 	if b.agent {
@@ -39,14 +39,14 @@ func (b *PlatformBackend) headers(ct string) map[string]string {
 	return map[string]string{
 		"Authorization":          "Token " + b.apiKey,
 		"Content-Type":           "application/json",
-		"X-Mem0-Source":          "cli",
-		"X-Mem0-Client-Language": "go",
-		"X-Mem0-Client-Version":  Version,
-		"X-Mem0-Caller-Type":     caller,
+		"X-MemGo-Source":          "cli",
+		"X-MemGo-Client-Language": "go",
+		"X-MemGo-Client-Version":  Version,
+		"X-MemGo-Caller-Type":     caller,
 	}
 }
 
-// request 对齐 _request: 401/404/400 分类, mem0_notice 捕获。
+// request 对齐 _request: 401/404/400 分类, memgo_notice 捕获。
 func (b *PlatformBackend) request(ctx context.Context, method, path string, payload any, query url.Values, timeout time.Duration) (any, error) {
 	var body []byte
 	if payload != nil {
@@ -93,9 +93,9 @@ func (b *PlatformBackend) request(ctx context.Context, method, path string, payl
 		return nil, errAPI(fmt.Sprintf("响应非 JSON: %s", string(raw)))
 	}
 	if m, ok := data.(map[string]any); ok {
-		if n, has := m["mem0_notice"]; has {
+		if n, has := m["memgo_notice"]; has {
 			captureNotice(fmt.Sprintf("%v", n))
-			delete(m, "mem0_notice")
+			delete(m, "memgo_notice")
 		}
 	}
 	return data, nil

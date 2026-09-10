@@ -23,12 +23,12 @@ let origConfigFile: string;
 let tmpDir: string;
 
 beforeEach(() => {
-  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mem0-test-"));
+  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "memgo-test-"));
   // Monkey-patch the module-level constants
   // We'll use env vars and direct file manipulation instead
-  // Clear MEM0_ env vars
+  // Clear MEMGO_ env vars
   for (const key of Object.keys(process.env)) {
-    if (key.startsWith("MEM0_")) {
+    if (key.startsWith("MEMGO_")) {
       delete process.env[key];
     }
   }
@@ -61,7 +61,7 @@ describe("redactKey", () => {
 describe("createDefaultConfig", () => {
   it("has correct defaults", () => {
     const config = createDefaultConfig();
-    expect(config.platform.baseUrl).toBe("https://api.mem0.ai");
+    expect(config.platform.baseUrl).toBe("https://api.memgo.ai");
     expect(config.platform.apiKey).toBe("");
     expect(config.defaults.userId).toBe("");
   });

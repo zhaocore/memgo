@@ -5,11 +5,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 
-from mem0_cli.config import Mem0Config
+from memgo_cli.config import MemGoConfig
 
 
 class Backend(ABC):
-    """Abstract interface for mem0 backends."""
+    """Abstract interface for memgo backends."""
 
     @abstractmethod
     def add(
@@ -124,8 +124,8 @@ class Backend(ABC):
     def get_event(self, event_id: str) -> dict: ...
 
 
-def get_backend(config: Mem0Config) -> Backend:
+def get_backend(config: MemGoConfig) -> Backend:
     """Return the Platform backend."""
-    from mem0_cli.backend.platform import PlatformBackend
+    from memgo_cli.backend.platform import PlatformBackend
 
     return PlatformBackend(config.platform)

@@ -1,5 +1,4 @@
 // Package config 提供 MemoryConfig v1.1 的解析/校验与 deep-merge/redact 工具。
-// 对齐上游: mem0/configs/base.py + provider 配置默认值 + server 的 deepmerge/redact 语义。
 package config
 
 // Version 常量 (Python MemoryConfig.version 默认)。

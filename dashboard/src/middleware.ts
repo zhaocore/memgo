@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const hasRefreshToken = request.cookies.has("mem0_refresh_token");
+  const hasRefreshToken = request.cookies.has("memgo_refresh_token");
 
   if (pathname === "/" || pathname === "/login" || pathname === "/setup") {
     try {

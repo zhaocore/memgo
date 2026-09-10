@@ -10,7 +10,7 @@ import (
 func NewRootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:           "memgo",
-		Short:         "◆ Mem0 CLI v" + Version + " · Go\n\n   The Memory Layer for AI Agents",
+		Short:         "◆ memgo CLI v" + Version + " · Go\n\n   The Memory Layer for AI Agents",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}

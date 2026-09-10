@@ -1,5 +1,5 @@
 /**
- * Parity tests for `mem0 init --agent` (Agent Mode bootstrap).
+ * Parity tests for `memgo init --agent` (Agent Mode bootstrap).
  *
  * Mirror of `cli/python/tests/test_agent_mode.py` — both files MUST stay
  * in sync so that the Python and Node CLIs expose an identical surface
@@ -23,7 +23,7 @@ function run(
 ): { stdout: string; stderr: string; exitCode: number } {
   const env = { ...process.env };
   for (const key of Object.keys(env)) {
-    if (key.startsWith("MEM0_")) delete env[key];
+    if (key.startsWith("MEMGO_")) delete env[key];
   }
   if (opts.home) env.HOME = opts.home;
   if (opts.env) Object.assign(env, opts.env);
@@ -46,7 +46,7 @@ function run(
 }
 
 function cleanHome(): string {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "mem0-test-"));
+  return fs.mkdtempSync(path.join(os.tmpdir(), "memgo-test-"));
 }
 
 describe("init flag surface", () => {
@@ -83,7 +83,7 @@ describe("init flag surface", () => {
 
 describe("argv preprocessing — --agent reaches init subcommand", () => {
   // Regression for the bug where the global --agent JSON-alias swallowed
-  // the init-level --agent flag, making `mem0 init --agent` behave like
+  // the init-level --agent flag, making `memgo init --agent` behave like
   // the plain interactive wizard.
 
   it("init --agent triggers bootstrap branch (not the wizard)", () => {
@@ -91,7 +91,7 @@ describe("argv preprocessing — --agent reaches init subcommand", () => {
     const result = run(["init", "--agent"], {
       home,
       env: {
-        MEM0_BASE_URL: "http://127.0.0.1:1", // blackhole
+        MEMGO_BASE_URL: "http://127.0.0.1:1", // blackhole
         FORCE_COLOR: "0",
       },
     });
@@ -116,7 +116,7 @@ describe("JSON envelope on network failure", () => {
     const result = run(["init", "--agent", "--json"], {
       home,
       env: {
-        MEM0_BASE_URL: "http://127.0.0.1:1",
+        MEMGO_BASE_URL: "http://127.0.0.1:1",
         FORCE_COLOR: "0",
       },
     });
@@ -130,7 +130,7 @@ describe("JSON envelope on network failure", () => {
 });
 
 describe("top-level help lists init", () => {
-  // `mem0 --help` must list `init` so agents walking the top-level help
+  // `memgo --help` must list `init` so agents walking the top-level help
   // can discover the Agent Mode entrypoint without prior knowledge.
 
   it("--help lists init", () => {

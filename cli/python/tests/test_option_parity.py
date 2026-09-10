@@ -5,7 +5,7 @@ from pathlib import Path
 
 import typer.main
 
-from mem0_cli.app import app
+from memgo_cli.app import app
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 OPENAPI_PATH = REPO_ROOT / "docs" / "openapi.json"

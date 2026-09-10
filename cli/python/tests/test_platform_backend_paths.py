@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from mem0_cli.backend.platform import PlatformBackend
+from memgo_cli.backend.platform import PlatformBackend
 
 
 def _backend(sample_config):

@@ -17,9 +17,9 @@ const (
 	posthogHost   = "https://us.i.posthog.com/i/v0/e/"
 )
 
-// telemetryEnabled MEM0_TELEMETRY=false 关闭。
+// telemetryEnabled MEMGO_TELEMETRY=false 关闭。
 func telemetryEnabled() bool {
-	v := os.Getenv("MEM0_TELEMETRY")
+	v := os.Getenv("MEMGO_TELEMETRY")
 	return v == "" || (v != "false" && v != "0" && v != "no")
 }
 

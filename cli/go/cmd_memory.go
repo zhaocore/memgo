@@ -185,7 +185,7 @@ func agentEmit(command string, data any, started int64, ids EntityIDs, count int
 		env["count"] = count
 	}
 	if n := TakeNotice(); n != "" {
-		env["mem0_notice"] = n
+		env["memgo_notice"] = n
 	}
 	env["data"] = data
 	printJSON(env)

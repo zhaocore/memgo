@@ -11,9 +11,9 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
 
-from mem0_cli import __version__
-from mem0_cli.backend.base import Backend
-from mem0_cli.branding import (
+from memgo_cli import __version__
+from memgo_cli.backend.base import Backend
+from memgo_cli.branding import (
     BRAND_COLOR,
     DIM_COLOR,
     ERROR_COLOR,
@@ -35,8 +35,8 @@ def cmd_status(
     output: str = "text",
 ) -> None:
     """Check connectivity and auth."""
-    from mem0_cli.output import format_agent_envelope
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.output import format_agent_envelope
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("status")
     if is_agent_mode():
@@ -74,10 +74,10 @@ def cmd_status(
         if "Authentication failed" in str(result["error"]):
             lines.append("")
             lines.append(
-                f"  [{DIM_COLOR}]Run [bold]mem0 init[/bold] to reconfigure your API key[/]"
+                f"  [{DIM_COLOR}]Run [bold]memgo init[/bold] to reconfigure your API key[/]"
             )
             lines.append(
-                f"  [{DIM_COLOR}]Get a key at [bold]https://app.mem0.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-python[/bold][/]"
+                f"  [{DIM_COLOR}]Get a key at [bold]https://app.memgo.ai/dashboard/api-keys?utm_source=oss&utm_medium=cli-python[/bold][/]"
             )
     lines.append(f"  [{DIM_COLOR}]Latency:[/]  {_elapsed:.2f}s")
 
@@ -96,7 +96,7 @@ def cmd_status(
 
 def cmd_version() -> None:
     """Show version."""
-    console.print(f"  [{BRAND_COLOR}]◆ Mem0[/] CLI v{__version__}")
+    console.print(f"  [{BRAND_COLOR}]◆ MemGo[/] CLI v{__version__}")
 
 
 def cmd_import(
@@ -108,8 +108,8 @@ def cmd_import(
     output: str = "text",
 ) -> None:
     """Import memories from a JSON file."""
-    from mem0_cli.output import format_agent_envelope
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.output import format_agent_envelope
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("import")
     if is_agent_mode():

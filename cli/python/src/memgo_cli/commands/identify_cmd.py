@@ -1,7 +1,7 @@
-"""mem0 identify — declare which agent owns the current agent-mode key.
+"""memgo identify — declare which agent owns the current agent-mode key.
 
-Used when `mem0 init --agent` ran without --agent-caller, so the backend
-saved agent_caller=NULL. The agent re-runs `mem0 identify <name>` to PATCH
+Used when `memgo init --agent` ran without --agent-caller, so the backend
+saved agent_caller=NULL. The agent re-runs `memgo identify <name>` to PATCH
 its own row with its real identity. Idempotent — running it again just
 overwrites.
 """
@@ -12,15 +12,15 @@ import httpx
 import typer
 from rich.console import Console
 
-from mem0_cli.branding import print_error, print_success
-from mem0_cli.config import load_config, save_config
+from memgo_cli.branding import print_error, print_success
+from memgo_cli.config import load_config, save_config
 
 console = Console()
 err_console = Console(stderr=True)
 
 _SOURCE_HEADERS = {
-    "X-Mem0-Source": "cli",
-    "X-Mem0-Client-Language": "python",
+    "X-MemGo-Source": "cli",
+    "X-MemGo-Client-Language": "python",
 }
 
 
@@ -30,7 +30,7 @@ def run_identify(name: str) -> None:
     if not config.platform.api_key:
         print_error(
             err_console,
-            "No API key configured. Run `mem0 init --agent` first.",
+            "No API key configured. Run `memgo init --agent` first.",
         )
         raise typer.Exit(1)
     if not config.platform.agent_mode:
@@ -45,7 +45,7 @@ def run_identify(name: str) -> None:
         print_error(err_console, "Agent name is required.")
         raise typer.Exit(1)
 
-    base_url = (config.platform.base_url or "https://api.mem0.ai").rstrip("/")
+    base_url = (config.platform.base_url or "https://api.memgo.ai").rstrip("/")
     try:
         with httpx.Client(timeout=30.0) as client:
             resp = client.patch(

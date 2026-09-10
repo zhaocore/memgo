@@ -1,6 +1,6 @@
-# mem0 CLI (Python)
+# memgo CLI (Python)
 
-The official command-line interface for [mem0](https://mem0.ai) — the memory layer for AI agents. Python implementation.
+The official command-line interface for [memgo](https://memgo.ai) — the memory layer for AI agents. Python implementation.
 
 > **Built for AI agents.** Pass `--agent` (or `--json`) as a global flag on any command to get structured JSON output optimized for programmatic consumption — sanitized fields, no colors or spinners, and errors as JSON too.
 
@@ -13,13 +13,13 @@ The official command-line interface for [mem0](https://mem0.ai) — the memory l
 ### Using pipx (recommended)
 
 ```bash
-pipx install mem0-cli
+pipx install memgo-cli
 ```
 
 ### Using pip
 
 ```bash
-pip install mem0-cli
+pip install memgo-cli
 ```
 
 > **Note:** On macOS with Homebrew Python, `pip install` outside a virtual environment will fail with an `externally-managed-environment` error ([PEP 668](https://peps.python.org/pep-0668/)). Use `pipx` instead, or install inside a virtual environment.
@@ -28,49 +28,49 @@ pip install mem0-cli
 
 ```bash
 # Interactive setup wizard
-mem0 init
+memgo init
 
 # Or login via email
-mem0 init --email alice@company.com
+memgo init --email alice@company.com
 
 # Or authenticate with an existing API key
-mem0 init --api-key m0-xxx
+memgo init --api-key m0-xxx
 
 # Add a memory
-mem0 add "I prefer dark mode and use vim keybindings" --user-id alice
+memgo add "I prefer dark mode and use vim keybindings" --user-id alice
 
 # Search memories
-mem0 search "What are Alice's preferences?" --user-id alice
+memgo search "What are Alice's preferences?" --user-id alice
 
 # List all memories for a user
-mem0 list --user-id alice
+memgo list --user-id alice
 
 # Get a specific memory
-mem0 get <memory-id>
+memgo get <memory-id>
 
 # Update a memory
-mem0 update <memory-id> "I switched to light mode"
+memgo update <memory-id> "I switched to light mode"
 
 # Delete a memory
-mem0 delete <memory-id>
+memgo delete <memory-id>
 ```
 
 ## Commands
 
-### `mem0 init`
+### `memgo init`
 
 Interactive setup wizard. Prompts for your API key and default user ID.
 
 ```bash
-mem0 init
-mem0 init --api-key m0-xxx --user-id alice
-mem0 init --email alice@company.com
+memgo init
+memgo init --api-key m0-xxx --user-id alice
+memgo init --email alice@company.com
 ```
 
 If an existing configuration is detected, the CLI asks for confirmation before overwriting. Use `--force` to skip the prompt (useful in CI/CD).
 
 ```bash
-mem0 init --api-key m0-xxx --user-id alice --force
+memgo init --api-key m0-xxx --user-id alice --force
 ```
 
 | Flag | Description |
@@ -81,14 +81,14 @@ mem0 init --api-key m0-xxx --user-id alice --force
 | `--code` | Verification code (use with `--email` for non-interactive login) |
 | `--force` | Overwrite existing config without confirmation |
 
-### `mem0 add`
+### `memgo add`
 
 Add a memory from text, a JSON messages array, a file, or stdin.
 
 ```bash
-mem0 add "I prefer dark mode" --user-id alice
-mem0 add --file conversation.json --user-id alice
-echo "Loves hiking on weekends" | mem0 add --user-id alice
+memgo add "I prefer dark mode" --user-id alice
+memgo add --file conversation.json --user-id alice
+echo "Loves hiking on weekends" | memgo add --user-id alice
 ```
 
 | Flag | Description |
@@ -102,13 +102,13 @@ echo "Loves hiking on weekends" | mem0 add --user-id alice
 | `--graph / --no-graph` | Enable or disable graph memory extraction |
 | `-o, --output` | Output format: `text`, `json`, `quiet` |
 
-### `mem0 search`
+### `memgo search`
 
 Search memories using natural language.
 
 ```bash
-mem0 search "dietary restrictions" --user-id alice
-mem0 search "preferred tools" --user-id alice --output json --top-k 5
+memgo search "dietary restrictions" --user-id alice
+memgo search "preferred tools" --user-id alice --output json --top-k 5
 ```
 
 | Flag | Description |
@@ -122,14 +122,14 @@ mem0 search "preferred tools" --user-id alice --output json --top-k 5
 | `--graph / --no-graph` | Enable or disable graph in search |
 | `-o, --output` | Output format: `text`, `json`, `table` |
 
-### `mem0 list`
+### `memgo list`
 
 List memories with optional filters and pagination.
 
 ```bash
-mem0 list --user-id alice
-mem0 list --user-id alice --category preferences --output json
-mem0 list --user-id alice --after 2024-01-01 --page-size 50
+memgo list --user-id alice
+memgo list --user-id alice --category preferences --output json
+memgo list --user-id alice --after 2024-01-01 --page-size 50
 ```
 
 | Flag | Description |
@@ -142,41 +142,41 @@ mem0 list --user-id alice --after 2024-01-01 --page-size 50
 | `--before` | Created before date (YYYY-MM-DD) |
 | `-o, --output` | Output format: `text`, `json`, `table` |
 
-### `mem0 get`
+### `memgo get`
 
 Retrieve a specific memory by ID.
 
 ```bash
-mem0 get 7b3c1a2e-4d5f-6789-abcd-ef0123456789
-mem0 get 7b3c1a2e-4d5f-6789-abcd-ef0123456789 --output json
+memgo get 7b3c1a2e-4d5f-6789-abcd-ef0123456789
+memgo get 7b3c1a2e-4d5f-6789-abcd-ef0123456789 --output json
 ```
 
-### `mem0 update`
+### `memgo update`
 
 Update the text or metadata of an existing memory.
 
 ```bash
-mem0 update <memory-id> "Updated preference text"
-mem0 update <memory-id> --metadata '{"priority": "high"}'
-echo "new text" | mem0 update <memory-id>
+memgo update <memory-id> "Updated preference text"
+memgo update <memory-id> --metadata '{"priority": "high"}'
+echo "new text" | memgo update <memory-id>
 ```
 
-### `mem0 delete`
+### `memgo delete`
 
 Delete a single memory, all memories for a scope, or an entire entity.
 
 ```bash
 # Delete a single memory
-mem0 delete <memory-id>
+memgo delete <memory-id>
 
 # Delete all memories for a user
-mem0 delete --all --user-id alice --force
+memgo delete --all --user-id alice --force
 
 # Delete all memories project-wide
-mem0 delete --all --project --force
+memgo delete --all --project --force
 
 # Preview what would be deleted
-mem0 delete --all --user-id alice --dry-run
+memgo delete --all --user-id alice --dry-run
 ```
 
 | Flag | Description |
@@ -187,58 +187,58 @@ mem0 delete --all --user-id alice --dry-run
 | `--dry-run` | Preview without deleting |
 | `--force` | Skip confirmation prompt |
 
-### `mem0 import`
+### `memgo import`
 
 Bulk import memories from a JSON file.
 
 ```bash
-mem0 import data.json --user-id alice
+memgo import data.json --user-id alice
 ```
 
 The file should be a JSON array where each item has a `memory` (or `text` or `content`) field and optional `user_id`, `agent_id`, and `metadata` fields.
 
-### `mem0 config`
+### `memgo config`
 
 View or modify the local CLI configuration.
 
 ```bash
-mem0 config show              # Display current config (secrets redacted)
-mem0 config get api_key       # Get a specific value
-mem0 config set user_id bob   # Set a value
+memgo config show              # Display current config (secrets redacted)
+memgo config get api_key       # Get a specific value
+memgo config set user_id bob   # Set a value
 ```
 
-### `mem0 entity`
+### `memgo entity`
 
 List or delete entities (users, agents, apps, runs).
 
 ```bash
-mem0 entity list users
-mem0 entity list agents --output json
-mem0 entity delete --user-id alice --force
+memgo entity list users
+memgo entity list agents --output json
+memgo entity delete --user-id alice --force
 ```
 
-### `mem0 event`
+### `memgo event`
 
 Inspect background processing events created by async operations (e.g. bulk deletes, large add jobs).
 
 ```bash
 # List recent events
-mem0 event list
+memgo event list
 
 # Check the status of a specific event
-mem0 event status <event-id>
+memgo event status <event-id>
 ```
 
 | Flag | Description |
 |------|-------------|
 | `-o, --output` | Output format: `text`, `json` |
 
-### `mem0 status`
+### `memgo status`
 
 Verify your API connection and display the current project.
 
 ```bash
-mem0 status
+memgo status
 ```
 
 ## Agent mode
@@ -246,10 +246,10 @@ mem0 status
 Pass `--agent` (or its alias `--json`) as a **global flag** on any command to get output designed for AI agent tool loops:
 
 ```bash
-mem0 --agent search "user preferences" --user-id alice
-mem0 --agent add "User prefers dark mode" --user-id alice
-mem0 --agent list --user-id alice
-mem0 --agent delete --all --user-id alice --force
+memgo --agent search "user preferences" --user-id alice
+memgo --agent add "User prefers dark mode" --user-id alice
+memgo --agent list --user-id alice
+memgo --agent delete --all --user-id alice --force
 ```
 
 Every command returns the same envelope shape:
@@ -273,7 +273,7 @@ What agent mode does differently from `--output json`:
 - **No human output**: spinners, colors, and banners are suppressed entirely
 - **Errors as JSON**: errors go to stdout as `{"status": "error", "command": "...", "error": "..."}` with a non-zero exit code
 
-Use `mem0 help --json` to get the full command tree as JSON — useful for agents that need to self-discover available commands.
+Use `memgo help --json` to get the full command tree as JSON — useful for agents that need to self-discover available commands.
 
 ## Output formats
 
@@ -299,19 +299,19 @@ These flags are available on all commands:
 | `--base-url` | Override the configured API base URL for this request |
 | `-o, --output` | Set the output format |
 
-`mem0 --version` prints the CLI version. It is only valid before a subcommand, not after one.
+`memgo --version` prints the CLI version. It is only valid before a subcommand, not after one.
 
 ## Environment variables
 
 | Variable | Description |
 |----------|-------------|
-| `MEM0_API_KEY` | API key (overrides config file) |
-| `MEM0_BASE_URL` | API base URL |
-| `MEM0_USER_ID` | Default user ID |
-| `MEM0_AGENT_ID` | Default agent ID |
-| `MEM0_APP_ID` | Default app ID |
-| `MEM0_RUN_ID` | Default run ID |
-| `MEM0_ENABLE_GRAPH` | Enable graph memory (`true` / `false`) |
+| `MEMGO_API_KEY` | API key (overrides config file) |
+| `MEMGO_BASE_URL` | API base URL |
+| `MEMGO_USER_ID` | Default user ID |
+| `MEMGO_AGENT_ID` | Default agent ID |
+| `MEMGO_APP_ID` | Default app ID |
+| `MEMGO_RUN_ID` | Default run ID |
+| `MEMGO_ENABLE_GRAPH` | Enable graph memory (`true` / `false`) |
 
 Environment variables take precedence over values in the config file, which take precedence over defaults.
 
@@ -323,8 +323,8 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
 # Run during development
-python -m mem0_cli --help
-mem0 add "test memory" --user-id alice
+python -m memgo_cli --help
+memgo add "test memory" --user-id alice
 ```
 
 ## Releasing
@@ -336,7 +336,7 @@ For a pre-release, use a beta version like `0.2.1b1` and check the **pre-release
 
 ## Documentation
 
-Full documentation is available at [docs.mem0.ai/platform/cli](https://docs.mem0.ai/platform/cli).
+Full documentation is available at [docs.memgo.ai/platform/cli](https://docs.memgo.ai/platform/cli).
 
 ## License
 

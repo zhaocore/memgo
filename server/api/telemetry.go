@@ -22,10 +22,10 @@ var (
 	telState  telemetryState
 )
 
-func telemetryEnabled() bool { return os.Getenv("MEM0_TELEMETRY") != "false" }
+func telemetryEnabled() bool { return os.Getenv("MEMGO_TELEMETRY") != "false" }
 
 func telemetryPath() string {
-	if p := os.Getenv("MEM0_TELEMETRY_STATE_PATH"); p != "" {
+	if p := os.Getenv("MEMGO_TELEMETRY_STATE_PATH"); p != "" {
 		return p
 	}
 	if h := os.Getenv("HISTORY_DB_PATH"); h != "" {

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Main CLI application — the entrypoint for `mem0`.
+ * Main CLI application — the entrypoint for `memgo`.
  */
 
 import fs from "node:fs";
@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { AuthError, type Backend, getBackend } from "./backend/index.js";
 import { colors, printError, printWarning } from "./branding.js";
-import type { Mem0Config } from "./config.js";
+import type { MemGoConfig } from "./config.js";
 import { loadConfig, saveConfig } from "./config.js";
 import { richFormatHelp } from "./help.js";
 import {
@@ -34,7 +34,7 @@ let _validatedUserEmail: string | undefined;
 async function getBackendAndConfig(
 	apiKey?: string,
 	baseUrl?: string,
-): Promise<{ backend: Backend; config: Mem0Config }> {
+): Promise<{ backend: Backend; config: MemGoConfig }> {
 	const config = loadConfig();
 
 	if (apiKey) config.platform.apiKey = apiKey;
@@ -43,7 +43,7 @@ async function getBackendAndConfig(
 	if (!config.platform.apiKey) {
 		printError(
 			"No API key configured.",
-			"Run 'mem0 init' or set MEM0_API_KEY environment variable.",
+			"Run 'memgo init' or set MEMGO_API_KEY environment variable.",
 		);
 		process.exit(1);
 	}
@@ -75,7 +75,7 @@ async function getBackendAndConfig(
 		if (e instanceof AuthError) {
 			printError(
 				"Invalid or expired API key.",
-				"Run 'mem0 init' or set MEM0_API_KEY environment variable.",
+				"Run 'memgo init' or set MEMGO_API_KEY environment variable.",
 			);
 			process.exit(1);
 		}
@@ -96,7 +96,7 @@ async function getBackendOnly(
 }
 
 function printVersion(): void {
-	console.log(`  ${colors.brand("◆ Mem0")} CLI v${CLI_VERSION}`);
+	console.log(`  ${colors.brand("◆ MemGo")} CLI v${CLI_VERSION}`);
 }
 
 function checkAgentMode(): boolean {
@@ -114,7 +114,7 @@ function checkAgentMode(): boolean {
  * If no explicit IDs, fall back to all configured defaults.
  */
 function resolveIds(
-	config: Mem0Config,
+	config: MemGoConfig,
 	opts: {
 		userId?: string;
 		agentId?: string;
@@ -147,12 +147,12 @@ function resolveIds(
 // ── Main program ──────────────────────────────────────────────────────────
 
 program
-	.name("mem0")
+	.name("memgo")
 	.description(
-		`◆ Mem0 CLI v${CLI_VERSION} · Node.js SDK\n\nThe Memory Layer for AI Agents`,
+		`◆ MemGo CLI v${CLI_VERSION} · Node.js SDK\n\nThe Memory Layer for AI Agents`,
 	)
 	// Positional options: flags AFTER a subcommand name belong to that
-	// subcommand, not the global program. Without this, `mem0 init --agent`
+	// subcommand, not the global program. Without this, `memgo init --agent`
 	// routes `--agent` to the program-level alias (for --json) and init's own
 	// `--agent` (Agent Mode bootstrap) silently never fires.
 	.enablePositionalOptions()
@@ -164,7 +164,7 @@ program
 	.option("--json", "Output as JSON for agent/programmatic use.")
 	.option(
 		"--agent",
-		"Output as JSON for agent/programmatic use. (alias: --json) Place BEFORE the subcommand: `mem0 --agent <cmd>`. On `init`, `mem0 init --agent` is the Agent Mode bootstrap flag instead.",
+		"Output as JSON for agent/programmatic use. (alias: --json) Place BEFORE the subcommand: `memgo --agent <cmd>`. On `init`, `memgo init --agent` is the Agent Mode bootstrap flag instead.",
 	)
 	.usage("<command> [options]")
 	.helpOption("--help", "Show this message and exit.")
@@ -178,7 +178,7 @@ program.hook("preAction", (_thisCommand, actionCommand) => {
 		const commandName = actionCommand.name();
 		const parentName = actionCommand.parent?.name();
 		const fullCommand =
-			parentName && parentName !== "mem0"
+			parentName && parentName !== "memgo"
 				? `${parentName}.${commandName}`
 				: commandName;
 		// Stash the active command name in shared state so the JSON
@@ -207,7 +207,7 @@ program.hook("preAction", (_thisCommand, actionCommand) => {
 
 program
 	.command("init")
-	.description("Interactive setup wizard for mem0 CLI.")
+	.description("Interactive setup wizard for memgo CLI.")
 	.option("--api-key <key>", "API key (skip prompt).")
 	.option("-u, --user-id <id>", "Default user ID (skip prompt).")
 	.option("--email <email>", "Login via email verification code.")
@@ -230,13 +230,13 @@ program
 		"Self-declared agent identity (e.g. claude-code, cursor). Used with --agent to attribute Agent Mode signups.",
 	)
 	// Accept `--json` at the init level too so the PRD-documented form
-	// `mem0 init --agent --json` works without requiring users to move it
+	// `memgo init --agent --json` works without requiring users to move it
 	// before the subcommand. Effect is identical to the global `--json`:
 	// flip agent-mode output state.
 	.option("--json", "Output as JSON (alias for global `--json`).", false)
 	.addHelpText(
 		"after",
-		"\nExamples:\n  $ mem0 init\n  $ mem0 init --api-key m0-xxx --user-id alice\n  $ mem0 init --email you@example.com\n  $ mem0 init --email you@example.com --code 123456\n  $ mem0 init --agent             # Bootstrap an Agent Mode account (unattended)\n  $ mem0 init --email you@example.com  # Claims an existing Agent Mode key when one is present",
+		"\nExamples:\n  $ memgo init\n  $ memgo init --api-key m0-xxx --user-id alice\n  $ memgo init --email you@example.com\n  $ memgo init --email you@example.com --code 123456\n  $ memgo init --agent             # Bootstrap an Agent Mode account (unattended)\n  $ memgo init --email you@example.com  # Claims an existing Agent Mode key when one is present",
 	)
 	.action(async (opts) => {
 		// `--json` at init level mirrors the global flag — flip agent_mode
@@ -290,7 +290,7 @@ agentRush
 	.description("Submit a memory to AGENTRUSH.")
 	.addHelpText(
 		"after",
-		'\nExamples:\n  $ mem0 agent-rush add "I used mem0 to build a coding agent"\n  $ mem0 agent-rush add "Agents that remember are better agents"',
+		'\nExamples:\n  $ memgo agent-rush add "I used memgo to build a coding agent"\n  $ memgo agent-rush add "Agents that remember are better agents"',
 	)
 	.action(async (parts: string[]) => {
 		const { cmdAgentRushAdd } = await import("./commands/agent-rush.js");
@@ -302,7 +302,7 @@ agentRush
 	.description("Search AGENTRUSH memories.")
 	.addHelpText(
 		"after",
-		'\nExamples:\n  $ mem0 agent-rush search "agents and memory and tools"\n  $ mem0 agent-rush search "coding assistant"',
+		'\nExamples:\n  $ memgo agent-rush search "agents and memory and tools"\n  $ memgo agent-rush search "coding assistant"',
 	)
 	.action(async (parts: string[]) => {
 		const { cmdAgentRushSearch } = await import("./commands/agent-rush.js");
@@ -352,7 +352,7 @@ program
 	.option("--base-url <url>", "Override API base URL.")
 	.addHelpText(
 		"after",
-		'\nExamples:\n  $ mem0 add "I prefer dark mode" --user-id alice\n  $ echo "text" | mem0 add -u alice\n  $ mem0 add --file msgs.json -u alice -o json',
+		'\nExamples:\n  $ memgo add "I prefer dark mode" --user-id alice\n  $ echo "text" | memgo add -u alice\n  $ memgo add --file msgs.json -u alice -o json',
 	)
 	.action(async (text, opts) => {
 		const { cmdAdd } = await import("./commands/memory.js");
@@ -411,7 +411,7 @@ program
 	.option("--base-url <url>", "Override API base URL.")
 	.addHelpText(
 		"after",
-		'\nExamples:\n  $ mem0 search "preferences" --user-id alice\n  $ mem0 search "tools" -u alice -o json -k 5\n  $ echo "preferences" | mem0 search -u alice\n  $ mem0 search "invoices" -u alice --filter \'{"AND": [{"categories": {"in": ["work"]}}]}\'',
+		'\nExamples:\n  $ memgo search "preferences" --user-id alice\n  $ memgo search "tools" -u alice -o json -k 5\n  $ echo "preferences" | memgo search -u alice\n  $ memgo search "invoices" -u alice --filter \'{"AND": [{"categories": {"in": ["work"]}}]}\'',
 	)
 	.action(async (query, opts) => {
 		let resolvedQuery = query;
@@ -455,7 +455,7 @@ program
 	.option("--base-url <url>", "Override API base URL.")
 	.addHelpText(
 		"after",
-		"\nExamples:\n  $ mem0 get abc-123-def-456\n  $ mem0 get abc-123-def-456 -o json",
+		"\nExamples:\n  $ memgo get abc-123-def-456\n  $ memgo get abc-123-def-456 -o json",
 	)
 	.action(async (memoryId, opts) => {
 		const { cmdGet } = await import("./commands/memory.js");
@@ -495,7 +495,7 @@ program
 	.option("--base-url <url>", "Override API base URL.")
 	.addHelpText(
 		"after",
-		"\nExamples:\n  $ mem0 list -u alice\n  $ mem0 list --category prefs --after 2024-01-01 -o json",
+		"\nExamples:\n  $ memgo list -u alice\n  $ memgo list --category prefs --after 2024-01-01 -o json",
 	)
 	.action(async (opts) => {
 		const { cmdList } = await import("./commands/memory.js");
@@ -534,7 +534,7 @@ program
 	.option("--base-url <url>", "Override API base URL.")
 	.addHelpText(
 		"after",
-		`\nExamples:\n  $ mem0 update abc-123 "new text"\n  $ mem0 update abc-123 --metadata '{"key":"val"}'\n  $ echo "new text" | mem0 update abc-123`,
+		`\nExamples:\n  $ memgo update abc-123 "new text"\n  $ memgo update abc-123 --metadata '{"key":"val"}'\n  $ echo "new text" | memgo update abc-123`,
 	)
 	.action(async (memoryId, text, opts) => {
 		let resolvedText = text;
@@ -583,10 +583,10 @@ program
 		"after",
 		[
 			"\nExamples:",
-			"  $ mem0 delete abc-123-def-456              # single memory",
-			"  $ mem0 delete --all -u alice --force        # all memories for user",
-			"  $ mem0 delete --all --project --force       # project-wide wipe",
-			"  $ mem0 delete --entity -u alice --force     # entity + all its memories",
+			"  $ memgo delete abc-123-def-456              # single memory",
+			"  $ memgo delete --all -u alice --force        # all memories for user",
+			"  $ memgo delete --all --project --force       # project-wide wipe",
+			"  $ memgo delete --entity -u alice --force     # entity + all its memories",
 		].join("\n"),
 	)
 	.action(async (memoryId, opts) => {
@@ -610,9 +610,9 @@ program
 		if (!memoryId && !opts.all && !opts.entity) {
 			printError(
 				"Specify a memory ID, --all, or --entity.\n" +
-					"  mem0 delete <id>              Delete a single memory\n" +
-					"  mem0 delete --all [scope]     Delete all memories matching scope\n" +
-					"  mem0 delete --entity [scope]  Delete an entity and all its memories",
+					"  memgo delete <id>              Delete a single memory\n" +
+					"  memgo delete --all [scope]     Delete all memories matching scope\n" +
+					"  memgo delete --entity [scope]  Delete an entity and all its memories",
 			);
 			process.exit(1);
 		}
@@ -668,7 +668,7 @@ program
 
 const configCmd = program
 	.command("config")
-	.description("Manage mem0 configuration.")
+	.description("Manage memgo configuration.")
 	.addHelpCommand(false);
 
 configCmd
@@ -677,7 +677,7 @@ configCmd
 	.option("-o, --output <format>", "Output: text, json.", "text")
 	.addHelpText(
 		"after",
-		"\nExamples:\n  $ mem0 config show\n  $ mem0 config show -o json",
+		"\nExamples:\n  $ memgo config show\n  $ memgo config show -o json",
 	)
 	.action(async (opts) => {
 		const { cmdConfigShow } = await import("./commands/config.js");
@@ -691,7 +691,7 @@ configCmd
 	.description("Get a configuration value.")
 	.addHelpText(
 		"after",
-		"\nExamples:\n  $ mem0 config get platform.api_key\n  $ mem0 config get defaults.user_id",
+		"\nExamples:\n  $ memgo config get platform.api_key\n  $ memgo config get defaults.user_id",
 	)
 	.action(async (key) => {
 		const { cmdConfigGet } = await import("./commands/config.js");
@@ -704,7 +704,7 @@ configCmd
 	.description("Set a configuration value.")
 	.addHelpText(
 		"after",
-		"\nExamples:\n  $ mem0 config set defaults.user_id alice\n  $ mem0 config set platform.base_url https://api.mem0.ai",
+		"\nExamples:\n  $ memgo config set defaults.user_id alice\n  $ memgo config set platform.base_url https://api.memgo.ai",
 	)
 	.action(async (key, value) => {
 		const { cmdConfigSet } = await import("./commands/config.js");
@@ -728,7 +728,7 @@ entityCmd
 	.option("--base-url <url>", "Override API base URL.")
 	.addHelpText(
 		"after",
-		"\nExamples:\n  $ mem0 entity list users\n  $ mem0 entity list agents -o json",
+		"\nExamples:\n  $ memgo entity list users\n  $ memgo entity list agents -o json",
 	)
 	.action(async (entityType, opts) => {
 		const { cmdEntitiesList } = await import("./commands/entities.js");
@@ -752,7 +752,7 @@ entityCmd
 	.option("--base-url <url>", "Override API base URL.")
 	.addHelpText(
 		"after",
-		"\nExamples:\n  $ mem0 entity delete --user-id alice --force\n  $ mem0 entity delete --user-id alice --dry-run",
+		"\nExamples:\n  $ memgo entity delete --user-id alice --force\n  $ memgo entity delete --user-id alice --dry-run",
 	)
 	.action(async (opts) => {
 		const { cmdEntitiesDelete } = await import("./commands/entities.js");
@@ -778,7 +778,7 @@ eventCmd
 	.option("--base-url <url>", "Override API base URL.")
 	.addHelpText(
 		"after",
-		"\nExamples:\n  $ mem0 event list\n  $ mem0 event list -o json",
+		"\nExamples:\n  $ memgo event list\n  $ memgo event list -o json",
 	)
 	.action(async (opts) => {
 		const { cmdEventList } = await import("./commands/events.js");
@@ -796,7 +796,7 @@ eventCmd
 	.option("--base-url <url>", "Override API base URL.")
 	.addHelpText(
 		"after",
-		"\nExamples:\n  $ mem0 event status <event-id>\n  $ mem0 event status <event-id> -o json",
+		"\nExamples:\n  $ memgo event status <event-id>\n  $ memgo event status <event-id> -o json",
 	)
 	.action(async (eventId, opts) => {
 		const { cmdEventStatus } = await import("./commands/events.js");
@@ -814,7 +814,7 @@ program
 	.option("-o, --output <format>", "Output: text, json.", "text")
 	.option("--api-key <key>", "Override API key.")
 	.option("--base-url <url>", "Override API base URL.")
-	.addHelpText("after", "\nExamples:\n  $ mem0 status\n  $ mem0 status -o json")
+	.addHelpText("after", "\nExamples:\n  $ memgo status\n  $ memgo status -o json")
 	.action(async (opts) => {
 		const { cmdStatus } = await import("./commands/utils.js");
 		const isAgent = checkAgentMode();
@@ -847,7 +847,7 @@ program
 	.option("--base-url <url>", "Override API base URL.")
 	.addHelpText(
 		"after",
-		"\nExamples:\n  $ mem0 import data.json --user-id alice\n  $ mem0 import data.json -u alice -o json",
+		"\nExamples:\n  $ memgo import data.json --user-id alice\n  $ memgo import data.json -u alice -o json",
 	)
 	.action(async (filePath, opts) => {
 		const { cmdImport } = await import("./commands/utils.js");
@@ -873,9 +873,9 @@ program
 		"Show help. Use --json for machine-readable output (for LLM agents).",
 	)
 	.option("--json", "Output machine-readable JSON for LLM agents.", false)
-	.addHelpText("after", "\nExamples:\n  $ mem0 help\n  $ mem0 help --json")
+	.addHelpText("after", "\nExamples:\n  $ memgo help\n  $ memgo help --json")
 	.action((opts) => {
-		// opts.json is set when `mem0 help --json` is used (subcommand flag).
+		// opts.json is set when `memgo help --json` is used (subcommand flag).
 		// program.opts().json/.agent is set when a root global flag was used first.
 		if (opts.json || program.opts().json || program.opts().agent) {
 			// Load spec from parent directory
@@ -888,7 +888,7 @@ program
 				console.log(
 					JSON.stringify(
 						{
-							name: "mem0",
+							name: "memgo",
 							version: CLI_VERSION,
 							description: "The Memory Layer for AI Agents",
 						},
@@ -900,9 +900,9 @@ program
 		} else {
 			const { brand: b } = colors;
 			console.log(
-				`${b("◆ Mem0 CLI")} v${CLI_VERSION} · Node.js SDK\n  The Memory Layer for AI Agents\n`,
+				`${b("◆ MemGo CLI")} v${CLI_VERSION} · Node.js SDK\n  The Memory Layer for AI Agents\n`,
 			);
-			console.log("Usage: mem0 <command> [OPTIONS]\n");
+			console.log("Usage: memgo <command> [OPTIONS]\n");
 			console.log("Commands:");
 			console.log(
 				"  add              Add a memory from text, messages, file, or stdin",
@@ -925,9 +925,9 @@ program
 			console.log("  init             Interactive setup wizard");
 			console.log("  status           Check connectivity and authentication");
 			console.log();
-			console.log("  mem0 <command> --help    Get help for a command");
+			console.log("  memgo <command> --help    Get help for a command");
 			console.log(
-				"  mem0 help --json         Machine-readable help (for LLM agents)",
+				"  memgo help --json         Machine-readable help (for LLM agents)",
 			);
 			console.log();
 		}

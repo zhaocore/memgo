@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-from mem0_cli.backend.platform import PlatformBackend
-from mem0_cli.config import PlatformConfig
+from memgo_cli.backend.platform import PlatformBackend
+from memgo_cli.config import PlatformConfig
 
 
 def _make_backend() -> PlatformBackend:
-    return PlatformBackend(PlatformConfig(api_key="test-key", base_url="https://api.mem0.ai"))
+    return PlatformBackend(PlatformConfig(api_key="test-key", base_url="https://api.memgo.ai"))
 
 
 class TestAddOptions:

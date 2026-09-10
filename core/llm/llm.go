@@ -1,5 +1,5 @@
 // Package llm: LLM 接口与内置 provider (openai/anthropic/gemini)。
-// 对齐上游 mem0/llms/base.py 接口面 (chat + structured JSON 两个能力, 计划 D6)。
+// 对齐上游 memgo/llms/base.py 接口面 (chat + structured JSON 两个能力, 计划 D6)。
 package llm
 
 // Message 与 OpenAI chat 消息形状一致 (role/content)。
@@ -13,7 +13,7 @@ type ResponseFormat struct {
 	Type string `json:"type"`
 }
 
-// JSONFormat 是 mem0 add 流水线使用的 response_format。
+// JSONFormat 是 memgo add 流水线使用的 response_format。
 func JSONFormat() *ResponseFormat {
 	return &ResponseFormat{Type: "json_object"}
 }

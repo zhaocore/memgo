@@ -105,7 +105,7 @@ export default function MemoriesPage() {
           id="memories-1k"
           message="1,000+ memories stored. Categories can help organize them."
           ctaLabel="Explore Cloud"
-          ctaUrl="https://app.mem0.ai?utm_source=oss&utm_medium=dashboard-memories"
+          ctaUrl="https://app.memgo.ai?utm_source=oss&utm_medium=dashboard-memories"
           variant="cloud"
         />
       )}
@@ -139,7 +139,7 @@ export default function MemoriesPage() {
   -d '{"messages": [{"role": "user", "content": "I like hiking"}], "user_id": "alice"}'`}
           </pre>
           <a
-            href="https://docs.mem0.ai/open-source/features/rest-api#memory-operations"
+            href="https://docs.memgo.ai/open-source/features/rest-api#memory-operations"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-onSurface-default-tertiary underline underline-offset-4 hover:text-onSurface-default-primary mt-2"

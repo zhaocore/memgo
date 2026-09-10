@@ -1,4 +1,4 @@
-"""Output formatting for mem0 CLI — text, JSON, table, quiet modes."""
+"""Output formatting for memgo CLI — text, JSON, table, quiet modes."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from mem0_cli.branding import ACCENT_COLOR, BRAND_COLOR, DIM_COLOR, SUCCESS_COLOR, _sym
+from memgo_cli.branding import ACCENT_COLOR, BRAND_COLOR, DIM_COLOR, SUCCESS_COLOR, _sym
 
 
 def format_memories_text(console: Console, memories: list[dict], title: str = "memories") -> None:
@@ -171,7 +171,7 @@ def format_add_result(console: Console, result: dict | list, output: str = "text
             console.print("  ".join(parts))
             if event_id:
                 console.print(f"  [{DIM_COLOR}]  event_id: {event_id}[/]")
-                console.print(f"  [{DIM_COLOR}]  → Check status: mem0 event status {event_id}[/]")
+                console.print(f"  [{DIM_COLOR}]  → Check status: memgo event status {event_id}[/]")
             continue
 
         event = r.get("event", "ADD")
@@ -233,11 +233,11 @@ def format_json_envelope(
     # If the platform flagged this as an unclaimed Agent Mode account, surface
     # the notice inside the JSON envelope so an agent consuming the output
     # sees it without needing to inspect HTTP headers.
-    from mem0_cli.state import take_notice
+    from memgo_cli.state import take_notice
 
     notice = take_notice()
     if notice:
-        envelope["mem0_notice"] = notice
+        envelope["memgo_notice"] = notice
 
     console.print_json(json.dumps(envelope, default=str))
 
@@ -352,11 +352,11 @@ def format_agent_envelope(
 
     # Surface the unclaimed-Agent-Mode notice (if any) in the envelope so an
     # agent reading the JSON output sees it without inspecting HTTP headers.
-    from mem0_cli.state import take_notice
+    from memgo_cli.state import take_notice
 
     notice = take_notice()
     if notice:
-        envelope["mem0_notice"] = notice
+        envelope["memgo_notice"] = notice
 
     console.print_json(json.dumps(envelope, default=str))
 

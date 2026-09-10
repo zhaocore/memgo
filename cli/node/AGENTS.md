@@ -1,6 +1,6 @@
 # Node CLI (`cli/node/`)
 
-The `@mem0/cli` package on npm. Commander-based, entry point `mem0`.
+The `@memgo/cli` package on npm. Commander-based, entry point `memgo`.
 
 ## Commands
 
@@ -19,7 +19,7 @@ pnpm only. Never npm, never yarn.
 
 ## Conventions
 
-> **Biome, not ESLint. vitest, not jest.** `mem0-ts/` uses Prettier + jest and
+> **Biome, not ESLint. vitest, not jest.** `memgo-ts/` uses Prettier + jest and
 > `integrations/vercel-ai-sdk/` uses ESLint + jest. Running those tools here produces
 > spurious diffs. Every toolchain in this repo is per-package.
 
@@ -33,7 +33,7 @@ Run `pnpm run typecheck` after every change.
 
 ## Dependencies
 
-Commander + Chalk + ora + cli-table3, and `mem0ai` (npm) for API calls.
+Commander + Chalk + ora + cli-table3, and `memgoai` (npm) for API calls.
 
 ## CI and release
 

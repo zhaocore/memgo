@@ -41,7 +41,7 @@ export async function cmdEntitiesList(
 	} catch (e) {
 		printError(
 			e instanceof Error ? e.message : String(e),
-			"This feature may require the mem0 Platform.",
+			"This feature may require the memgo Platform.",
 		);
 		process.exit(1);
 	}

@@ -1,7 +1,7 @@
 # 契约套件 (P0)
 
 黑盒 HTTP 套件: 同一套用例打 Python server (采基线) 与 Go server (验目标)。
-合同基准: `mem0/architecture/doc-02` (逐端点) + `doc-03 §3.3` (鉴权回退链)。
+合同基准: `memgo/architecture/doc-02` (逐端点) + `doc-03 §3.3` (鉴权回退链)。
 
 ## 结构
 

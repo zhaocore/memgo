@@ -1,5 +1,5 @@
-"""Backend abstraction layer for mem0 CLI."""
+"""Backend abstraction layer for memgo CLI."""
 
-from mem0_cli.backend.base import Backend, get_backend
+from memgo_cli.backend.base import Backend, get_backend
 
 __all__ = ["Backend", "get_backend"]

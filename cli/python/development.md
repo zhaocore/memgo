@@ -75,15 +75,15 @@ pytest -k test_help
 ```bash
 # Using Make — drop into an activated shell
 make shell
-mem0 --help
+memgo --help
 
 # Using Python directly (with venv activated)
 source .venv/bin/activate
-mem0 --help
-mem0 --version
+memgo --help
+memgo --version
 
 # Or run without activating
-.venv/bin/mem0 --help
+.venv/bin/memgo --help
 ```
 
 ## Lint

@@ -43,18 +43,18 @@ node dist/index.js version
 node dist/index.js add "test memory" --user-id alice
 ```
 
-### Option 3: Link globally (makes `mem0` available system-wide)
+### Option 3: Link globally (makes `memgo` available system-wide)
 
 ```bash
 pnpm build
 pnpm link --global
 
 # Now use it like a normal CLI
-mem0 --help
-mem0 --version
+memgo --help
+memgo --version
 ```
 
-> **Warning:** If you also have the Python CLI installed, both register the `mem0` command. The last one linked/installed wins. Unlink with `pnpm unlink --global`.
+> **Warning:** If you also have the Python CLI installed, both register the `memgo` command. The last one linked/installed wins. Unlink with `pnpm unlink --global`.
 
 ## Build
 

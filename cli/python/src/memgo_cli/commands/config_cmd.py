@@ -5,8 +5,8 @@ from __future__ import annotations
 from rich.console import Console
 from rich.table import Table
 
-from mem0_cli.branding import ACCENT_COLOR, BRAND_COLOR, DIM_COLOR, print_error, print_success
-from mem0_cli.config import (
+from memgo_cli.branding import ACCENT_COLOR, BRAND_COLOR, DIM_COLOR, print_error, print_success
+from memgo_cli.config import (
     get_nested_value,
     load_config,
     redact_key,
@@ -20,8 +20,8 @@ err_console = Console(stderr=True)
 
 def cmd_config_show(*, output: str = "text") -> None:
     """Display current configuration (secrets redacted)."""
-    from mem0_cli.output import format_agent_envelope
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.output import format_agent_envelope
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("config show")
     if is_agent_mode():
@@ -49,7 +49,7 @@ def cmd_config_show(*, output: str = "text") -> None:
         return
 
     console.print()
-    console.print(f"  [{BRAND_COLOR}]◆ mem0 Configuration[/]\n")
+    console.print(f"  [{BRAND_COLOR}]◆ memgo Configuration[/]\n")
 
     table = Table(border_style=BRAND_COLOR, header_style=f"bold {ACCENT_COLOR}", padding=(0, 2))
     table.add_column("Key", style="bold")
@@ -84,8 +84,8 @@ def cmd_config_show(*, output: str = "text") -> None:
 
 def cmd_config_get(key: str) -> None:
     """Get a config value."""
-    from mem0_cli.output import format_agent_envelope
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.output import format_agent_envelope
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("config get")
     config = load_config()
@@ -109,8 +109,8 @@ def cmd_config_get(key: str) -> None:
 
 def cmd_config_set(key: str, value: str) -> None:
     """Set a config value."""
-    from mem0_cli.output import format_agent_envelope
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.output import format_agent_envelope
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("config set")
     config = load_config()

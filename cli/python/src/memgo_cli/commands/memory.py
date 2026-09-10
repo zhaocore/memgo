@@ -14,15 +14,15 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
-from mem0_cli.backend.base import Backend
-from mem0_cli.branding import (
+from memgo_cli.backend.base import Backend
+from memgo_cli.branding import (
     print_error,
     print_info,
     print_scope,
     print_success,
     timed_status,
 )
-from mem0_cli.output import (
+from memgo_cli.output import (
     format_add_result,
     format_agent_envelope,
     format_json,
@@ -38,7 +38,7 @@ err_console = Console(stderr=True)
 
 def _stdin_is_piped() -> bool:
     """Return True only when stdin is an actual pipe or file redirect."""
-    from mem0_cli.state import is_agent_mode
+    from memgo_cli.state import is_agent_mode
 
     if is_agent_mode():
         return False
@@ -84,7 +84,7 @@ def cmd_add(
     output: str = "text",
 ) -> None:
     """Add a memory."""
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("add")
     if is_agent_mode():
@@ -257,7 +257,7 @@ def cmd_search(
     output: str = "text",
 ) -> None:
     """Search memories."""
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("search")
     if is_agent_mode():
@@ -355,7 +355,7 @@ def cmd_search(
 
 def cmd_get(backend: Backend, memory_id: str, *, output: str) -> None:
     """Get a specific memory by ID."""
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("get")
     if is_agent_mode():
@@ -390,7 +390,7 @@ def cmd_list(
     output: str = "table",
 ) -> None:
     """List memories."""
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("list")
     if is_agent_mode():
@@ -488,7 +488,7 @@ def cmd_update(
     output: str,
 ) -> None:
     """Update a memory."""
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("update")
     if is_agent_mode():
@@ -542,7 +542,7 @@ def cmd_delete(
     output: str,
 ) -> None:
     """Delete a single memory by ID."""
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("delete")
     if is_agent_mode():
@@ -593,7 +593,7 @@ def cmd_delete_all(
     output: str,
 ) -> None:
     """Delete all memories matching a scope."""
-    from mem0_cli.state import is_agent_mode, set_current_command
+    from memgo_cli.state import is_agent_mode, set_current_command
 
     set_current_command("delete-all")
     if is_agent_mode():

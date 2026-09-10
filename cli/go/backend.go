@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Version 对齐 python __version__ (X-Mem0-Client-Version)。
+// Version 对齐 python __version__ (X-MemGo-Client-Version)。
 const Version = "0.2.12"
 
 // Backend 对齐 cli/python backend/base.py 接口面。

@@ -5,7 +5,7 @@ const mockSaveConfig = vi.fn();
 const mockSpawn = vi.fn();
 
 vi.mock("../src/config.js", () => ({
-  CONFIG_FILE: "/tmp/mem0-config.json",
+  CONFIG_FILE: "/tmp/memgo-config.json",
   loadConfig: mockLoadConfig,
   saveConfig: mockSaveConfig,
 }));
@@ -20,14 +20,14 @@ describe("captureEvent", () => {
     mockLoadConfig.mockReset();
     mockSaveConfig.mockReset();
     mockSpawn.mockReset();
-    delete process.env.MEM0_TELEMETRY;
+    delete process.env.MEMGO_TELEMETRY;
   });
 
   it("pipes the telemetry context through stdin instead of argv", async () => {
     mockLoadConfig.mockReturnValue({
       platform: {
         apiKey: "m0-node-secret",
-        baseUrl: "https://api.mem0.ai",
+        baseUrl: "https://api.memgo.ai",
         userEmail: "",
       },
       telemetry: {
@@ -52,7 +52,7 @@ describe("captureEvent", () => {
 
     expect(stdin.end).toHaveBeenCalledTimes(1);
     const payload = JSON.parse(stdin.end.mock.calls[0][0]);
-    expect(payload.mem0ApiKey).toBe("m0-node-secret");
+    expect(payload.memgoApiKey).toBe("m0-node-secret");
     expect(payload.payload.event).toBe("node_test_event");
     expect(child.unref).toHaveBeenCalledTimes(1);
   });

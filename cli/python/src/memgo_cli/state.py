@@ -26,7 +26,7 @@ def set_current_command(name: str) -> None:
 
 
 def capture_notice(notice: str | None) -> None:
-    """Stash a Mem0 backend notice for end-of-command surfacing.
+    """Stash a MemGo backend notice for end-of-command surfacing.
 
     Called from the platform backend after each response so the notice can
     be printed once per command (regardless of how many sub-requests fired).

@@ -1,8 +1,8 @@
 /**
- * Sync the active Mem0 API key into other ecosystem touchpoints.
+ * Sync the active MemGo API key into other ecosystem touchpoints.
  *
- * Why: the CLI canonical state is ~/.mem0/config.json. MCP servers
- * (Claude Code plugin, Codex plugin) read MEM0_API_KEY from env or
+ * Why: the CLI canonical state is ~/.memgo/config.json. MCP servers
+ * (Claude Code plugin, Codex plugin) read MEMGO_API_KEY from env or
  * their own config files. Without a sync, agent-mode bootstrap mints a
  * new key into config.json but the plugin's MCP keeps using the old
  * key from env — silent surprise.
@@ -14,8 +14,8 @@
  *  - Idempotent — re-running with the same key is a no-op
  *
  * Targets:
- *  - ~/.claude/settings.json::env::MEM0_API_KEY (Claude Code env injection)
- *  - ~/.zshrc / ~/.bashrc `export MEM0_API_KEY="..."` lines
+ *  - ~/.claude/settings.json::env::MEMGO_API_KEY (Claude Code env injection)
+ *  - ~/.zshrc / ~/.bashrc `export MEMGO_API_KEY="..."` lines
  *
  * Out of scope: Codex / Cursor MCP configs and the plugin's own
  * <plugin-dir>/.api_key file (plugin-managed, different schema).
@@ -33,9 +33,9 @@ const SHELL_RCS = [
 ];
 
 // Use [ \t]* (not \s*) so a trailing newline at end-of-file is preserved
-// when the MEM0_API_KEY export is the last line of the rc file.
+// when the MEMGO_API_KEY export is the last line of the rc file.
 const RC_LINE_RE =
-	/^([ \t]*export[ \t]+MEM0_API_KEY[ \t]*=[ \t]*)(["']?)([^"'\n]*)(["']?)[ \t]*$/m;
+	/^([ \t]*export[ \t]+MEMGO_API_KEY[ \t]*=[ \t]*)(["']?)([^"'\n]*)(["']?)[ \t]*$/m;
 
 export function syncApiKey(apiKey: string): string[] {
 	if (!apiKey) return [];
@@ -64,12 +64,12 @@ export function updateClaudeSettings(
 		return false;
 	}
 	const env = data.env;
-	if (!env || typeof env !== "object" || !("MEM0_API_KEY" in env)) {
+	if (!env || typeof env !== "object" || !("MEMGO_API_KEY" in env)) {
 		return false; // no existing entry — don't create one
 	}
 	const envObj = env as Record<string, string>;
-	if (envObj.MEM0_API_KEY === apiKey) return false; // already in sync
-	envObj.MEM0_API_KEY = apiKey;
+	if (envObj.MEMGO_API_KEY === apiKey) return false; // already in sync
+	envObj.MEMGO_API_KEY = apiKey;
 	atomicWriteText(filePath, `${JSON.stringify(data, null, 2)}\n`);
 	return true;
 }

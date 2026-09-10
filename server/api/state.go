@@ -85,7 +85,7 @@ func (s *AppState) rebuildFrom(cfgMap map[string]any) error {
 	if err != nil {
 		return err
 	}
-	entityCollection := parseStr(parsed.VectorStore.Config, "collection_name", "mem0") + "_entities"
+	entityCollection := parseStr(parsed.VectorStore.Config, "collection_name", "memgo") + "_entities"
 	entCfg := deepCopyMap(parsed.VectorStore.Config)
 	entCfg["collection_name"] = entityCollection
 	entVec, err := buildVectorStore(config.ProviderConfig{Provider: parsed.VectorStore.Provider, Config: entCfg})

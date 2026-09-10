@@ -1,4 +1,4 @@
-"""mem0 agent-rush — AGENTRUSH game commands.
+"""memgo agent-rush — AGENTRUSH game commands.
 
 Wraps the platform's /v1/agent-rush/{memories/, memories/search/} endpoints.
 Hardcoded routing; no flags needed.
@@ -13,8 +13,8 @@ import httpx
 import typer
 from rich.console import Console
 
-from mem0_cli.branding import print_error, print_success
-from mem0_cli.config import load_config, save_config
+from memgo_cli.branding import print_error, print_success
+from memgo_cli.config import load_config, save_config
 
 console = Console()
 err_console = Console(stderr=True)
@@ -27,16 +27,16 @@ _PII_WARNING_LINES = (
 )
 
 _SOURCE_HEADERS = {
-    "X-Mem0-Source": "cli",
-    "X-Mem0-Client-Language": "python",
-    "X-Mem0-Mode": "agent-rush",
+    "X-MemGo-Source": "cli",
+    "X-MemGo-Client-Language": "python",
+    "X-MemGo-Mode": "agent-rush",
 }
 
 _ERROR_HINTS = {
-    "agentrush_search_first": "Run 3 'mem0 agent-rush search' commands before adding.",
+    "agentrush_search_first": "Run 3 'memgo agent-rush search' commands before adding.",
     "agentrush_search_quota": "You've used your 3 lifetime searches.",
     "agentrush_add_quota": "You've used your 3 lifetime adds.",
-    "agentrush_not_agent_mode": "Re-run 'mem0 init --agent' to bootstrap an agent-mode key.",
+    "agentrush_not_agent_mode": "Re-run 'memgo init --agent' to bootstrap an agent-mode key.",
     "agentrush_length": "Memory text must be 50-1000 characters.",
     "agentrush_no_urls": "URLs are not allowed.",
     "agentrush_blocklist": "Content contains a blocked term.",
@@ -48,9 +48,9 @@ _ERROR_HINTS = {
 def _call(path: str, body: dict) -> dict:
     config = load_config()
     if not config.platform.api_key:
-        print_error(err_console, "Not initialized. Run `mem0 init --agent` first.")
+        print_error(err_console, "Not initialized. Run `memgo init --agent` first.")
         raise typer.Exit(1)
-    base_url = (config.platform.base_url or "https://api.mem0.ai").rstrip("/")
+    base_url = (config.platform.base_url or "https://api.memgo.ai").rstrip("/")
     try:
         with httpx.Client(timeout=30.0) as client:
             resp = client.post(

@@ -28,13 +28,13 @@ def _run(
     env_override: dict | None = None,
     home_dir: str | None = None,
 ) -> subprocess.CompletedProcess:
-    """Run mem0 CLI command and capture output.
+    """Run memgo CLI command and capture output.
 
     Args:
         args: CLI arguments.
         env_override: Extra env vars to set.
         home_dir: If provided, set HOME to this path so the subprocess
-            reads config from ``<home_dir>/.mem0/config.json`` instead
+            reads config from ``<home_dir>/.memgo/config.json`` instead
             of the user's real config.  This is critical for tests that
             depend on a clean (no API key) or custom config state.
 
@@ -45,9 +45,9 @@ def _run(
     ensures all assertions see the same plain text regardless of terminal env.
     """
     env = os.environ.copy()
-    # Strip all MEM0_ env vars so tests start clean
+    # Strip all MEMGO_ env vars so tests start clean
     for key in list(env.keys()):
-        if key.startswith("MEM0_"):
+        if key.startswith("MEMGO_"):
             del env[key]
     env.pop("FORCE_COLOR", None)
     env["PYTHONIOENCODING"] = "utf-8"
@@ -56,7 +56,7 @@ def _run(
     if env_override:
         env.update(env_override)
     result = subprocess.run(
-        [sys.executable, "-m", "mem0_cli", *args],
+        [sys.executable, "-m", "memgo_cli", *args],
         capture_output=True,
         encoding="utf-8",
         env=env,
@@ -71,7 +71,7 @@ def _run(
 
 @pytest.fixture
 def clean_home(tmp_path):
-    """Return a temp directory to use as HOME, ensuring no ~/.mem0 exists."""
+    """Return a temp directory to use as HOME, ensuring no ~/.memgo exists."""
     return str(tmp_path)
 
 
@@ -81,12 +81,12 @@ class TestCLIIntegration:
     def test_help(self):
         result = _run(["--help"])
         assert result.returncode == 0
-        assert "mem0" in result.stdout
+        assert "memgo" in result.stdout
         assert "add" in result.stdout
         assert "search" in result.stdout
 
     def test_version_flag_only(self):
-        from mem0_cli import __version__
+        from memgo_cli import __version__
 
         flag = _run(["--version"])
         assert flag.returncode == 0
@@ -106,7 +106,7 @@ class TestCLIIntegration:
         result = _run(args)
         assert result.returncode == 0
         spec = json.loads(result.stdout)
-        assert spec["name"] == "mem0"
+        assert spec["name"] == "memgo"
         assert "add" in spec["commands"]
 
     def test_help_without_json_is_text(self):
@@ -180,7 +180,7 @@ class TestCLIIsolated:
     """Tests that need a clean HOME to avoid reading the user's real config."""
 
     def test_add_no_key_errors(self, clean_home):
-        """Without an API key, `mem0 add` must fail with a helpful message."""
+        """Without an API key, `memgo add` must fail with a helpful message."""
         result = _run(
             ["add", "test", "--user-id", "alice"],
             home_dir=clean_home,
@@ -190,7 +190,7 @@ class TestCLIIsolated:
         assert "API key" in combined or "api" in combined.lower() or "Error" in combined
 
     def test_search_no_key_errors(self, clean_home):
-        """Without an API key, `mem0 search` must fail."""
+        """Without an API key, `memgo search` must fail."""
         result = _run(
             ["search", "preferences", "--user-id", "alice"],
             home_dir=clean_home,
@@ -200,7 +200,7 @@ class TestCLIIsolated:
         assert "API key" in combined or "Error" in combined
 
     def test_list_no_key_errors(self, clean_home):
-        """Without an API key, `mem0 list` must fail."""
+        """Without an API key, `memgo list` must fail."""
         result = _run(["list"], home_dir=clean_home)
         assert result.returncode != 0
         combined = result.stderr + result.stdout

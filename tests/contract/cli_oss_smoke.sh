@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # OSS backend CLI 冒烟 (P3 验收): memgo CLI 打 MemGo server 往返。
-# HOME 隔离: 配置读写落到临时目录, 不污染真实 ~/.mem0。
+# HOME 隔离: 配置读写落到临时目录, 不污染真实 ~/.memgo。
 # 前提: Go server 运行于 CONTRACT_BASE_URL (默认 http://localhost:18888), stub 已起。
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -17,8 +17,8 @@ if [ ! -x "$MEMGO_BIN" ]; then
 fi
 
 export HOME="$SMOKE_HOME"
-export MEM0_BASE_URL="$BASE_URL"
-export MEM0_API_KEY="$ADMIN_KEY"
+export MEMGO_BASE_URL="$BASE_URL"
+export MEMGO_API_KEY="$ADMIN_KEY"
 PASS=0; FAIL=0
 ok() { PASS=$((PASS+1)); echo "  ok    $1"; }
 bad() { FAIL=$((FAIL+1)); echo "  FAIL  $1"; }

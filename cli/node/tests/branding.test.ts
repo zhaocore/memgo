@@ -47,7 +47,7 @@ describe("branding constants", () => {
   });
 
   it("has correct logo mini", () => {
-    expect(LOGO_MINI).toBe("◆ mem0");
+    expect(LOGO_MINI).toBe("◆ memgo");
   });
 });
 

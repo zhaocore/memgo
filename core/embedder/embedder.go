@@ -1,5 +1,5 @@
 // Package embedder: Embedder 接口与内置 provider (openai/gemini)。
-// 对齐上游 mem0/embeddings/base.py (embed + embed_batch)。
+// 对齐上游 memgo/embeddings/base.py (embed + embed_batch)。
 package embedder
 
 // Embedder 对齐 Python EmbeddingBase。

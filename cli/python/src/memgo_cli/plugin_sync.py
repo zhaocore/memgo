@@ -1,8 +1,8 @@
-"""Sync the active Mem0 API key into other ecosystem touchpoints.
+"""Sync the active MemGo API key into other ecosystem touchpoints.
 
 Why this exists:
-  The CLI canonical state lives in ``~/.mem0/config.json``. But MCP servers
-  (Claude Code plugin, Codex plugin, etc.) read ``MEM0_API_KEY`` from env
+  The CLI canonical state lives in ``~/.memgo/config.json``. But MCP servers
+  (Claude Code plugin, Codex plugin, etc.) read ``MEMGO_API_KEY`` from env
   vars or their own config files. Without a sync, an agent-mode bootstrap
   mints a new key into config.json but the plugin's MCP keeps using the
   old key from env — silent surprise.
@@ -15,12 +15,12 @@ Design:
   - Skip on dry_run
 
 Targets currently handled:
-  - ``~/.claude/settings.json::env::MEM0_API_KEY`` (Claude Code env injection)
-  - ``~/.zshrc`` / ``~/.bashrc`` ``export MEM0_API_KEY="..."`` lines
+  - ``~/.claude/settings.json::env::MEMGO_API_KEY`` (Claude Code env injection)
+  - ``~/.zshrc`` / ``~/.bashrc`` ``export MEMGO_API_KEY="..."`` lines
 
 Out of scope (deliberately not touched):
   - Codex / Cursor MCP configs — would require schema-aware edits and
-    those tools don't have mem0 entries by default
+    those tools don't have memgo entries by default
   - Plugin's own ``<plugin-dir>/.api_key`` file — plugin-managed
 """
 
@@ -56,7 +56,7 @@ def sync_api_key(api_key: str) -> list[str]:
 
 
 def _update_claude_settings(path: Path, api_key: str) -> bool:
-    """Update ``env.MEM0_API_KEY`` in path. Returns True if file was changed."""
+    """Update ``env.MEMGO_API_KEY`` in path. Returns True if file was changed."""
     if not path.is_file():
         return False
     try:
@@ -65,27 +65,27 @@ def _update_claude_settings(path: Path, api_key: str) -> bool:
     except (json.JSONDecodeError, OSError):
         return False
     env = data.get("env")
-    if not isinstance(env, dict) or "MEM0_API_KEY" not in env:
+    if not isinstance(env, dict) or "MEMGO_API_KEY" not in env:
         # No existing entry — don't create one.
         return False
-    if env["MEM0_API_KEY"] == api_key:
+    if env["MEMGO_API_KEY"] == api_key:
         return False  # already in sync
-    env["MEM0_API_KEY"] = api_key
+    env["MEMGO_API_KEY"] = api_key
     _atomic_write_text(path, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
     return True
 
 
-# Match `export MEM0_API_KEY="..."` (or single quotes, or no quotes).
+# Match `export MEMGO_API_KEY="..."` (or single quotes, or no quotes).
 # Use [ \t]* (not \s*) for trailing whitespace so a trailing newline at
-# end-of-file is preserved when MEM0_API_KEY is the last line.
+# end-of-file is preserved when MEMGO_API_KEY is the last line.
 _RC_LINE = re.compile(
-    r'^([ \t]*export[ \t]+MEM0_API_KEY[ \t]*=[ \t]*)(["\']?)([^"\'\n]*)(["\']?)[ \t]*$',
+    r'^([ \t]*export[ \t]+MEMGO_API_KEY[ \t]*=[ \t]*)(["\']?)([^"\'\n]*)(["\']?)[ \t]*$',
     re.MULTILINE,
 )
 
 
 def _update_shell_rc(path: Path, api_key: str) -> bool:
-    """Update an existing ``export MEM0_API_KEY=...`` line in path."""
+    """Update an existing ``export MEMGO_API_KEY=...`` line in path."""
     if not path.is_file():
         return False
     try:

@@ -1,4 +1,4 @@
-"""Platform (SaaS) backend — communicates with api.mem0.ai."""
+"""Platform (SaaS) backend — communicates with api.memgo.ai."""
 
 from __future__ import annotations
 
@@ -7,9 +7,9 @@ from urllib.parse import quote
 
 import httpx
 
-from mem0_cli import __version__
-from mem0_cli.backend.base import Backend
-from mem0_cli.config import PlatformConfig
+from memgo_cli import __version__
+from memgo_cli.backend.base import Backend
+from memgo_cli.config import PlatformConfig
 
 
 def _encode_path_segment(value: Any) -> str:
@@ -17,7 +17,7 @@ def _encode_path_segment(value: Any) -> str:
 
 
 class PlatformBackend(Backend):
-    """Backend that talks to the mem0 Platform API."""
+    """Backend that talks to the memgo Platform API."""
 
     def __init__(self, config: PlatformConfig) -> None:
         self.config = config
@@ -27,17 +27,17 @@ class PlatformBackend(Backend):
             headers={
                 "Authorization": f"Token {config.api_key}",
                 "Content-Type": "application/json",
-                "X-Mem0-Source": "cli",
-                "X-Mem0-Client-Language": "python",
-                "X-Mem0-Client-Version": __version__,
+                "X-MemGo-Source": "cli",
+                "X-MemGo-Client-Language": "python",
+                "X-MemGo-Client-Version": __version__,
             },
             timeout=30.0,
         )
 
     def _request(self, method: str, path: str, **kwargs: Any) -> Any:
-        from mem0_cli.state import capture_notice, is_agent_mode
+        from memgo_cli.state import capture_notice, is_agent_mode
 
-        self._client.headers["X-Mem0-Caller-Type"] = "agent" if is_agent_mode() else "user"
+        self._client.headers["X-MemGo-Caller-Type"] = "agent" if is_agent_mode() else "user"
         resp = self._client.request(method, path, **kwargs)
         if resp.status_code == 401:
             raise AuthError("Authentication failed. Your API key may be invalid or expired.")
@@ -59,17 +59,17 @@ class PlatformBackend(Backend):
         # fallback for endpoints that return non-dict / non-dict-leading
         # payloads) and stash it for end-of-command surfacing.
         notice = None
-        if isinstance(data, dict) and "mem0_notice" in data:
-            notice = data.pop("mem0_notice")
+        if isinstance(data, dict) and "memgo_notice" in data:
+            notice = data.pop("memgo_notice")
         elif (
             isinstance(data, list)
             and data
             and isinstance(data[0], dict)
-            and "mem0_notice" in data[0]
+            and "memgo_notice" in data[0]
         ):
-            notice = data[0].pop("mem0_notice")
+            notice = data[0].pop("memgo_notice")
         if notice is None:
-            notice = resp.headers.get("X-Mem0-Notice-Message") or None
+            notice = resp.headers.get("X-MemGo-Notice-Message") or None
         capture_notice(notice)
 
         return data

@@ -13,7 +13,7 @@ function WebhooksMockup() {
       <CardContent className="p-6 space-y-4">
         <div className="space-y-2">
           <Label>Endpoint URL</Label>
-          <Input placeholder="https://your-app.com/webhooks/mem0" disabled />
+          <Input placeholder="https://your-app.com/webhooks/memgo" disabled />
         </div>
         <div className="space-y-2">
           <Label>Events</Label>

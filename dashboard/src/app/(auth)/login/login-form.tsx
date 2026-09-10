@@ -78,14 +78,14 @@ export default function LoginForm() {
                     ? "/images/logos/logo-light.png"
                     : "/images/logos/logo-dark.png"
                 }
-                alt="Mem0"
+                alt="MemGo"
                 width={41}
                 height={41}
               />
             )}
           </div>
           <h1 className="text-2xl font-semibold text-onSurface-default-primary text-center mb-6 font-fustat">
-            Sign in to Mem0
+            Sign in to MemGo
           </h1>
           <div className="flex flex-col gap-4 border p-8 border-memBorder-primary rounded-xl">
             {error && (
@@ -177,7 +177,7 @@ export default function LoginForm() {
         <div className="relative z-10 flex w-full max-w-[564px] flex-col items-center gap-20 text-center text-white">
           <div className="w-full space-y-5">
             <p className="typo-h3 text-white">
-              &quot;Mem0 allowed us to unlock true personalized tutoring for
+              &quot;MemGo allowed us to unlock true personalized tutoring for
               every student, and it took us just a weekend to integrate.&quot;
             </p>
             <div className="flex flex-col items-center gap-[7px]">

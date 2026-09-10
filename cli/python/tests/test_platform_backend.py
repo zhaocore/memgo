@@ -1,17 +1,17 @@
-"""Tests for the Platform backend (mem0 Platform API client)."""
+"""Tests for the Platform backend (memgo Platform API client)."""
 
 from __future__ import annotations
 
 from unittest.mock import patch
 
-from mem0_cli.backend.platform import PlatformBackend
-from mem0_cli.config import PlatformConfig
+from memgo_cli.backend.platform import PlatformBackend
+from memgo_cli.config import PlatformConfig
 
 
 def _make_backend() -> PlatformBackend:
     # api_key/base_url are only used to build the httpx client; every test here
     # patches _request, so no real network calls are made.
-    return PlatformBackend(PlatformConfig(api_key="test-key", base_url="https://api.mem0.ai"))
+    return PlatformBackend(PlatformConfig(api_key="test-key", base_url="https://api.memgo.ai"))
 
 
 class TestDeleteEntities:

@@ -48,7 +48,7 @@ func newInitCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fireTelemetry(LoadConfig(), "cli.init", map[string]any{"command": "init"})
 			if email != "" || agentSignal || agentCaller != "" {
-				printError("--email/--code/--agent/--agent-caller flows are not migrated to the Go CLI yet.", "Use --api-key from https://app.mem0.ai")
+				printError("--email/--code/--agent/--agent-caller flows are not migrated to the Go CLI yet.", "Use --api-key from https://app.memgo.ai")
 				return errExit
 			}
 			cfg := LoadConfig()
@@ -57,7 +57,7 @@ func newInitCmd() *cobra.Command {
 				return errExit
 			}
 			if apiKey == "" {
-				apiKey = promptLine("Enter your Mem0 API key (https://app.mem0.ai): ")
+				apiKey = promptLine("Enter your memgo API key (https://app.memgo.ai): ")
 				if apiKey == "" {
 					printError("API key is required.", "")
 					return errExit
@@ -181,7 +181,7 @@ func newVersionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Show version and exit.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			printInfo("Mem0 CLI v" + Version + " (Go)")
+			printInfo("memgo CLI v" + Version + " (Go)")
 			return nil
 		},
 	}
@@ -199,7 +199,7 @@ func newHelpCmd() *cobra.Command {
 				printJSON(buildHelpJSON())
 				return nil
 			}
-			printInfo("mem0 CLI v" + Version + " (Go) — The Memory Layer for AI Agents")
+			printInfo("memgo CLI v" + Version + " (Go) — The Memory Layer for AI Agents")
 			fmt.Println()
 			fmt.Println("Usage: memgo <command> [OPTIONS]")
 			fmt.Println()
@@ -258,7 +258,7 @@ func buildHelpJSON() map[string]any {
 			"status": map[string]any{"description": "Check connectivity and authentication.", "usage": "memgo status [OPTIONS]"},
 		},
 		"global_options": map[string]any{
-			"--api-key":      "Override API key (env: MEM0_API_KEY).",
+			"--api-key":      "Override API key (env: MEMGO_API_KEY).",
 			"--base-url":     "Override API base URL.",
 			"--json/--agent": "Output as JSON for agent/programmatic use.",
 			"--help":         "Show help for a command.",

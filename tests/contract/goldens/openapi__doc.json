@@ -121,7 +121,7 @@
       "GenerateInstructionsRequest": {
         "properties": {
           "use_case": {
-            "description": "Description of what the user will use Mem0 for.",
+            "description": "Description of what the user will use memgo for.",
             "title": "Use Case",
             "type": "string"
           }
@@ -745,7 +745,7 @@
   },
   "info": {
     "description": "A REST API for managing and searching memories for your AI Agents and Apps.\n\n## Authentication\nSupports Bearer JWT tokens, per-user API keys via `X-API-Key` header, or the legacy `ADMIN_API_KEY` environment variable. Set `AUTH_DISABLED=true` for local development only.",
-    "title": "Mem0 REST APIs",
+    "title": "memgo REST APIs",
     "version": "1.0.0"
   },
   "openapi": "3.1.0",
@@ -1221,7 +1221,7 @@
             "APIKeyHeader": []
           }
         ],
-        "summary": "Get current Mem0 configuration"
+        "summary": "Get current memgo configuration"
       },
       "post": {
         "description": "Set memory configuration. Requires admin role.",
@@ -1265,7 +1265,7 @@
             "APIKeyHeader": []
           }
         ],
-        "summary": "Configure Mem0"
+        "summary": "Configure memgo"
       }
     },
     "/configure/providers": {

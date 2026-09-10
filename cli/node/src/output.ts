@@ -1,5 +1,5 @@
 /**
- * Output formatting for mem0 CLI — text, JSON, table, quiet modes.
+ * Output formatting for memgo CLI — text, JSON, table, quiet modes.
  */
 
 import boxen from "boxen";
@@ -187,7 +187,7 @@ export function formatAddResult(
 			if (eventId) {
 				console.log(`  ${dim(`  event_id: ${eventId}`)}`);
 				console.log(
-					`  ${dim(`  → Check status: mem0 event status ${eventId}`)}`,
+					`  ${dim(`  → Check status: memgo event status ${eventId}`)}`,
 				);
 			}
 			continue;
@@ -252,7 +252,7 @@ export function formatJsonEnvelope(opts: {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const { takeNotice } = require("./state.js");
 	const notice = takeNotice();
-	if (notice) envelope.mem0_notice = notice;
+	if (notice) envelope.memgo_notice = notice;
 
 	console.log(JSON.stringify(envelope, null, 2));
 }
@@ -384,7 +384,7 @@ export function formatAgentEnvelope(opts: {
 	// Surface the unclaimed-Agent-Mode notice (if any) in the envelope so an
 	// agent reading the JSON output sees it without inspecting HTTP headers.
 	const notice = takeNotice();
-	if (notice) envelope.mem0_notice = notice;
+	if (notice) envelope.memgo_notice = notice;
 
 	console.log(JSON.stringify(envelope, null, 2));
 }

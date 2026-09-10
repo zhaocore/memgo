@@ -40,7 +40,7 @@ export function cmdConfigShow(opts: { output?: string } = {}): void {
 	}
 
 	console.log();
-	console.log(`  ${brand("◆ mem0 Configuration")}\n`);
+	console.log(`  ${brand("◆ memgo Configuration")}\n`);
 
 	const table = new Table({
 		head: [accent("Key"), accent("Value")],

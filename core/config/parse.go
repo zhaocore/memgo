@@ -20,7 +20,7 @@ type PGVectorDefaults struct {
 func DefaultPGVector() PGVectorDefaults {
 	return PGVectorDefaults{
 		DBName:             "postgres",
-		CollectionName:     "mem0",
+		CollectionName:     "memgo",
 		EmbeddingModelDims: 1536,
 		DiskANN:            false,
 		HNSW:               true,
@@ -29,9 +29,9 @@ func DefaultPGVector() PGVectorDefaults {
 	}
 }
 
-// DefaultHistoryDBPath 对齐 Python: $MEM0_DIR 或 ~/.mem0/history.db。
+// DefaultHistoryDBPath 对齐 Python: $MEMGO_DIR 或 ~/.memgo/history.db。
 func DefaultHistoryDBPath() string {
-	if d := os.Getenv("MEM0_DIR"); d != "" {
+	if d := os.Getenv("MEMGO_DIR"); d != "" {
 		return filepath.Join(d, "history.db")
 	}
 	home, err := os.UserHomeDir()
@@ -39,5 +39,5 @@ func DefaultHistoryDBPath() string {
 		// 无 home 环境退化为相对路径, 等价 Python expanduser 失败退化
 		return "history.db"
 	}
-	return filepath.Join(home, ".mem0", "history.db")
+	return filepath.Join(home, ".memgo", "history.db")
 }
