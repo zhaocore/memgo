@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface UpgradeBannerProps {
   id: string;
   message: string;
   ctaLabel: string;
   ctaUrl: string;
-  variant: "cloud" | "enterprise";
+  variant: 'cloud' | 'enterprise';
   dismissible?: boolean;
 }
 
@@ -25,24 +25,24 @@ export function UpgradeBanner({
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    setDismissed(localStorage.getItem(`nudge_${id}_dismissed`) === "true");
+    setDismissed(localStorage.getItem(`nudge_${id}_dismissed`) === 'true');
     setMounted(true);
   }, [id]);
 
   if (!mounted || dismissed) return null;
 
   const handleDismiss = () => {
-    localStorage.setItem(`nudge_${id}_dismissed`, "true");
+    localStorage.setItem(`nudge_${id}_dismissed`, 'true');
     setDismissed(true);
   };
 
   return (
     <div
       className={cn(
-        "flex items-center gap-3 px-4 py-2.5 rounded-md typo-body-xs font-fustat",
-        variant === "cloud"
-          ? "bg-memGold-100 border-l-2 border-memGold-500"
-          : "bg-memRed-100 border-l-2 border-memRed-400",
+        'flex items-center gap-3 px-4 py-2.5 rounded-md typo-body-xs font-fustat',
+        variant === 'cloud'
+          ? 'bg-memGold-100 border-l-2 border-memGold-500'
+          : 'bg-memRed-100 border-l-2 border-memRed-400',
       )}
     >
       <p className="flex-1 text-onSurface-default-secondary">{message}</p>
@@ -51,8 +51,8 @@ export function UpgradeBanner({
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-          "text-xs font-medium whitespace-nowrap underline",
-          variant === "cloud" ? "text-memGold-700" : "text-memRed-600",
+          'text-xs font-medium whitespace-nowrap underline',
+          variant === 'cloud' ? 'text-memGold-700' : 'text-memRed-600',
         )}
       >
         {ctaLabel}

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { useTheme } from "next-themes";
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
 export default function ThemeAwareLogo({
   width = 120,
@@ -22,9 +22,9 @@ export default function ThemeAwareLogo({
     return <div style={{ width, height }} />;
   }
 
-  const currentTheme = theme === "system" ? resolvedTheme : theme;
+  const currentTheme = theme === 'system' ? resolvedTheme : theme;
   const logoSrc =
-    currentTheme === "dark" ? "/images/dark.svg" : "/images/light.svg";
+    currentTheme === 'dark' ? '/images/dark.svg' : '/images/light.svg';
 
   return <Image src={logoSrc} alt="MemGo.ai" width={width} height={height} />;
 }

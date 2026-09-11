@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { toast } from "@/components/ui/use-toast";
-import { UpgradeBanner } from "@/components/self-hosted/upgrade-banner";
-import { getErrorMessage } from "@/lib/error-message";
-import { api } from "@/utils/api";
-import { MEMORY_ENDPOINTS } from "@/utils/api-endpoints";
+} from '@/components/ui/select';
+import { toast } from '@/components/ui/use-toast';
+import { UpgradeBanner } from '@/components/self-hosted/upgrade-banner';
+import { getErrorMessage } from '@/lib/error-message';
+import { api } from '@/utils/api';
+import { MEMORY_ENDPOINTS } from '@/utils/api-endpoints';
 import {
   buildProviderConfig,
   getEffectiveConfig,
-} from "@/utils/self-hosted-config";
-import { useAuth } from "@/hooks/use-auth";
-import { useApiQuery } from "@/hooks/use-api-query";
+} from '@/utils/self-hosted-config';
+import { useAuth } from '@/hooks/use-auth';
+import { useApiQuery } from '@/hooks/use-api-query';
 
 type BundledProviders = {
   llm: string[];
@@ -32,18 +32,18 @@ type BundledProviders = {
 export default function ConfigurationPage() {
   const { isAdmin } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
-  const [llmProvider, setLlmProvider] = useState("");
-  const [llmModel, setLlmModel] = useState("");
-  const [llmApiKey, setLlmApiKey] = useState("");
-  const [embedderProvider, setEmbedderProvider] = useState("");
-  const [embedderModel, setEmbedderModel] = useState("");
+  const [llmProvider, setLlmProvider] = useState('');
+  const [llmModel, setLlmModel] = useState('');
+  const [llmApiKey, setLlmApiKey] = useState('');
+  const [embedderProvider, setEmbedderProvider] = useState('');
+  const [embedderModel, setEmbedderModel] = useState('');
 
   const { data: config, isLoading: isPrefilling } = useApiQuery(
     async () => {
       const res = await api.get(MEMORY_ENDPOINTS.CONFIGURE);
       return getEffectiveConfig(res.data);
     },
-    { errorToast: "Failed to load server configuration" },
+    { errorToast: 'Failed to load server configuration' },
   );
 
   const { data: providers } = useApiQuery<BundledProviders>(
@@ -53,18 +53,18 @@ export default function ConfigurationPage() {
       );
       return res.data;
     },
-    { errorToast: "Failed to load bundled providers" },
+    { errorToast: 'Failed to load bundled providers' },
   );
 
   useEffect(() => {
     if (!config) return;
-    setLlmProvider((current) => current || config.llm?.provider || "");
-    setLlmModel((current) => current || config.llm?.config?.model || "");
+    setLlmProvider((current) => current || config.llm?.provider || '');
+    setLlmModel((current) => current || config.llm?.config?.model || '');
     setEmbedderProvider(
-      (current) => current || config.embedder?.provider || "",
+      (current) => current || config.embedder?.provider || '',
     );
     setEmbedderModel(
-      (current) => current || config.embedder?.config?.model || "",
+      (current) => current || config.embedder?.config?.model || '',
     );
   }, [config]);
 
@@ -83,7 +83,7 @@ export default function ConfigurationPage() {
       });
 
       const newConfig: Record<string, unknown> = {
-        version: "v1.1",
+        version: 'v1.1',
       };
 
       if (llm) {
@@ -95,12 +95,12 @@ export default function ConfigurationPage() {
       }
 
       await api.post(MEMORY_ENDPOINTS.CONFIGURE, newConfig);
-      toast({ title: "Configuration saved", variant: "success" });
+      toast({ title: 'Configuration saved', variant: 'success' });
     } catch (error) {
       toast({
-        title: "Failed to save configuration",
+        title: 'Failed to save configuration',
         description: getErrorMessage(error),
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);
@@ -130,7 +130,7 @@ export default function ConfigurationPage() {
                 value={llmProvider}
                 onValueChange={(value) => {
                   setLlmProvider(value);
-                  setLlmApiKey("");
+                  setLlmApiKey('');
                 }}
                 disabled={!isAdmin || !providers}
               >
@@ -209,7 +209,7 @@ export default function ConfigurationPage() {
 
       <p className="text-xs text-onSurface-default-tertiary">
         Need another provider? Install its Python package, rebuild the image,
-        and extend the bundled list. See the{" "}
+        and extend the bundled list. See the{' '}
         <a
           href="https://docs.memgo.ai/open-source/setup#supported-providers"
           target="_blank"
@@ -223,7 +223,7 @@ export default function ConfigurationPage() {
 
       {isAdmin && (
         <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? "Saving..." : "Save Configuration"}
+          {isSaving ? 'Saving...' : 'Save Configuration'}
         </Button>
       )}
 

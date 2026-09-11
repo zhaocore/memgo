@@ -1,12 +1,12 @@
-import "@/styles/globals.css";
-import { Inter, Fustat, Roboto, DMMono, InterDisplay } from "../(root)/fonts";
-import { cn } from "@/lib/utils";
-import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/lib/auth";
+import '@/styles/globals.css';
+import { Inter, Fustat, Roboto, DMMono, InterDisplay } from '../(root)/fonts';
+import { cn } from '@/lib/utils';
+import { ThemeProvider } from '@/components/theme-provider';
+import { AuthProvider } from '@/lib/auth';
 
 export const metadata = {
-  title: "Setup | MemGo",
-  description: "Set up your MemGo instance",
+  title: 'Setup | MemGo',
+  description: 'Set up your MemGo instance',
 };
 
 export default function SetupLayout({

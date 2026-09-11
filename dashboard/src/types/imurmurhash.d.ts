@@ -1,4 +1,4 @@
-declare module "imurmurhash" {
+declare module 'imurmurhash' {
   interface MurmurHash3State {
     result(): number;
     hash(value: string): MurmurHash3State;

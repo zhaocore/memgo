@@ -1,28 +1,28 @@
-import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
-import { AUTH_ENDPOINTS } from "@/utils/api-endpoints";
-import { getServerApiUrl } from "@/lib/server-api-url";
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+import { AUTH_ENDPOINTS } from '@/utils/api-endpoints';
+import { getServerApiUrl } from '@/lib/server-api-url';
 
-const COOKIE_NAME = "memgo_refresh_token";
+const COOKIE_NAME = 'memgo_refresh_token';
 
 function shouldUseSecureCookie() {
   const dashboardUrl = process.env.DASHBOARD_URL;
   if (!dashboardUrl) {
-    return process.env.NODE_ENV === "production";
+    return process.env.NODE_ENV === 'production';
   }
 
   try {
-    return new URL(dashboardUrl).protocol === "https:";
+    return new URL(dashboardUrl).protocol === 'https:';
   } catch {
-    return process.env.NODE_ENV === "production";
+    return process.env.NODE_ENV === 'production';
   }
 }
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: shouldUseSecureCookie(),
-  sameSite: "lax" as const,
-  path: "/",
+  sameSite: 'lax' as const,
+  path: '/',
   maxAge: 30 * 24 * 60 * 60, // 30 days
 };
 
@@ -31,19 +31,19 @@ export async function POST() {
   const refreshToken = cookieStore.get(COOKIE_NAME)?.value;
 
   if (!refreshToken) {
-    return NextResponse.json({ error: "No refresh token" }, { status: 401 });
+    return NextResponse.json({ error: 'No refresh token' }, { status: 401 });
   }
 
   const res = await fetch(`${getServerApiUrl()}${AUTH_ENDPOINTS.REFRESH}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refresh_token: refreshToken }),
   });
 
   if (!res.ok) {
     // Refresh token is invalid — clear cookie
     cookieStore.delete(COOKIE_NAME);
-    return NextResponse.json({ error: "Refresh failed" }, { status: 401 });
+    return NextResponse.json({ error: 'Refresh failed' }, { status: 401 });
   }
 
   const data = await res.json();
@@ -59,7 +59,7 @@ export async function PUT(request: NextRequest) {
 
   if (!body.refresh_token) {
     return NextResponse.json(
-      { error: "Missing refresh_token" },
+      { error: 'Missing refresh_token' },
       { status: 400 },
     );
   }

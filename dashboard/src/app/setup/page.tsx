@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Check, Copy } from "lucide-react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Check, Copy } from 'lucide-react';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { useAuth } from "@/hooks/use-auth";
-import { getErrorMessage } from "@/lib/error-message";
-import { cn } from "@/lib/utils";
-import { api } from "@/utils/api";
+} from '@/components/ui/select';
+import { useAuth } from '@/hooks/use-auth';
+import { getErrorMessage } from '@/lib/error-message';
+import { cn } from '@/lib/utils';
+import { api } from '@/utils/api';
 import {
   API_KEY_ENDPOINTS,
   AUTH_ENDPOINTS,
   MEMORY_ENDPOINTS,
-} from "@/utils/api-endpoints";
+} from '@/utils/api-endpoints';
 import {
   buildProviderConfig,
   getEffectiveConfig,
-} from "@/utils/self-hosted-config";
-import { isValidEmail } from "@/lib/validators";
+} from '@/utils/self-hosted-config';
+import { isValidEmail } from '@/lib/validators';
 
 type BundledProviders = {
   llm: string[];
@@ -36,31 +36,31 @@ type BundledProviders = {
 };
 
 const STEPS = [
-  "Admin Account",
-  "Providers",
-  "API Key",
-  "Use Case",
-  "Quick Test",
+  'Admin Account',
+  'Providers',
+  'API Key',
+  'Use Case',
+  'Quick Test',
 ];
 const STEP_TITLES = [
-  "Create your admin account",
-  "Review provider configuration",
-  "Your API key",
-  "Tell us your use case",
-  "Test your setup",
+  'Create your admin account',
+  'Review provider configuration',
+  'Your API key',
+  'Tell us your use case',
+  'Test your setup',
 ];
 const SUPPORTED_PROVIDERS_URL =
-  "https://docs.memgo.ai/open-source/setup#supported-providers";
+  'https://docs.memgo.ai/open-source/setup#supported-providers';
 
 const USE_CASE_PRESETS = [
-  "Personal assistant",
-  "Coding agent",
-  "Customer support",
-  "Research",
-  "Therapy / journaling",
+  'Personal assistant',
+  'Coding agent',
+  'Customer support',
+  'Research',
+  'Therapy / journaling',
 ];
 
-const DEFAULT_TEST_MESSAGE = "I like to hike on weekends.";
+const DEFAULT_TEST_MESSAGE = 'I like to hike on weekends.';
 
 export default function SetupPage() {
   const router = useRouter();
@@ -68,37 +68,37 @@ export default function SetupPage() {
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isPrefillingConfig, setIsPrefillingConfig] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const [llmProvider, setLlmProvider] = useState("");
-  const [llmModel, setLlmModel] = useState("");
-  const [llmApiKey, setLlmApiKey] = useState("");
-  const [embedderProvider, setEmbedderProvider] = useState("");
-  const [embedderModel, setEmbedderModel] = useState("");
+  const [llmProvider, setLlmProvider] = useState('');
+  const [llmModel, setLlmModel] = useState('');
+  const [llmApiKey, setLlmApiKey] = useState('');
+  const [embedderProvider, setEmbedderProvider] = useState('');
+  const [embedderModel, setEmbedderModel] = useState('');
   const [serverHasLlmKey, setServerHasLlmKey] = useState(false);
   const [providers, setProviders] = useState<BundledProviders | null>(null);
-  const [initialLlmProvider, setInitialLlmProvider] = useState("");
-  const [initialLlmModel, setInitialLlmModel] = useState("");
-  const [initialEmbedderProvider, setInitialEmbedderProvider] = useState("");
-  const [initialEmbedderModel, setInitialEmbedderModel] = useState("");
+  const [initialLlmProvider, setInitialLlmProvider] = useState('');
+  const [initialLlmModel, setInitialLlmModel] = useState('');
+  const [initialEmbedderProvider, setInitialEmbedderProvider] = useState('');
+  const [initialEmbedderModel, setInitialEmbedderModel] = useState('');
 
-  const [apiKey, setApiKey] = useState("");
-  const [keyLabel, setKeyLabel] = useState("");
+  const [apiKey, setApiKey] = useState('');
+  const [keyLabel, setKeyLabel] = useState('');
   const [copied, setCopied] = useState(false);
   const [testSuccess, setTestSuccess] = useState(false);
 
-  const [useCase, setUseCase] = useState("");
-  const [customInstructions, setCustomInstructions] = useState("");
+  const [useCase, setUseCase] = useState('');
+  const [customInstructions, setCustomInstructions] = useState('');
   const [testMessage, setTestMessage] = useState(DEFAULT_TEST_MESSAGE);
   const [isGeneratingInstructions, setIsGeneratingInstructions] =
     useState(false);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
   useEffect(() => {
     if (step !== 1) {
@@ -121,10 +121,10 @@ export default function SetupPage() {
           return;
         }
 
-        const llmProv = config?.llm?.provider || "";
-        const llmMod = config?.llm?.config?.model || "";
-        const embProv = config?.embedder?.provider || "";
-        const embMod = config?.embedder?.config?.model || "";
+        const llmProv = config?.llm?.provider || '';
+        const llmMod = config?.llm?.config?.model || '';
+        const embProv = config?.embedder?.provider || '';
+        const embMod = config?.embedder?.config?.model || '';
 
         setLlmProvider(llmProv);
         setLlmModel(llmMod);
@@ -138,7 +138,7 @@ export default function SetupPage() {
         setProviders(providersRes.data);
       } catch (err) {
         if (active) {
-          setError(getErrorMessage(err, "Could not read server configuration"));
+          setError(getErrorMessage(err, 'Could not read server configuration'));
         }
       } finally {
         if (active) {
@@ -158,7 +158,7 @@ export default function SetupPage() {
     e.preventDefault();
 
     if (!isValidEmail(email)) {
-      setError("Enter a valid email address.");
+      setError('Enter a valid email address.');
       return;
     }
 
@@ -168,18 +168,18 @@ export default function SetupPage() {
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+      setError('Password must be at least 8 characters');
       return;
     }
 
-    setError("");
+    setError('');
     setIsLoading(true);
 
     try {
       await register(name, email, password);
       setStep(1);
     } catch (err) {
-      setError(getErrorMessage(err, "Registration failed"));
+      setError(getErrorMessage(err, 'Registration failed'));
     } finally {
       setIsLoading(false);
     }
@@ -187,7 +187,7 @@ export default function SetupPage() {
 
   const handleStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     const dirty =
       !!llmApiKey ||
@@ -215,20 +215,20 @@ export default function SetupPage() {
           llmApiKey && embedderProvider === llmProvider ? llmApiKey : undefined,
       });
 
-      const payload: Record<string, unknown> = { version: "v1.1" };
+      const payload: Record<string, unknown> = { version: 'v1.1' };
       if (llm) payload.llm = llm;
       if (embedder) payload.embedder = embedder;
 
       await api.post(MEMORY_ENDPOINTS.CONFIGURE, payload);
       if (llmApiKey) setServerHasLlmKey(true);
-      setLlmApiKey("");
+      setLlmApiKey('');
       setInitialLlmProvider(llmProvider);
       setInitialLlmModel(llmModel);
       setInitialEmbedderProvider(embedderProvider);
       setInitialEmbedderModel(embedderModel);
       setStep(2);
     } catch (err) {
-      setError(getErrorMessage(err, "Failed to save configuration"));
+      setError(getErrorMessage(err, 'Failed to save configuration'));
     } finally {
       setIsLoading(false);
     }
@@ -236,16 +236,16 @@ export default function SetupPage() {
 
   const handleStep3 = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setIsLoading(true);
 
     try {
       const res = await api.post(API_KEY_ENDPOINTS.BASE, {
-        label: keyLabel.trim() || "My First Key",
+        label: keyLabel.trim() || 'My First Key',
       });
       setApiKey(res.data.key);
     } catch (err) {
-      setError(getErrorMessage(err, "Failed to create API key"));
+      setError(getErrorMessage(err, 'Failed to create API key'));
     } finally {
       setIsLoading(false);
     }
@@ -257,27 +257,27 @@ export default function SetupPage() {
   };
 
   const handleContinueToQuickTest = () => {
-    setError("");
+    setError('');
     setStep(4);
   };
 
   const handleGoToDashboard = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/dashboard/requests");
+    router.push('/dashboard/requests');
   };
 
   const handleTest = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setIsLoading(true);
 
     try {
       const res = await fetch(`${apiUrl}/memories`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-API-Key": apiKey },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': apiKey },
         body: JSON.stringify({
-          messages: [{ role: "user", content: testMessage }],
-          user_id: "setup-test",
+          messages: [{ role: 'user', content: testMessage }],
+          user_id: 'setup-test',
         }),
       });
 
@@ -297,7 +297,7 @@ export default function SetupPage() {
         .post(AUTH_ENDPOINTS.ONBOARDING_COMPLETE, { use_case: useCase })
         .catch(() => {});
     } catch (err) {
-      setError(getErrorMessage(err, "Test failed"));
+      setError(getErrorMessage(err, 'Test failed'));
     } finally {
       setIsLoading(false);
     }
@@ -311,10 +311,10 @@ export default function SetupPage() {
             <div key={label} className="flex items-center gap-2">
               <div
                 className={cn(
-                  "size-7 rounded-full flex items-center justify-center text-xs font-medium",
+                  'size-7 rounded-full flex items-center justify-center text-xs font-medium',
                   i <= step
-                    ? "bg-memPurple-500 text-white"
-                    : "bg-memNeutral-200 text-onSurface-default-tertiary",
+                    ? 'bg-memPurple-500 text-white'
+                    : 'bg-memNeutral-200 text-onSurface-default-tertiary',
                 )}
               >
                 {i < step ? <Check className="size-3.5" /> : i + 1}
@@ -322,8 +322,8 @@ export default function SetupPage() {
               {i < STEPS.length - 1 && (
                 <div
                   className={cn(
-                    "w-8 h-[2px]",
-                    i < step ? "bg-memPurple-500" : "bg-memNeutral-200",
+                    'w-8 h-[2px]',
+                    i < step ? 'bg-memPurple-500' : 'bg-memNeutral-200',
                   )}
                 />
               )}
@@ -397,7 +397,7 @@ export default function SetupPage() {
                   disabled={isLoading || !name || !email || !password}
                   className="w-full"
                 >
-                  {isLoading ? "Creating..." : "Create Admin Account"}
+                  {isLoading ? 'Creating...' : 'Create Admin Account'}
                 </Button>
               </form>
             )}
@@ -421,7 +421,7 @@ export default function SetupPage() {
                       value={llmProvider}
                       onValueChange={(value) => {
                         setLlmProvider(value);
-                        setLlmApiKey("");
+                        setLlmApiKey('');
                       }}
                       disabled={!providers}
                     >
@@ -458,8 +458,8 @@ export default function SetupPage() {
                     onChange={(e) => setLlmApiKey(e.target.value)}
                     placeholder={
                       serverHasLlmKey
-                        ? "Leave blank to keep existing key"
-                        : "sk-..."
+                        ? 'Leave blank to keep existing key'
+                        : 'sk-...'
                     }
                     className="font-mono text-sm"
                   />
@@ -504,7 +504,7 @@ export default function SetupPage() {
 
                 <p className="text-xs text-onSurface-default-tertiary">
                   Need another provider? Install its Python package and rebuild
-                  the image. See{" "}
+                  the image. See{' '}
                   <a
                     href={SUPPORTED_PROVIDERS_URL}
                     target="_blank"
@@ -526,7 +526,7 @@ export default function SetupPage() {
                   }
                   className="w-full"
                 >
-                  {isLoading ? "Saving..." : "Save & Continue"}
+                  {isLoading ? 'Saving...' : 'Save & Continue'}
                 </Button>
               </form>
             )}
@@ -543,7 +543,7 @@ export default function SetupPage() {
                   />
                 </div>
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? "Generating..." : "Generate API Key"}
+                  {isLoading ? 'Generating...' : 'Generate API Key'}
                 </Button>
               </form>
             )}
@@ -607,7 +607,7 @@ export default function SetupPage() {
                       onClick={() => setUseCase(preset)}
                       className={cn(
                         useCase === preset &&
-                          "border-memPurple-500 text-memPurple-500",
+                          'border-memPurple-500 text-memPurple-500',
                       )}
                     >
                       {preset}
@@ -632,7 +632,7 @@ export default function SetupPage() {
                     disabled={!useCase || isGeneratingInstructions}
                     className="flex-1"
                     onClick={async () => {
-                      setError("");
+                      setError('');
                       setIsGeneratingInstructions(true);
                       try {
                         const res = await api.post(
@@ -649,7 +649,7 @@ export default function SetupPage() {
                         setError(
                           getErrorMessage(
                             err,
-                            "Failed to generate instructions",
+                            'Failed to generate instructions',
                           ),
                         );
                       } finally {
@@ -658,8 +658,8 @@ export default function SetupPage() {
                     }}
                   >
                     {isGeneratingInstructions
-                      ? "Generating instructions..."
-                      : "Generate instructions"}
+                      ? 'Generating instructions...'
+                      : 'Generate instructions'}
                   </Button>
                 </div>
                 {customInstructions && (
@@ -679,7 +679,7 @@ export default function SetupPage() {
                       type="button"
                       className="w-full"
                       onClick={async () => {
-                        setError("");
+                        setError('');
                         setIsLoading(true);
                         try {
                           await api.post(MEMORY_ENDPOINTS.CONFIGURE, {
@@ -688,7 +688,7 @@ export default function SetupPage() {
                           handleContinueToQuickTest();
                         } catch (err) {
                           setError(
-                            getErrorMessage(err, "Failed to save instructions"),
+                            getErrorMessage(err, 'Failed to save instructions'),
                           );
                         } finally {
                           setIsLoading(false);
@@ -696,7 +696,7 @@ export default function SetupPage() {
                       }}
                       disabled={isLoading}
                     >
-                      {isLoading ? "Saving..." : "Save & Continue"}
+                      {isLoading ? 'Saving...' : 'Save & Continue'}
                     </Button>
                   </div>
                 )}
@@ -728,17 +728,17 @@ export default function SetupPage() {
                       disabled={isLoading}
                       className="w-full"
                     >
-                      {isLoading ? "Testing..." : "Run Test"}
+                      {isLoading ? 'Testing...' : 'Run Test'}
                     </Button>
                     {error && (
                       <p className="text-xs text-onSurface-default-tertiary">
-                        Provider credentials or model wrong? Fix them in{" "}
+                        Provider credentials or model wrong? Fix them in{' '}
                         <a
                           href="/dashboard/configuration"
                           className="underline underline-offset-4 hover:text-onSurface-default-primary"
                         >
                           Configuration
-                        </a>{" "}
+                        </a>{' '}
                         and run the test again.
                       </p>
                     )}

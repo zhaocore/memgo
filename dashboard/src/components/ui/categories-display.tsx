@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface CategoriesDisplayProps {
   categories?: string[];
@@ -32,16 +32,16 @@ export function CategoriesDisplay({
 
   const getCategoryColor = (category: string) => {
     const colors = [
-      "bg-purple-500",
-      "bg-blue-500",
-      "bg-green-500",
-      "bg-yellow-500",
-      "bg-red-500",
-      "bg-indigo-500",
-      "bg-pink-500",
-      "bg-teal-500",
-      "bg-orange-500",
-      "bg-cyan-500",
+      'bg-purple-500',
+      'bg-blue-500',
+      'bg-green-500',
+      'bg-yellow-500',
+      'bg-red-500',
+      'bg-indigo-500',
+      'bg-pink-500',
+      'bg-teal-500',
+      'bg-orange-500',
+      'bg-cyan-500',
     ];
 
     let hash = 0;
@@ -62,17 +62,18 @@ export function CategoriesDisplay({
   const firstCategory = allCategories[0];
   const remainingCount = allCategories.length - 1;
 
-  const popoverContent = isHovered &&
+  const popoverContent =
+    isHovered &&
     isPositioned &&
     allCategories.length > 1 && (
       <div
         style={{
-          position: "fixed",
+          position: 'fixed',
           top: `${popoverPosition.top}px`,
           left: `${popoverPosition.left}px`,
           zIndex: 999999,
         }}
-        className={`p-3 bg-surface-default-tertiary border border-memBorder-primary rounded-lg shadow-xl flex flex-col gap-2.5 min-w-max opacity-100 visible`}
+        className={'p-3 bg-surface-default-tertiary border border-memBorder-primary rounded-lg shadow-xl flex flex-col gap-2.5 min-w-max opacity-100 visible'}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -80,12 +81,12 @@ export function CategoriesDisplay({
         {allCategories.map((category, index) => (
           <div
             key={index}
-            className="inline-flex items-center gap-1.5 whitespace-nowrap bg-surface-default-fg-secondary border border-memBorder-primary rounded-md px-2 py-1 text-onSurface-default-secondary"
+            className='inline-flex items-center gap-1.5 whitespace-nowrap bg-surface-default-fg-secondary border border-memBorder-primary rounded-md px-2 py-1 text-onSurface-default-secondary'
           >
             <div
               className={`size-2 rounded-full ${getCategoryColor(category)}`}
             />
-            <span className="typo-body-xs">{category}</span>
+            <span className='typo-body-xs'>{category}</span>
           </div>
         ))}
       </div>
@@ -134,7 +135,7 @@ export function CategoriesDisplay({
       </div>
 
       {/* Portal-rendered popover */}
-      {typeof window !== "undefined" &&
+      {typeof window !== 'undefined' &&
         popoverContent &&
         createPortal(popoverContent, document.body)}
     </div>

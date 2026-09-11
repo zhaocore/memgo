@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { LockedPage } from "@/components/self-hosted/locked-page";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { LockedPage } from '@/components/self-hosted/locked-page';
+import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 function ExportMockup() {
   return (
@@ -13,13 +13,13 @@ function ExportMockup() {
           <div className="space-y-2">
             <Label>Format</Label>
             <div className="flex gap-2">
-              {["JSON", "CSV", "Pydantic Schema"].map((fmt) => (
+              {['JSON', 'CSV', 'Pydantic Schema'].map((fmt) => (
                 <Button
                   key={fmt}
                   variant="outline"
                   size="sm"
                   disabled
-                  className={fmt === "JSON" ? "border-memPurple-300" : ""}
+                  className={fmt === 'JSON' ? 'border-memPurple-300' : ''}
                 >
                   {fmt}
                 </Button>

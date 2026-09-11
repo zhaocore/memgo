@@ -1,9 +1,9 @@
-import React from "react";
-import { Loader2 } from "lucide-react";
+import React from 'react';
+import { Loader2 } from 'lucide-react';
 
 export const renderLoader = (
   condition: boolean,
-  className: string = "",
+  className: string = '',
   showLoader: boolean = true,
 ) => {
   if (condition) {

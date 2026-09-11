@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
-import { Slot } from "@radix-ui/react-slot";
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+import { Slot } from '@radix-ui/react-slot';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/tooltip';
 
 const sidebarVariants = cva(
-  "relative flex flex-col gap-0 border-r border-memBorder-primary",
+  'relative flex flex-col gap-0 border-r border-memBorder-primary',
   {
     variants: {
       collapsible: {
-        icon: "w-[90px] transition-[width] duration-300 ease-in-out",
-        default: "w-72 transition-[width] duration-300 ease-in-out",
+        icon: 'w-[90px] transition-[width] duration-300 ease-in-out',
+        default: 'w-72 transition-[width] duration-300 ease-in-out',
       },
     },
     defaultVariants: {
-      collapsible: "default",
+      collapsible: 'default',
     },
   },
 );
@@ -39,15 +39,15 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
     />
   ),
 );
-Sidebar.displayName = "Sidebar";
+Sidebar.displayName = 'Sidebar';
 
 const SidebarHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex flex-col gap-2", className)} {...props} />
+  <div ref={ref} className={cn('flex flex-col gap-2', className)} {...props} />
 ));
-SidebarHeader.displayName = "SidebarHeader";
+SidebarHeader.displayName = 'SidebarHeader';
 
 const SidebarContent = React.forwardRef<
   HTMLDivElement,
@@ -55,27 +55,27 @@ const SidebarContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-1 flex-col gap-0 overflow-hidden", className)}
+    className={cn('flex flex-1 flex-col gap-0 overflow-hidden', className)}
     {...props}
   />
 ));
-SidebarContent.displayName = "SidebarContent";
+SidebarContent.displayName = 'SidebarContent';
 
 const SidebarFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("mt-auto", className)} {...props} />
+  <div ref={ref} className={cn('mt-auto', className)} {...props} />
 ));
-SidebarFooter.displayName = "SidebarFooter";
+SidebarFooter.displayName = 'SidebarFooter';
 
 const SidebarGroup = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex flex-col gap-1", className)} {...props} />
+  <div ref={ref} className={cn('flex flex-col gap-1', className)} {...props} />
 ));
-SidebarGroup.displayName = "SidebarGroup";
+SidebarGroup.displayName = 'SidebarGroup';
 
 const SidebarGroupLabel = React.forwardRef<
   HTMLDivElement,
@@ -84,42 +84,42 @@ const SidebarGroupLabel = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex w-full items-center gap-1 px-[6px] py-1 text-[10px] font-medium uppercase leading-[140%] text-onSurface-default-tertiary font-dm-mono",
+      'flex w-full items-center gap-1 px-[6px] py-1 text-[10px] font-medium uppercase leading-[140%] text-onSurface-default-tertiary font-dm-mono',
       className,
     )}
     {...props}
   />
 ));
-SidebarGroupLabel.displayName = "SidebarGroupLabel";
+SidebarGroupLabel.displayName = 'SidebarGroupLabel';
 
 const SidebarMenu = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex flex-col gap-1", className)} {...props} />
+  <div ref={ref} className={cn('flex flex-col gap-1', className)} {...props} />
 ));
-SidebarMenu.displayName = "SidebarMenu";
+SidebarMenu.displayName = 'SidebarMenu';
 
 const SidebarMenuItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("", className)} {...props} />
+  <div ref={ref} className={cn('', className)} {...props} />
 ));
-SidebarMenuItem.displayName = "SidebarMenuItem";
+SidebarMenuItem.displayName = 'SidebarMenuItem';
 
 const menuButtonVariants = cva(
-  "group flex w-full items-center gap-1.5 rounded p-1.5 font-fustat text-xs font-semibold leading-[140%] transition-colors",
+  'group flex w-full items-center gap-1.5 rounded p-1.5 font-fustat text-xs font-semibold leading-[140%] transition-colors',
   {
     variants: {
       active: {
-        true: "bg-surface-default-tertiary text-onSurface-default-primary [&_svg]:text-onSurface-default-primary",
+        true: 'bg-surface-default-tertiary text-onSurface-default-primary [&_svg]:text-onSurface-default-primary',
         false:
-          "bg-transparent text-onSurface-default-secondary [&_svg]:text-onSurface-default-tertiary hover:bg-surface-default-primary-hover [&_svg]:group-hover:text-onSurface-default-secondary",
+          'bg-transparent text-onSurface-default-secondary [&_svg]:text-onSurface-default-tertiary hover:bg-surface-default-primary-hover [&_svg]:group-hover:text-onSurface-default-secondary',
       },
       collapsed: {
-        true: "!w-8 !h-8 !p-2 items-center justify-center",
-        false: "",
+        true: '!w-8 !h-8 !p-2 items-center justify-center',
+        false: '',
       },
     },
     compoundVariants: [
@@ -127,13 +127,13 @@ const menuButtonVariants = cva(
         collapsed: true,
         active: false,
         className:
-          "bg-surface-default-secondary hover:bg-surface-default-primary-hover [&_svg]:text-onSurface-default-tertiary [&_svg]:group-hover:text-onSurface-default-secondary",
+          'bg-surface-default-secondary hover:bg-surface-default-primary-hover [&_svg]:text-onSurface-default-tertiary [&_svg]:group-hover:text-onSurface-default-secondary',
       },
       {
         collapsed: true,
         active: true,
         className:
-          "bg-surface-default-tertiary [&_svg]:text-onSurface-default-primary",
+          'bg-surface-default-tertiary [&_svg]:text-onSurface-default-primary',
       },
     ],
     defaultVariants: {
@@ -159,7 +159,7 @@ const SidebarMenuButton = React.forwardRef<
     { className, active, collapsed, asChild = false, tooltip, ...props },
     ref,
   ) => {
-    const Comp = asChild ? Slot : "button";
+    const Comp = asChild ? Slot : 'button';
     const button = (
       <Comp
         ref={ref}
@@ -180,7 +180,7 @@ const SidebarMenuButton = React.forwardRef<
     );
   },
 );
-SidebarMenuButton.displayName = "SidebarMenuButton";
+SidebarMenuButton.displayName = 'SidebarMenuButton';
 
 const SidebarMenuAction = React.forwardRef<
   HTMLButtonElement,
@@ -191,14 +191,14 @@ const SidebarMenuAction = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "flex h-6 w-6 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground",
-      showOnHover && "invisible group-hover:visible",
+      'flex h-6 w-6 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground',
+      showOnHover && 'invisible group-hover:visible',
       className,
     )}
     {...props}
   />
 ));
-SidebarMenuAction.displayName = "SidebarMenuAction";
+SidebarMenuAction.displayName = 'SidebarMenuAction';
 
 const SidebarMenuSub = React.forwardRef<
   HTMLDivElement,
@@ -206,40 +206,40 @@ const SidebarMenuSub = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col gap-1 py-1.5 pl-6", className)}
+    className={cn('flex flex-col gap-1 py-1.5 pl-6', className)}
     {...props}
   />
 ));
-SidebarMenuSub.displayName = "SidebarMenuSub";
+SidebarMenuSub.displayName = 'SidebarMenuSub';
 
 const SidebarMenuSubItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("", className)} {...props} />
+  <div ref={ref} className={cn('', className)} {...props} />
 ));
-SidebarMenuSubItem.displayName = "SidebarMenuSubItem";
+SidebarMenuSubItem.displayName = 'SidebarMenuSubItem';
 
 const SidebarMenuSubButton = React.forwardRef<
   HTMLButtonElement,
   SidebarMenuButtonProps
 >(({ className, active, collapsed, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "button";
+  const Comp = asChild ? Slot : 'button';
   return (
     <Comp
       ref={ref}
       className={cn(
-        "group flex w-full items-center gap-1.5 rounded p-1.5 font-fustat text-xs font-semibold leading-[140%] transition-colors",
+        'group flex w-full items-center gap-1.5 rounded p-1.5 font-fustat text-xs font-semibold leading-[140%] transition-colors',
         active
-          ? "bg-surface-default-tertiary text-onSurface-default-primary [&_svg]:text-onSurface-default-primary"
-          : "bg-transparent text-onSurface-default-secondary [&_svg]:text-onSurface-default-tertiary hover:bg-surface-default-primary-hover hover:[&_svg]:text-onSurface-default-secondary",
+          ? 'bg-surface-default-tertiary text-onSurface-default-primary [&_svg]:text-onSurface-default-primary'
+          : 'bg-transparent text-onSurface-default-secondary [&_svg]:text-onSurface-default-tertiary hover:bg-surface-default-primary-hover hover:[&_svg]:text-onSurface-default-secondary',
         className,
       )}
       {...props}
     />
   );
 });
-SidebarMenuSubButton.displayName = "SidebarMenuSubButton";
+SidebarMenuSubButton.displayName = 'SidebarMenuSubButton';
 
 const SidebarRail = React.forwardRef<
   HTMLDivElement,
@@ -248,13 +248,13 @@ const SidebarRail = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "absolute right-0 top-0 h-full w-px bg-border opacity-0",
+      'absolute right-0 top-0 h-full w-px bg-border opacity-0',
       className,
     )}
     {...props}
   />
 ));
-SidebarRail.displayName = "SidebarRail";
+SidebarRail.displayName = 'SidebarRail';
 
 export {
   Sidebar,

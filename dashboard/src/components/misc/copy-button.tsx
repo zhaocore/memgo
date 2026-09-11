@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
-import { CopyToClipboard } from "react-copy-to-clipboard";
+import { CheckIcon, CopyIcon } from '@radix-ui/react-icons';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 interface CopyButtonProps {
   textToCopy: string;

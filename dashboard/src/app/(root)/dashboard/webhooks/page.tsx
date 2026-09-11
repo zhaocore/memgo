@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { LockedPage } from "@/components/self-hosted/locked-page";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { LockedPage } from '@/components/self-hosted/locked-page';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 function WebhooksMockup() {
   return (
@@ -19,13 +19,13 @@ function WebhooksMockup() {
           <Label>Events</Label>
           <div className="flex flex-col gap-2">
             {[
-              "memory.created",
-              "memory.updated",
-              "memory.deleted",
-              "search.performed",
+              'memory.created',
+              'memory.updated',
+              'memory.deleted',
+              'search.performed',
             ].map((event) => (
               <div key={event} className="flex items-center gap-2">
-                <Checkbox disabled checked={event === "memory.created"} />
+                <Checkbox disabled checked={event === 'memory.created'} />
                 <Label className="text-sm font-normal">{event}</Label>
               </div>
             ))}

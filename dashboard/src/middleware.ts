@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { AUTH_ENDPOINTS } from "@/utils/api-endpoints";
-import { getServerApiUrl } from "@/lib/server-api-url";
+import { NextRequest, NextResponse } from 'next/server';
+import { AUTH_ENDPOINTS } from '@/utils/api-endpoints';
+import { getServerApiUrl } from '@/lib/server-api-url';
 
 const PUBLIC_PATHS = [
-  "/_next",
-  "/api/auth",
-  "/api/health",
-  "/fonts",
-  "/favicon",
+  '/_next',
+  '/api/auth',
+  '/api/health',
+  '/fonts',
+  '/favicon',
 ];
 
 export async function middleware(request: NextRequest) {
@@ -17,9 +17,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const hasRefreshToken = request.cookies.has("memgo_refresh_token");
+  const hasRefreshToken = request.cookies.has('memgo_refresh_token');
 
-  if (pathname === "/" || pathname === "/login" || pathname === "/setup") {
+  if (pathname === '/' || pathname === '/login' || pathname === '/setup') {
     try {
       const res = await fetch(
         `${getServerApiUrl()}${AUTH_ENDPOINTS.SETUP_STATUS}`,
@@ -27,11 +27,11 @@ export async function middleware(request: NextRequest) {
       if (res.ok) {
         const { needsSetup } = await res.json();
 
-        if (needsSetup && pathname !== "/setup") {
-          return NextResponse.redirect(new URL("/setup", request.url));
+        if (needsSetup && pathname !== '/setup') {
+          return NextResponse.redirect(new URL('/setup', request.url));
         }
-        if (!needsSetup && pathname === "/setup") {
-          return NextResponse.redirect(new URL("/login", request.url));
+        if (!needsSetup && pathname === '/setup') {
+          return NextResponse.redirect(new URL('/login', request.url));
         }
       }
     } catch {
@@ -39,23 +39,23 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (pathname === "/login" || pathname === "/setup") {
+  if (pathname === '/login' || pathname === '/setup') {
     return NextResponse.next();
   }
 
-  if (pathname === "/") {
+  if (pathname === '/') {
     return NextResponse.redirect(
-      new URL(hasRefreshToken ? "/dashboard/requests" : "/login", request.url),
+      new URL(hasRefreshToken ? '/dashboard/requests' : '/login', request.url),
     );
   }
 
-  if (pathname === "/dashboard" || pathname === "/dashboard/") {
-    return NextResponse.redirect(new URL("/dashboard/requests", request.url));
+  if (pathname === '/dashboard' || pathname === '/dashboard/') {
+    return NextResponse.redirect(new URL('/dashboard/requests', request.url));
   }
 
   if (!hasRefreshToken) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", pathname);
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('next', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -63,5 +63,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|fonts|images|icons).*)"],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|fonts|images|icons).*)'],
 };

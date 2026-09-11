@@ -1,7 +1,7 @@
-import axios, { AxiosError, AxiosInstance } from "axios";
+import axios, { AxiosError, AxiosInstance } from 'axios';
 
 let cachedToken: string | null = null;
-const LOGIN_PATH = "/login";
+const LOGIN_PATH = '/login';
 
 export const setAccessToken = (token: string | null) => {
   cachedToken = token;
@@ -16,15 +16,15 @@ const handleTokenError = () => {
 };
 
 const redirectToLogin = () => {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     window.location.href = LOGIN_PATH;
   }
 };
 
 const refreshAccessToken = async () => {
-  const refreshResponse = await fetch("/api/auth/refresh", {
-    method: "POST",
-    credentials: "include",
+  const refreshResponse = await fetch('/api/auth/refresh', {
+    method: 'POST',
+    credentials: 'include',
   });
 
   if (!refreshResponse.ok) {
@@ -85,10 +85,10 @@ const createApi = (): AxiosInstance & {
 
   const postStream = async (url: string, data: unknown): Promise<Response> => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Authorization: cachedToken ? `Bearer ${cachedToken}` : "",
+        'Content-Type': 'application/json',
+        Authorization: cachedToken ? `Bearer ${cachedToken}` : '',
       },
       body: JSON.stringify(data),
     });
@@ -96,12 +96,12 @@ const createApi = (): AxiosInstance & {
     if (response.status === 401) {
       handleTokenError();
       redirectToLogin();
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "Request failed");
+      throw new Error(errorData.error || 'Request failed');
     }
 
     return response;

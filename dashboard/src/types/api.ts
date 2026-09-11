@@ -33,7 +33,7 @@ export interface ApiRequestLog {
   auth_type: string;
 }
 
-export type EntityType = "user" | "agent" | "run";
+export type EntityType = 'user' | 'agent' | 'run';
 
 export interface Entity {
   id: string;

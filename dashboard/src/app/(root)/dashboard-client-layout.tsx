@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import React from "react";
-import { ThemeProvider } from "@/components/theme-provider";
-import "@/styles/globals.css";
-import { ClientLayout } from "./clientLayout";
-import { cn } from "@/lib/utils";
-import { Inter, InterDisplay, Roboto, Fustat, DMMono } from "./fonts";
-import { Provider } from "react-redux";
-import store from "@/store/store";
-import { AuthProvider } from "@/lib/auth";
-import dynamic from "next/dynamic";
+import React from 'react';
+import { ThemeProvider } from '@/components/theme-provider';
+import '@/styles/globals.css';
+import { ClientLayout } from './clientLayout';
+import { cn } from '@/lib/utils';
+import { Inter, InterDisplay, Roboto, Fustat, DMMono } from './fonts';
+import { Provider } from 'react-redux';
+import store from '@/store/store';
+import { AuthProvider } from '@/lib/auth';
+import dynamic from 'next/dynamic';
 
 const Toaster = dynamic(
   () =>
-    import("@/components/ui/sonner").then((mod) => ({ default: mod.Toaster })),
+    import('@/components/ui/sonner').then((mod) => ({ default: mod.Toaster })),
   {
     ssr: false,
   },

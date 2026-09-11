@@ -1,5 +1,5 @@
 enum LayoutActionConstants {
-  TOGGLE_SIDEBAR = "TOGGLE_SIDEBAR",
+  TOGGLE_SIDEBAR = 'TOGGLE_SIDEBAR',
 }
 
 interface LayoutState {

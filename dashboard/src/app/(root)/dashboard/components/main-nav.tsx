@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import Link from "next/link";
+import * as React from 'react';
+import Link from 'next/link';
 import {
   Activity,
   ChartLine,
@@ -14,15 +14,15 @@ import {
   Users,
   WebhookIcon,
   Wrench,
-} from "lucide-react";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
-import { Badge } from "@/components/ui/badge";
+} from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
+import { Badge } from '@/components/ui/badge';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from '@/components/ui/collapsible';
 import {
   Sidebar,
   SidebarContent,
@@ -32,9 +32,9 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarGroupLabel,
-} from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/sidebar';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export function MainNav({
   className,
@@ -48,8 +48,8 @@ export function MainNav({
 
   return (
     <Sidebar
-      collapsible={isSidebarCollapsed ? "icon" : undefined}
-      className={cn(className, "border-r-0 w-full mb-0 bg-transparent")}
+      collapsible={isSidebarCollapsed ? 'icon' : undefined}
+      className={cn(className, 'border-r-0 w-full mb-0 bg-transparent')}
       {...props}
     >
       <SidebarContent>
@@ -64,22 +64,22 @@ export function MainNav({
                 )}
                 {[
                   {
-                    title: "Requests",
-                    url: "/dashboard/requests",
+                    title: 'Requests',
+                    url: '/dashboard/requests',
                     icon: Activity,
-                    active: pathname === "/dashboard/requests",
+                    active: pathname === '/dashboard/requests',
                   },
                   {
-                    title: "Memories",
-                    url: "/dashboard/memories",
+                    title: 'Memories',
+                    url: '/dashboard/memories',
                     icon: GalleryVerticalEnd,
-                    active: pathname === "/dashboard/memories",
+                    active: pathname === '/dashboard/memories',
                   },
                   {
-                    title: "Entities",
-                    url: "/dashboard/entities",
+                    title: 'Entities',
+                    url: '/dashboard/entities',
                     icon: Users,
-                    active: pathname === "/dashboard/entities",
+                    active: pathname === '/dashboard/entities',
                   },
                 ].map((item) => (
                   <SidebarMenuItem key={item.title}>
@@ -92,10 +92,10 @@ export function MainNav({
                       <Link
                         href={item.url}
                         className={cn(
-                          "flex items-center w-full",
+                          'flex items-center w-full',
                           isSidebarCollapsed
-                            ? "justify-center mx-auto"
-                            : "gap-1.5",
+                            ? 'justify-center mx-auto'
+                            : 'gap-1.5',
                         )}
                       >
                         <item.icon className="size-4 shrink-0" />
@@ -121,8 +121,8 @@ export function MainNav({
                       CLOUD FEATURES
                       <ChevronDown
                         className={cn(
-                          "size-3 transition-transform duration-200",
-                          isCloudOpen ? "" : "-rotate-90",
+                          'size-3 transition-transform duration-200',
+                          isCloudOpen ? '' : '-rotate-90',
                         )}
                       />
                     </SidebarGroupLabel>
@@ -131,23 +131,23 @@ export function MainNav({
                 <CollapsibleContent className="flex flex-col gap-0">
                   {[
                     {
-                      title: "Categories",
-                      url: "/dashboard/categories",
+                      title: 'Categories',
+                      url: '/dashboard/categories',
                       icon: Tags,
                     },
                     {
-                      title: "Webhooks",
-                      url: "/dashboard/webhooks",
+                      title: 'Webhooks',
+                      url: '/dashboard/webhooks',
                       icon: WebhookIcon,
                     },
                     {
-                      title: "Analytics",
-                      url: "/dashboard/analytics",
+                      title: 'Analytics',
+                      url: '/dashboard/analytics',
                       icon: ChartLine,
                     },
                     {
-                      title: "Export",
-                      url: "/dashboard/export",
+                      title: 'Export',
+                      url: '/dashboard/export',
                       icon: FolderInput,
                     },
                   ].map((item) => (
@@ -161,10 +161,10 @@ export function MainNav({
                         <Link
                           href={item.url}
                           className={cn(
-                            "flex items-center w-full",
+                            'flex items-center w-full',
                             isSidebarCollapsed
-                              ? "justify-center mx-auto"
-                              : "gap-1.5",
+                              ? 'justify-center mx-auto'
+                              : 'gap-1.5',
                           )}
                         >
                           <item.icon className="size-4 shrink-0" />
@@ -198,22 +198,22 @@ export function MainNav({
                 )}
                 {[
                   {
-                    title: "API Keys",
-                    url: "/dashboard/api-keys",
+                    title: 'API Keys',
+                    url: '/dashboard/api-keys',
                     icon: KeyRound,
-                    active: pathname === "/dashboard/api-keys",
+                    active: pathname === '/dashboard/api-keys',
                   },
                   {
-                    title: "Configuration",
-                    url: "/dashboard/configuration",
+                    title: 'Configuration',
+                    url: '/dashboard/configuration',
                     icon: Wrench,
-                    active: pathname === "/dashboard/configuration",
+                    active: pathname === '/dashboard/configuration',
                   },
                   {
-                    title: "Settings",
-                    url: "/dashboard/settings",
+                    title: 'Settings',
+                    url: '/dashboard/settings',
                     icon: Settings,
-                    active: pathname === "/dashboard/settings",
+                    active: pathname === '/dashboard/settings',
                   },
                 ].map((item) => (
                   <SidebarMenuItem key={item.title}>
@@ -226,10 +226,10 @@ export function MainNav({
                       <Link
                         href={item.url}
                         className={cn(
-                          "flex items-center w-full",
+                          'flex items-center w-full',
                           isSidebarCollapsed
-                            ? "justify-center mx-auto"
-                            : "gap-1.5",
+                            ? 'justify-center mx-auto'
+                            : 'gap-1.5',
                         )}
                       >
                         <item.icon className="size-4 shrink-0" />

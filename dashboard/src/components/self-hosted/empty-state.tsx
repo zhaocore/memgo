@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useTheme } from "next-themes";
+import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
 interface EmptyStateProps {
   title: string;
   description?: string;
-  image?: "memories" | "requests";
+  image?: 'memories' | 'requests';
   children?: React.ReactNode;
 }
 
 export function EmptyState({
   title,
   description,
-  image = "memories",
+  image = 'memories',
   children,
 }: EmptyStateProps) {
   const { resolvedTheme } = useTheme();
   const src =
-    resolvedTheme === "dark"
+    resolvedTheme === 'dark'
       ? `/images/no-${image}-dark.svg`
       : `/images/no-${image}.svg`;
 

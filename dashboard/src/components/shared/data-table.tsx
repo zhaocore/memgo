@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
-import { LucideIcon } from "lucide-react";
+import { ReactNode } from 'react';
+import { LucideIcon } from 'lucide-react';
 
 interface Column<T> {
   key: keyof T;
@@ -7,10 +7,10 @@ interface Column<T> {
   icon?: LucideIcon;
   render?(value: T[keyof T], row: T): ReactNode;
   className?: string;
-  width?: number | "auto";
-  align?: "left" | "center" | "right";
-  cellVariant?: "default" | "flush";
-  headerVariant?: "default" | "check";
+  width?: number | 'auto';
+  align?: 'left' | 'center' | 'right';
+  cellVariant?: 'default' | 'flush';
+  headerVariant?: 'default' | 'check';
 }
 
 interface DataTableProps<T> {
@@ -23,29 +23,29 @@ interface DataTableProps<T> {
 }
 
 const classes = {
-  tableHeaderRow: "h-[38px] border-b border-memBorder-primary",
+  tableHeaderRow: 'h-[38px] border-b border-memBorder-primary',
   tableHeaderCell:
-    "w-[230px] h-[38px] p-2 align-middle bg-surface-default-fg-secondary text-onSurface-default-secondary",
+    'w-[230px] h-[38px] p-2 align-middle bg-surface-default-fg-secondary text-onSurface-default-secondary',
   tableHeaderCheckCell:
-    "w-[40px] h-[38px] p-2 align-middle bg-surface-default-fg-secondary",
-  tableHeaderCheckWrap: "flex items-center gap-2",
+    'w-[40px] h-[38px] p-2 align-middle bg-surface-default-fg-secondary',
+  tableHeaderCheckWrap: 'flex items-center gap-2',
   tableHeaderCheckBox:
-    "box-border flex h-4 w-4 items-center gap-2.5 rounded-sm border border-memBorder-primary p-1",
+    'box-border flex h-4 w-4 items-center gap-2.5 rounded-sm border border-memBorder-primary p-1',
   tableHeaderDivider:
-    "w-px self-stretch border border-memBorder-primary shrink-0",
+    'w-px self-stretch border border-memBorder-primary shrink-0',
   tableRow:
-    "h-[38px] border-t border-memBorder-primary bg-surface-default-primary hover:bg-surface-default-primary-hover",
+    'h-[38px] border-t border-memBorder-primary bg-surface-default-primary hover:bg-surface-default-primary-hover',
   tableCell:
-    "text-sm font-medium text-onSurface-default-primary px-4 py-2 justify-start align-middle font-[Fustat] leading-[140%] tracking-normal",
-  tableCellFlush: "align-middle",
-  tableCellBase: "text-sm px-6",
-  tableCellPadding: "",
+    'text-sm font-medium text-onSurface-default-primary px-4 py-2 justify-start align-middle font-[Fustat] leading-[140%] tracking-normal',
+  tableCellFlush: 'align-middle',
+  tableCellBase: 'text-sm px-6',
+  tableCellPadding: '',
 } as const;
 
 export function DataTable<T>({
   data,
   columns,
-  className = "",
+  className = '',
   getRowKey,
   onRowClick,
   getRowClassName,
@@ -53,7 +53,7 @@ export function DataTable<T>({
   const minHeight = data.length > 0 ? Math.max(76, 38 + data.length * 38) : 100;
   // Proportional column widths so table fits container (width numbers treated as relative weights)
   const totalWeight = columns.reduce(
-    (sum, col) => sum + (typeof col.width === "number" ? col.width : 100),
+    (sum, col) => sum + (typeof col.width === 'number' ? col.width : 100),
     0,
   );
   return (
@@ -64,7 +64,7 @@ export function DataTable<T>({
       <table className="table-fixed w-full">
         <colgroup>
           {columns.map((col, i) => {
-            const weight = typeof col.width === "number" ? col.width : 100;
+            const weight = typeof col.width === 'number' ? col.width : 100;
             const pct =
               totalWeight > 0
                 ? (weight / totalWeight) * 100
@@ -77,7 +77,7 @@ export function DataTable<T>({
             {columns.map((column, index) => {
               const isLastColumn = index === columns.length - 1;
 
-              if (column.headerVariant === "check") {
+              if (column.headerVariant === 'check') {
                 return (
                   <th key={index} className={classes.tableHeaderCheckCell}>
                     <div className="flex h-full items-stretch justify-between">
@@ -95,45 +95,45 @@ export function DataTable<T>({
               const Icon = column.icon;
               const relevantClasses = column.className
                 ? column.className
-                    .split(" ")
-                    .filter(
-                      (c) =>
-                        c.startsWith("w-") ||
-                        c.startsWith("min-w-") ||
-                        c.startsWith("max-w-") ||
-                        c.startsWith("text-center") ||
-                        c.startsWith("text-left") ||
-                        c.startsWith("text-right"),
-                    )
-                    .join(" ")
-                : "";
+                  .split(' ')
+                  .filter(
+                    (c) =>
+                      c.startsWith('w-') ||
+                      c.startsWith('min-w-') ||
+                      c.startsWith('max-w-') ||
+                      c.startsWith('text-center') ||
+                      c.startsWith('text-left') ||
+                      c.startsWith('text-right'),
+                  )
+                  .join(' ')
+                : '';
 
               const baseHeaderClass = classes.tableHeaderCell;
               const alignClass =
-                column.align === "center"
-                  ? "text-center"
-                  : column.align === "right"
-                    ? "text-right"
-                    : "";
+                column.align === 'center'
+                  ? 'text-center'
+                  : column.align === 'right'
+                    ? 'text-right'
+                    : '';
               const mergedRelevantClasses =
                 `${relevantClasses} ${alignClass}`.trim();
               const hasCustomAlignment =
-                mergedRelevantClasses.includes("text-center") ||
-                mergedRelevantClasses.includes("text-right");
+                mergedRelevantClasses.includes('text-center') ||
+                mergedRelevantClasses.includes('text-right');
               const headerClassName = hasCustomAlignment
-                ? `${baseHeaderClass.replace("text-left", "")} ${mergedRelevantClasses}`.trim()
+                ? `${baseHeaderClass.replace('text-left', '')} ${mergedRelevantClasses}`.trim()
                 : mergedRelevantClasses
                   ? `${baseHeaderClass} ${mergedRelevantClasses}`.trim()
                   : baseHeaderClass;
               const headerCellClassName = `${headerClassName} min-w-0`;
 
               const flexAlignment = mergedRelevantClasses.includes(
-                "text-center",
+                'text-center',
               )
-                ? "justify-center"
-                : mergedRelevantClasses.includes("text-right")
-                  ? "justify-end"
-                  : "";
+                ? 'justify-center'
+                : mergedRelevantClasses.includes('text-right')
+                  ? 'justify-end'
+                  : '';
 
               return (
                 <th key={index} className={headerCellClassName}>
@@ -160,14 +160,14 @@ export function DataTable<T>({
             <tr
               key={getRowKey ? String(getRowKey(row, rowIndex)) : rowIndex}
               className={`${classes.tableRow} ${
-                onRowClick ? "cursor-pointer" : ""
-              } ${getRowClassName ? (getRowClassName(row, rowIndex) ?? "") : ""} animate-fade-in`}
+                onRowClick ? 'cursor-pointer' : ''
+              } ${getRowClassName ? (getRowClassName(row, rowIndex) ?? '') : ''} animate-fade-in`}
               onClick={onRowClick ? () => onRowClick(row, rowIndex) : undefined}
             >
               {columns.map((column, colIndex) => {
                 const value = row[column.key];
                 const baseCellClass =
-                  column.cellVariant === "flush"
+                  column.cellVariant === 'flush'
                     ? classes.tableCellFlush
                     : classes.tableCell;
                 const cellClassName = `${column.className || baseCellClass} min-w-0 overflow-hidden`;

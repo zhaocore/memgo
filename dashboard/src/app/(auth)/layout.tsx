@@ -1,13 +1,13 @@
-import "@/styles/globals.css";
-import React from "react";
-import { Inter, InterDisplay, Roboto, Fustat, DMMono } from "../(root)/fonts";
-import { cn } from "@/lib/utils";
-import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/lib/auth";
+import '@/styles/globals.css';
+import React from 'react';
+import { Inter, InterDisplay, Roboto, Fustat, DMMono } from '../(root)/fonts';
+import { cn } from '@/lib/utils';
+import { ThemeProvider } from '@/components/theme-provider';
+import { AuthProvider } from '@/lib/auth';
 
 export const metadata = {
-  title: "MemGo - Log in",
-  description: "Log in to MemGo",
+  title: 'MemGo - Log in',
+  description: 'Log in to MemGo',
 };
 
 export default function AuthLayout({

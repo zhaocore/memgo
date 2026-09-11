@@ -58,6 +58,7 @@
 ### Dashboard
 
 - `dashboard/` 为已迁入的 Next.js 资产，通过 HTTP 合同使用服务端；不可将 Go 领域逻辑迁入前端。
+- Dashboard favicon、PWA 图标、登录页 Logo 和公共主题 Logo 使用统一的透明底 MEMGO 品牌图标：中心记忆环连接三处神经元突触节点，单色浅灰蓝 `#94A3B8`，无附加文字、外层方框、矩形边缘或包围框。
 - 已确认质量缺口：当前没有 Dashboard 单元测试或 Playwright 配置/命令。首次修改 Dashboard 产品代码时，必须在同一变更补齐两层测试与稳定选择器。
 - Dashboard 全流程冒烟（setup、登录、memories、配置保存、API key 创建/撤销、requests）尚无当前轮实测证据，状态为待验证，不得标为通过。
 

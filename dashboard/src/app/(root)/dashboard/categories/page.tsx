@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { LockedPage } from "@/components/self-hosted/locked-page";
-import { Card, CardContent } from "@/components/ui/card";
+import { LockedPage } from '@/components/self-hosted/locked-page';
+import { Card, CardContent } from '@/components/ui/card';
 
 function CategoriesMockup() {
-  const categories = ["Health", "Preferences", "Work"];
+  const categories = ['Health', 'Preferences', 'Work'];
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {categories.map((cat) => (

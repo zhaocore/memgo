@@ -1,7 +1,7 @@
-import * as React from "react";
+import * as React from 'react';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  variant?: "default" | "textField" | "nestedInput";
+  variant?: 'default' | 'textField' | 'nestedInput';
 }
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {

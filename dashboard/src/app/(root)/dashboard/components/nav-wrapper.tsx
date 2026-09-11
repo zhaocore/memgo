@@ -1,32 +1,32 @@
-"use client";
+'use client';
 
-import { MainNav } from "./main-nav";
-import { PanelRight, LogOut, Settings, HelpCircle } from "lucide-react";
-import { useCallback } from "react";
+import { MainNav } from './main-nav';
+import { PanelRight, LogOut, Settings, HelpCircle } from 'lucide-react';
+import { useCallback } from 'react';
 import {
   COLLAPSED_SIDEBAR_WIDTH,
   COLLAPSED_SIDEBAR_WIDTH_WITHOUT_PADDING,
   SIDEBAR_WIDTH,
-} from "../../clientLayout";
-import { useDispatch, useSelector } from "react-redux";
-import { cn } from "@/lib/utils";
-import { RootState } from "@/store/store";
-import { toggleSidebar } from "@/store/reducers/layoutReducer";
-import { useAuth } from "@/hooks/use-auth";
+} from '../../clientLayout';
+import { useDispatch, useSelector } from 'react-redux';
+import { cn } from '@/lib/utils';
+import { RootState } from '@/store/store';
+import { toggleSidebar } from '@/store/reducers/layoutReducer';
+import { useAuth } from '@/hooks/use-auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-} from "@/components/ui/tooltip";
-import Link from "next/link";
-import { Building2 } from "lucide-react";
+} from '@/components/ui/tooltip';
+import Link from 'next/link';
+import { Building2 } from 'lucide-react';
 
 export default function NavWrapper() {
   const dispatch = useDispatch();
@@ -35,7 +35,7 @@ export default function NavWrapper() {
   );
   const { user, logout } = useAuth();
 
-  const instanceName = process.env.NEXT_PUBLIC_INSTANCE_NAME || "MemGo";
+  const instanceName = process.env.NEXT_PUBLIC_INSTANCE_NAME || 'MemGo';
 
   const handleToggle = useCallback(() => {
     dispatch(toggleSidebar());
@@ -52,14 +52,14 @@ export default function NavWrapper() {
         <div className="flex flex-col flex-1 min-h-0 items-start gap-5 px-3 py-3 overflow-y-auto overflow-x-hidden">
           <div
             className={cn(
-              "relative flex w-full",
-              isSidebarCollapsed ? "p-0 justify-center" : "",
+              'relative flex w-full',
+              isSidebarCollapsed ? 'p-0 justify-center' : '',
             )}
           >
             <div
               className={cn(
-                "flex items-center w-full",
-                isSidebarCollapsed ? "justify-center" : "gap-2",
+                'flex items-center w-full',
+                isSidebarCollapsed ? 'justify-center' : 'gap-2',
               )}
             >
               <div className="flex items-center justify-center size-7 rounded-md bg-surface-default-tertiary shrink-0">
@@ -83,7 +83,7 @@ export default function NavWrapper() {
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 w-full text-left hover:bg-surface-default-secondary-hover rounded-md p-1.5 transition-colors">
                     <div className="grid size-7 place-items-center rounded-md bg-surface-default-tertiary text-onSurface-default-secondary text-xs font-semibold shrink-0">
-                      {user?.name?.charAt(0).toUpperCase() || "?"}
+                      {user?.name?.charAt(0).toUpperCase() || '?'}
                     </div>
                     <div className="flex flex-col min-w-0">
                       <span className="typo-body-xs text-onSurface-default-primary truncate">
@@ -146,7 +146,7 @@ export default function NavWrapper() {
             onClick={handleToggle}
             className="cursor-pointer text-onSurface-default-tertiary hover:text-onSurface-default-secondary"
             aria-label={
-              isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+              isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
             }
           >
             <PanelRight className="size-4" />

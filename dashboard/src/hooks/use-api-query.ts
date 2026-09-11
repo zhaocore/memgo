@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "@/components/ui/use-toast";
-import { getErrorMessage } from "@/lib/error-message";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/lib/error-message';
 
 interface UseApiQueryOptions<T> {
   enabled?: boolean;
@@ -23,24 +23,24 @@ export function useApiQuery<T>(
 
   const [data, setData] = useState<T | undefined>(initialData);
   const [isLoading, setIsLoading] = useState(enabled);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const fetcherRef = useRef(fetcher);
   fetcherRef.current = fetcher;
 
   const run = useCallback(async () => {
     setIsLoading(true);
-    setError("");
+    setError('');
     try {
       setData(await fetcherRef.current());
     } catch (err) {
-      const message = getErrorMessage(err, errorToast || "Request failed");
+      const message = getErrorMessage(err, errorToast || 'Request failed');
       setError(message);
       if (errorToast) {
         toast({
           title: errorToast,
           description: message,
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
     } finally {

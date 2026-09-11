@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useTheme } from "next-themes";
-import { Check, Copy } from "lucide-react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { Check, Copy } from 'lucide-react';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -14,24 +14,24 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks/use-auth";
-import { getErrorMessage } from "@/lib/error-message";
-import { isValidEmail } from "@/lib/validators";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/use-auth';
+import { getErrorMessage } from '@/lib/error-message';
+import { isValidEmail } from '@/lib/validators';
 
 const RESET_COMMAND =
-  "make reset-admin-password EMAIL=<your-email> PASSWORD=<new-password>";
+  'make reset-admin-password EMAIL=<your-email> PASSWORD=<new-password>';
 
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading, login } = useAuth();
   const { resolvedTheme } = useTheme();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -42,7 +42,7 @@ export default function LoginForm() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      router.push(searchParams.get("next") || "/dashboard/requests");
+      router.push(searchParams.get('next') || '/dashboard/requests');
     }
   }, [user, isLoading, router, searchParams]);
 
@@ -50,17 +50,17 @@ export default function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     if (!emailValid) {
-      setError("Enter a valid email address.");
+      setError('Enter a valid email address.');
       return;
     }
     setSubmitting(true);
     try {
       await login(email, password);
-      router.push(searchParams.get("next") || "/dashboard/requests");
+      router.push(searchParams.get('next') || '/dashboard/requests');
     } catch (err) {
-      setError(getErrorMessage(err, "Login failed"));
+      setError(getErrorMessage(err, 'Login failed'));
     } finally {
       setSubmitting(false);
     }
@@ -74,9 +74,9 @@ export default function LoginForm() {
             {mounted && (
               <Image
                 src={
-                  resolvedTheme === "dark"
-                    ? "/images/logos/logo-light.png"
-                    : "/images/logos/logo-dark.png"
+                  resolvedTheme === 'dark'
+                    ? '/images/logos/logo-light.png'
+                    : '/images/logos/logo-dark.png'
                 }
                 alt="MemGo"
                 width={41}
@@ -87,7 +87,7 @@ export default function LoginForm() {
           <h1 className="text-2xl font-semibold text-onSurface-default-primary text-center mb-6 font-fustat">
             Sign in to MemGo
           </h1>
-          <div className="flex flex-col gap-4 border p-8 border-memBorder-primary rounded-xl">
+          <div className="flex flex-col gap-4 border p-8 border-memBorder-primary rounded-xl bg-surface-default-primary shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
             {error && (
               <p className="text-sm text-onSurface-danger-primary bg-surface-danger-primary px-3 py-2 rounded">
                 {error}
@@ -123,7 +123,7 @@ export default function LoginForm() {
                 size="lg"
                 className="w-full"
               >
-                {submitting ? "Signing in..." : "Sign in"}
+                {submitting ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>
             <Dialog>
@@ -172,7 +172,7 @@ export default function LoginForm() {
         </div>
       </div>
 
-      <div className="relative hidden h-screen flex-1 items-center justify-center overflow-hidden bg-gradient-to-b from-[#31275A] to-[#5C49A3] px-10 lg:flex">
+      <div className="relative hidden h-screen flex-1 items-center justify-center overflow-hidden bg-gradient-to-br from-memPurple-950 via-memPurple-800 to-memPurple-600 px-10 lg:flex">
         <div className="pointer-events-none absolute inset-0 bg-[url('/images/dither.svg')] bg-bottom bg-no-repeat bg-contain" />
         <div className="relative z-10 flex w-full max-w-[564px] flex-col items-center gap-20 text-center text-white">
           <div className="w-full space-y-5">

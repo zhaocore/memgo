@@ -1,36 +1,36 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { DataTable } from "@/components/shared/data-table";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
-import { EmptyState } from "@/components/self-hosted/empty-state";
-import DeleteConfirmationModal from "@/components/ui/delete-confirmation-modal";
-import { api } from "@/utils/api";
-import { API_KEY_ENDPOINTS } from "@/utils/api-endpoints";
-import { toast } from "@/components/ui/use-toast";
-import { UpgradeBanner } from "@/components/self-hosted/upgrade-banner";
-import { Plus, Copy, Check, Trash2 } from "lucide-react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-import { format } from "date-fns";
-import { getErrorMessage } from "@/lib/error-message";
-import { useApiQuery } from "@/hooks/use-api-query";
-import { ApiKey, ApiKeyCreateResponse } from "@/types/api";
+} from '@/components/ui/dialog';
+import { DataTable } from '@/components/shared/data-table';
+import { TableSkeleton } from '@/components/shared/table-skeleton';
+import { EmptyState } from '@/components/self-hosted/empty-state';
+import DeleteConfirmationModal from '@/components/ui/delete-confirmation-modal';
+import { api } from '@/utils/api';
+import { API_KEY_ENDPOINTS } from '@/utils/api-endpoints';
+import { toast } from '@/components/ui/use-toast';
+import { UpgradeBanner } from '@/components/self-hosted/upgrade-banner';
+import { Plus, Copy, Check, Trash2 } from 'lucide-react';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { format } from 'date-fns';
+import { getErrorMessage } from '@/lib/error-message';
+import { useApiQuery } from '@/hooks/use-api-query';
+import { ApiKey, ApiKeyCreateResponse } from '@/types/api';
 
 export default function ApiKeysPage() {
   const [createOpen, setCreateOpen] = useState(false);
-  const [newLabel, setNewLabel] = useState("");
-  const [newKey, setNewKey] = useState("");
+  const [newLabel, setNewLabel] = useState('');
+  const [newKey, setNewKey] = useState('');
   const [copied, setCopied] = useState(false);
   const [keyToRevoke, setKeyToRevoke] = useState<ApiKey | null>(null);
 
@@ -43,7 +43,7 @@ export default function ApiKeysPage() {
       const res = await api.get<ApiKey[]>(API_KEY_ENDPOINTS.BASE);
       return res.data ?? [];
     },
-    { errorToast: "Failed to load API keys", initialData: [] },
+    { errorToast: 'Failed to load API keys', initialData: [] },
   );
 
   const handleCreate = async () => {
@@ -55,9 +55,9 @@ export default function ApiKeysPage() {
       void refetch();
     } catch (error) {
       toast({
-        title: "Failed to create key",
+        title: 'Failed to create key',
         description: getErrorMessage(error),
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
@@ -66,53 +66,53 @@ export default function ApiKeysPage() {
     if (!keyToRevoke) return;
     try {
       await api.delete(API_KEY_ENDPOINTS.BY_ID(keyToRevoke.id));
-      toast({ title: "API key revoked", variant: "success" });
+      toast({ title: 'API key revoked', variant: 'success' });
       setKeyToRevoke(null);
       void refetch();
     } catch (error) {
       toast({
-        title: "Failed to revoke key",
+        title: 'Failed to revoke key',
         description: getErrorMessage(error),
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
 
   const handleDialogClose = (open: boolean) => {
     if (!open) {
-      setNewKey("");
-      setNewLabel("");
+      setNewKey('');
+      setNewLabel('');
       setCopied(false);
     }
     setCreateOpen(open);
   };
 
   const columns = [
-    { key: "label" as keyof ApiKey, label: "Label", width: 150 },
+    { key: 'label' as keyof ApiKey, label: 'Label', width: 150 },
     {
-      key: "key_prefix" as keyof ApiKey,
-      label: "Key",
+      key: 'key_prefix' as keyof ApiKey,
+      label: 'Key',
       width: 120,
       render: (value: string) => (
         <code className="text-xs font-mono">{value}...</code>
       ),
     },
     {
-      key: "created_at" as keyof ApiKey,
-      label: "Created",
+      key: 'created_at' as keyof ApiKey,
+      label: 'Created',
       width: 120,
-      render: (value: string) => format(new Date(value), "MMM d, yyyy"),
+      render: (value: string) => format(new Date(value), 'MMM d, yyyy'),
     },
     {
-      key: "last_used_at" as keyof ApiKey,
-      label: "Last Used",
+      key: 'last_used_at' as keyof ApiKey,
+      label: 'Last Used',
       width: 120,
       render: (value: string | null) =>
-        value ? format(new Date(value), "MMM d, yyyy") : "Never",
+        value ? format(new Date(value), 'MMM d, yyyy') : 'Never',
     },
     {
-      key: "id" as keyof ApiKey,
-      label: "",
+      key: 'id' as keyof ApiKey,
+      label: '',
       width: 40,
       render: (_: string, row: ApiKey) => (
         <Button
@@ -236,7 +236,7 @@ export default function ApiKeysPage() {
         onConfirm={handleRevoke}
         title="Revoke API key"
         description="Applications using this key will immediately stop working. This cannot be undone."
-        itemName={keyToRevoke?.label ?? ""}
+        itemName={keyToRevoke?.label ?? ''}
         confirmButtonText="Revoke"
       />
     </div>

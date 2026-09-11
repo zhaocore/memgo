@@ -373,7 +373,7 @@
 
   body {
     @apply bg-surface-default-secondary text-foreground;
-    font-feature-settings: "ss03" 1;
+    font-feature-settings: 'ss03' 1;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -512,7 +512,7 @@
   }
 
   .chunk-container::after {
-    content: "";
+    content: '';
     @apply absolute -inset-4 shadow-xl rounded-xl border;
   }
 }

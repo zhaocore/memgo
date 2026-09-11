@@ -1,29 +1,29 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Sun, Moon, Monitor } from "lucide-react";
-import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
-import { useAuth } from "@/hooks/use-auth";
-import { getErrorMessage } from "@/lib/error-message";
-import { api } from "@/utils/api";
-import { AUTH_ENDPOINTS } from "@/utils/api-endpoints";
+import { useEffect, useState } from 'react';
+import { Sun, Moon, Monitor } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { getErrorMessage } from '@/lib/error-message';
+import { api } from '@/utils/api';
+import { AUTH_ENDPOINTS } from '@/utils/api-endpoints';
 
 export default function SettingsPage() {
   const { user, refreshUser } = useAuth();
   const { setTheme } = useTheme();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
@@ -45,12 +45,12 @@ export default function SettingsPage() {
         email: email.trim(),
       });
       await refreshUser();
-      toast({ title: "Profile updated", variant: "success" });
+      toast({ title: 'Profile updated', variant: 'success' });
     } catch (error) {
       toast({
-        title: "Failed to update profile",
+        title: 'Failed to update profile',
         description: getErrorMessage(error),
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setSavingProfile(false);
@@ -61,7 +61,7 @@ export default function SettingsPage() {
     if (newPassword !== confirmPassword) {
       toast({
         title: "Passwords don't match",
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -72,15 +72,15 @@ export default function SettingsPage() {
         current_password: currentPassword,
         new_password: newPassword,
       });
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      toast({ title: "Password updated", variant: "success" });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      toast({ title: 'Password updated', variant: 'success' });
     } catch (error) {
       toast({
-        title: "Failed to update password",
+        title: 'Failed to update password',
         description: getErrorMessage(error),
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setSavingPassword(false);
@@ -123,7 +123,7 @@ export default function SettingsPage() {
             onClick={handleSaveProfile}
             disabled={!profileDirty || !profileValid || savingProfile}
           >
-            {savingProfile ? "Saving..." : "Save profile"}
+            {savingProfile ? 'Saving...' : 'Save profile'}
           </Button>
         </CardContent>
       </Card>
@@ -178,7 +178,7 @@ export default function SettingsPage() {
               savingPassword
             }
           >
-            {savingPassword ? "Saving..." : "Update password"}
+            {savingPassword ? 'Saving...' : 'Update password'}
           </Button>
         </CardContent>
       </Card>
@@ -193,19 +193,19 @@ export default function SettingsPage() {
               Theme
             </span>
             <button
-              onClick={() => setTheme("light")}
+              onClick={() => setTheme('light')}
               className="p-2 rounded hover:bg-surface-default-secondary-hover"
             >
               <Sun className="size-4" />
             </button>
             <button
-              onClick={() => setTheme("dark")}
+              onClick={() => setTheme('dark')}
               className="p-2 rounded hover:bg-surface-default-secondary-hover"
             >
               <Moon className="size-4" />
             </button>
             <button
-              onClick={() => setTheme("system")}
+              onClick={() => setTheme('system')}
               className="p-2 rounded hover:bg-surface-default-secondary-hover"
             >
               <Monitor className="size-4" />

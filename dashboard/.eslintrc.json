@@ -1,3 +1,9 @@
 {
-  "extends": ["next/core-web-vitals"]
+  "extends": ["next/core-web-vitals", "prettier"],
+  "rules": {
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "eol-last": ["error", "always"],
+    "no-trailing-spaces": "error",
+    "comma-dangle": ["error", "always-multiline"]
+  }
 }

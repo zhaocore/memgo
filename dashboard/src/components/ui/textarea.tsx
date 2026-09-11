@@ -1,9 +1,9 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { cn } from "@/lib/utils";
-import { Label } from "@/components/ui/label";
-import { fieldLabelClassName } from "@/constants/ui-components";
-import { TextareaProps } from "@/types/ui-components";
+import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
+import { fieldLabelClassName } from '@/constants/ui-components';
+import { TextareaProps } from '@/types/ui-components';
 
 /**
  * Same style as default input (textField): rounded-lg, border-memBorder-primary,
@@ -29,7 +29,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       <textarea
         id={id}
         className={cn(
-          "flex h-[129px] w-full min-w-0 rounded-lg border border-memBorder-primary bg-surface-default-primary px-3 py-2.5 font-fustat text-sm text-onSurface-default-primary placeholder:text-onSurface-default-tertiary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 transition-colors resize-none",
+          'flex h-[129px] w-full min-w-0 rounded-lg border border-memBorder-primary bg-surface-default-primary px-3 py-2.5 font-fustat text-sm text-onSurface-default-primary placeholder:text-onSurface-default-tertiary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 transition-colors resize-none',
           textareaClassName,
           className,
         )}
@@ -40,7 +40,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     if (label) {
       return (
-        <div className={cn("flex flex-col gap-1.5", containerClassName)}>
+        <div className={cn('flex flex-col gap-1.5', containerClassName)}>
           <Label
             htmlFor={id}
             className={cn(fieldLabelClassName, labelClassName)}
@@ -55,6 +55,6 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     return textarea;
   },
 );
-Textarea.displayName = "Textarea";
+Textarea.displayName = 'Textarea';
 
 export { Textarea };

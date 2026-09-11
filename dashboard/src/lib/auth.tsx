@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   createContext,
@@ -6,9 +6,9 @@ import {
   useEffect,
   useMemo,
   useState,
-} from "react";
-import { api, setAccessToken } from "@/utils/api";
-import { AUTH_ENDPOINTS } from "@/utils/api-endpoints";
+} from 'react';
+import { api, setAccessToken } from '@/utils/api';
+import { AUTH_ENDPOINTS } from '@/utils/api-endpoints';
 
 export interface AuthUser {
   id: string;
@@ -39,21 +39,21 @@ export const AuthContext = createContext<AuthContextValue>({
 });
 
 async function storeRefreshToken(refreshToken: string) {
-  await fetch("/api/auth/refresh", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
+  await fetch('/api/auth/refresh', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refresh_token: refreshToken }),
   });
 }
 
 async function clearRefreshToken() {
-  await fetch("/api/auth/refresh", { method: "DELETE" });
+  await fetch('/api/auth/refresh', { method: 'DELETE' });
 }
 
 async function refreshSession(): Promise<boolean> {
-  const res = await fetch("/api/auth/refresh", {
-    method: "POST",
-    credentials: "include",
+  const res = await fetch('/api/auth/refresh', {
+    method: 'POST',
+    credentials: 'include',
   });
   if (!res.ok) return false;
   const data = await res.json();
@@ -115,14 +115,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await clearRefreshToken();
     setAccessToken(null);
     setUser(null);
-    if (typeof window !== "undefined") window.location.href = "/login";
+    if (typeof window !== 'undefined') window.location.href = '/login';
   }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
       isLoading,
-      isAdmin: user?.role === "admin",
+      isAdmin: user?.role === 'admin',
       login,
       register,
       logout,

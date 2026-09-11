@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
-import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { DataTable } from "@/components/shared/data-table";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
-import { EmptyState } from "@/components/self-hosted/empty-state";
-import DeleteConfirmationModal from "@/components/ui/delete-confirmation-modal";
-import { toast } from "@/components/ui/use-toast";
-import { api } from "@/utils/api";
-import { ENTITY_ENDPOINTS } from "@/utils/api-endpoints";
-import { getErrorMessage } from "@/lib/error-message";
-import { useApiQuery } from "@/hooks/use-api-query";
-import { Entity } from "@/types/api";
+import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { DataTable } from '@/components/shared/data-table';
+import { TableSkeleton } from '@/components/shared/table-skeleton';
+import { EmptyState } from '@/components/self-hosted/empty-state';
+import DeleteConfirmationModal from '@/components/ui/delete-confirmation-modal';
+import { toast } from '@/components/ui/use-toast';
+import { api } from '@/utils/api';
+import { ENTITY_ENDPOINTS } from '@/utils/api-endpoints';
+import { getErrorMessage } from '@/lib/error-message';
+import { useApiQuery } from '@/hooks/use-api-query';
+import { Entity } from '@/types/api';
 
 export default function EntitiesPage() {
   const [entityToDelete, setEntityToDelete] = useState<Entity | null>(null);
@@ -29,7 +29,7 @@ export default function EntitiesPage() {
       const res = await api.get<Entity[]>(ENTITY_ENDPOINTS.BASE);
       return res.data ?? [];
     },
-    { errorToast: "Failed to load entities", initialData: [] },
+    { errorToast: 'Failed to load entities', initialData: [] },
   );
 
   const handleDelete = async () => {
@@ -38,53 +38,53 @@ export default function EntitiesPage() {
       await api.delete(
         ENTITY_ENDPOINTS.BY_ID(entityToDelete.type, entityToDelete.id),
       );
-      toast({ title: "Entity deleted", variant: "success" });
+      toast({ title: 'Entity deleted', variant: 'success' });
       setEntityToDelete(null);
       void refetch();
     } catch (error) {
       toast({
-        title: "Failed to delete entity",
+        title: 'Failed to delete entity',
         description: getErrorMessage(error),
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
 
   const columns = [
     {
-      key: "type" as keyof Entity,
-      label: "Type",
+      key: 'type' as keyof Entity,
+      label: 'Type',
       width: 100,
-      render: (value: Entity["type"]) => (
+      render: (value: Entity['type']) => (
         <Badge variant="outline" className="capitalize">
           {value}
         </Badge>
       ),
     },
     {
-      key: "id" as keyof Entity,
-      label: "ID",
+      key: 'id' as keyof Entity,
+      label: 'ID',
       width: 280,
       render: (value: string) => (
         <span className="font-mono text-sm truncate">{value}</span>
       ),
     },
     {
-      key: "total_memories" as keyof Entity,
-      label: "Memories",
+      key: 'total_memories' as keyof Entity,
+      label: 'Memories',
       width: 100,
-      align: "right" as const,
+      align: 'right' as const,
     },
     {
-      key: "updated_at" as keyof Entity,
-      label: "Last Active",
+      key: 'updated_at' as keyof Entity,
+      label: 'Last Active',
       width: 140,
       render: (value: string | null) =>
-        value ? format(new Date(value), "MMM d, yyyy") : "--",
+        value ? format(new Date(value), 'MMM d, yyyy') : '--',
     },
     {
-      key: "id" as keyof Entity,
-      label: "",
+      key: 'id' as keyof Entity,
+      label: '',
       width: 40,
       render: (_: string, row: Entity) => (
         <Button
@@ -126,7 +126,7 @@ export default function EntitiesPage() {
         onConfirm={handleDelete}
         title="Delete entity"
         description="All memories associated with this entity will be permanently removed. This cannot be undone."
-        itemName={entityToDelete?.id ?? ""}
+        itemName={entityToDelete?.id ?? ''}
         confirmButtonText="Delete"
       />
     </div>

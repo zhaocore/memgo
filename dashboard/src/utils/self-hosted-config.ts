@@ -12,7 +12,7 @@ export type EffectiveConfig = {
 };
 
 export const getEffectiveConfig = (data: unknown): EffectiveConfig | null => {
-  if (!data || typeof data !== "object") {
+  if (!data || typeof data !== 'object') {
     return null;
   }
 

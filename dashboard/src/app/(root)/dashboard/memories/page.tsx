@@ -1,41 +1,41 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
-import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { DataTable } from "@/components/shared/data-table";
-import { TableSkeleton } from "@/components/shared/table-skeleton";
-import { EmptyState } from "@/components/self-hosted/empty-state";
-import DeleteConfirmationModal from "@/components/ui/delete-confirmation-modal";
+import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { DataTable } from '@/components/shared/data-table';
+import { TableSkeleton } from '@/components/shared/table-skeleton';
+import { EmptyState } from '@/components/self-hosted/empty-state';
+import DeleteConfirmationModal from '@/components/ui/delete-confirmation-modal';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet";
-import { UpgradeBanner } from "@/components/self-hosted/upgrade-banner";
-import { toast } from "@/components/ui/use-toast";
-import { getErrorMessage } from "@/lib/error-message";
-import { api } from "@/utils/api";
-import { MEMORY_ENDPOINTS } from "@/utils/api-endpoints";
-import { useApiQuery } from "@/hooks/use-api-query";
-import { Memory } from "@/types/api";
+} from '@/components/ui/sheet';
+import { UpgradeBanner } from '@/components/self-hosted/upgrade-banner';
+import { toast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/lib/error-message';
+import { api } from '@/utils/api';
+import { MEMORY_ENDPOINTS } from '@/utils/api-endpoints';
+import { useApiQuery } from '@/hooks/use-api-query';
+import { Memory } from '@/types/api';
 
 const PAGE_SIZE = 20;
 // Keep in sync with ALL_MEMORIES_LIMIT in server/main.py.
 const MEMORY_FETCH_LIMIT = 1000;
 
 export default function MemoriesPage() {
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState('');
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
   const [memoryToDelete, setMemoryToDelete] = useState<Memory | null>(null);
   const [page, setPage] = useState(0);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
   const {
     data: memories = [],
@@ -50,7 +50,7 @@ export default function MemoriesPage() {
       const raw = res.data?.results ?? res.data ?? [];
       return Array.isArray(raw) ? raw : [];
     },
-    { errorToast: "Failed to load memories", initialData: [] },
+    { errorToast: 'Failed to load memories', initialData: [] },
   );
 
   const totalPages = Math.ceil(memories.length / PAGE_SIZE);
@@ -63,36 +63,36 @@ export default function MemoriesPage() {
     if (!memoryToDelete) return;
     try {
       await api.delete(MEMORY_ENDPOINTS.BY_ID(memoryToDelete.id));
-      toast({ title: "Memory deleted", variant: "success" });
+      toast({ title: 'Memory deleted', variant: 'success' });
       if (selectedMemory?.id === memoryToDelete.id) setSelectedMemory(null);
       setMemoryToDelete(null);
       void refetch();
     } catch (error) {
       toast({
-        title: "Failed to delete memory",
+        title: 'Failed to delete memory',
         description: getErrorMessage(error),
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
 
   const columns = [
     {
-      key: "memory" as keyof Memory,
-      label: "Content",
+      key: 'memory' as keyof Memory,
+      label: 'Content',
       width: 400,
       render: (value: string) => (
         <span className="line-clamp-2 text-sm">{value}</span>
       ),
     },
-    { key: "user_id" as keyof Memory, label: "User", width: 100 },
-    { key: "agent_id" as keyof Memory, label: "Agent", width: 100 },
+    { key: 'user_id' as keyof Memory, label: 'User', width: 100 },
+    { key: 'agent_id' as keyof Memory, label: 'Agent', width: 100 },
     {
-      key: "created_at" as keyof Memory,
-      label: "Created",
+      key: 'created_at' as keyof Memory,
+      label: 'Created',
       width: 120,
       render: (value: string) =>
-        value ? format(new Date(value), "MMM d, yyyy") : "--",
+        value ? format(new Date(value), 'MMM d, yyyy') : '--',
     },
   ];
 
@@ -116,7 +116,7 @@ export default function MemoriesPage() {
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === 'Enter') {
               setPage(0);
               refetch();
             }
@@ -157,7 +157,7 @@ export default function MemoriesPage() {
               onRowClick={(row) => setSelectedMemory(row)}
               getRowClassName={(row) =>
                 selectedMemory?.id === row.id
-                  ? "bg-surface-default-tertiary"
+                  ? 'bg-surface-default-tertiary'
                   : undefined
               }
             />
@@ -166,7 +166,7 @@ export default function MemoriesPage() {
             <div className="flex items-center justify-between text-sm text-onSurface-default-tertiary">
               <span>
                 {page * PAGE_SIZE + 1}–
-                {Math.min((page + 1) * PAGE_SIZE, memories.length)} of{" "}
+                {Math.min((page + 1) * PAGE_SIZE, memories.length)} of{' '}
                 {memories.length}
               </span>
               <div className="flex gap-2">
@@ -269,7 +269,7 @@ export default function MemoriesPage() {
         onConfirm={handleDelete}
         title="Delete memory"
         description="This memory will be permanently removed. This cannot be undone."
-        itemName={memoryToDelete?.id ?? ""}
+        itemName={memoryToDelete?.id ?? ''}
         confirmButtonText="Delete"
       />
     </div>

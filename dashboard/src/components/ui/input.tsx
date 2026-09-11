@@ -1,11 +1,11 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { cn } from "@/lib/utils";
-import type { InputProps } from "@/types/ui-components";
-import { inputVariants } from "@/constants/ui-components";
+import { cn } from '@/lib/utils';
+import type { InputProps } from '@/types/ui-components';
+import { inputVariants } from '@/constants/ui-components';
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, variant = "default", ...props }, ref) => {
+  ({ className, type, variant = 'default', ...props }, ref) => {
     return (
       <input
         type={type}
@@ -16,7 +16,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     );
   },
 );
-Input.displayName = "Input";
+Input.displayName = 'Input';
 
 export { Input, inputVariants };
 export type { InputProps };

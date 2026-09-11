@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -25,18 +25,18 @@ const DeleteConfirmationModal = ({
   title,
   description,
   itemName,
-  confirmButtonText = "Delete",
+  confirmButtonText = 'Delete',
 }: DeleteConfirmationModalProps) => {
-  const [confirmationText, setConfirmationText] = useState("");
+  const [confirmationText, setConfirmationText] = useState('');
 
   const handleClose = () => {
-    setConfirmationText("");
+    setConfirmationText('');
     onClose();
   };
 
   const handleConfirm = () => {
     onConfirm();
-    setConfirmationText("");
+    setConfirmationText('');
   };
 
   const isDeleteEnabled = confirmationText === itemName;
