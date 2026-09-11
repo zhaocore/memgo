@@ -1,18 +1,4 @@
-"""Unit tests for init internals — decision tree primitives + plugin sync.
-
-These tests exercise the units that the high-level subprocess parity tests in
-``test_agent_mode.py`` deliberately can't reach:
-
-  - ``_ping_key`` must NOT treat network errors as "invalid key" (else a VPN
-    flap silently mints a new shadow over a working key).
-  - ``plugin_sync`` must only update entries that already exist, preserve
-    trailing newlines, and never mangle other lines.
-  - The 403→ratelimit translation in ``bootstrap_via_backend`` surfaces the
-    real cause instead of DRF's opaque "You do not have permission" string.
-
-Mirror surface lives in ``cli/node/tests/agent-mode.test.ts``; if you add a
-behavioral assertion here, mirror it on the Node side and vice versa.
-"""
+"""验证 init_internals 的行为与兼容性。"""
 
 from __future__ import annotations
 
@@ -21,10 +7,10 @@ from unittest.mock import MagicMock
 import httpx
 import pytest
 
-from memgo_cli.commands.init_cmd import _ping_key
-from memgo_cli.plugin_sync import _update_claude_settings, _update_shell_rc
+from memgo_cli.application.onboarding.key import _ping_key
+from memgo_cli.integrations.plugin_sync import _update_claude_settings, _update_shell_rc
 
-# ── _ping_key ──────────────────────────────────────────────────────────────
+# 密钥有效性探测
 
 
 class _Resp:
@@ -34,32 +20,32 @@ class _Resp:
 
 def test_ping_key_200_is_valid(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(httpx, "get", lambda *a, **kw: _Resp(200))
-    assert _ping_key("k", "http://x") is True
+    assert _ping_key("k", "http://x", timeout=5.0) is True
 
 
 def test_ping_key_401_is_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(httpx, "get", lambda *a, **kw: _Resp(401))
-    assert _ping_key("k", "http://x") is False
+    assert _ping_key("k", "http://x", timeout=5.0) is False
 
 
 def test_ping_key_403_is_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(httpx, "get", lambda *a, **kw: _Resp(403))
-    assert _ping_key("k", "http://x") is False
+    assert _ping_key("k", "http://x", timeout=5.0) is False
 
 
 def test_ping_key_5xx_is_not_definitively_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Transient upstream failure must NOT cause a shadow to be minted.
+    # 上游瞬时故障不得触发新账号创建
     monkeypatch.setattr(httpx, "get", lambda *a, **kw: _Resp(503))
-    assert _ping_key("k", "http://x") is True
+    assert _ping_key("k", "http://x", timeout=5.0) is True
 
 
 def test_ping_key_connect_error_prefers_reuse(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Network blip (DNS, captive portal, etc.) — must NOT trigger a re-mint.
+    # 网络故障不得重新创建密钥
     def boom(*a, **kw):
         raise httpx.ConnectError("nope")
 
     monkeypatch.setattr(httpx, "get", boom)
-    assert _ping_key("k", "http://x") is True
+    assert _ping_key("k", "http://x", timeout=5.0) is True
 
 
 def test_ping_key_timeout_prefers_reuse(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -67,10 +53,10 @@ def test_ping_key_timeout_prefers_reuse(monkeypatch: pytest.MonkeyPatch) -> None
         raise httpx.ReadTimeout("slow")
 
     monkeypatch.setattr(httpx, "get", boom)
-    assert _ping_key("k", "http://x") is True
+    assert _ping_key("k", "http://x", timeout=5.0) is True
 
 
-# ── plugin_sync._update_shell_rc ──────────────────────────────────────────
+# shell 配置同步
 
 
 def test_shell_rc_updates_existing_export_preserves_trailing_newline(tmp_path) -> None:
@@ -108,11 +94,11 @@ def test_shell_rc_idempotent_when_already_matching(tmp_path) -> None:
 
 
 def test_shell_rc_missing_file_is_noop(tmp_path) -> None:
-    rc = tmp_path / ".zshrc"  # does not exist
+    rc = tmp_path / ".zshrc"  # 文件不存在
     assert _update_shell_rc(rc, "x") is False
 
 
-# ── plugin_sync._update_claude_settings ────────────────────────────────────
+# Claude 设置同步
 
 
 def test_claude_settings_does_not_create_env_block(tmp_path) -> None:
@@ -122,7 +108,7 @@ def test_claude_settings_does_not_create_env_block(tmp_path) -> None:
     settings.write_text(json.dumps({"otherKey": 1}), encoding="utf-8")
     changed = _update_claude_settings(settings, "newkey")
     assert changed is False
-    # Original content unchanged.
+    # 原内容不变
     assert json.loads(settings.read_text(encoding="utf-8")) == {"otherKey": 1}
 
 
@@ -147,7 +133,7 @@ def test_claude_settings_updates_existing_entry(tmp_path) -> None:
     assert changed is True
     data = json.loads(settings.read_text(encoding="utf-8"))
     assert data["env"]["MEMGO_API_KEY"] == "fresh"
-    assert data["env"]["OTHER"] == "y"  # other keys preserved
+    assert data["env"]["OTHER"] == "y"  # 保留其他字段
 
 
 def test_claude_settings_idempotent(tmp_path) -> None:
@@ -164,13 +150,13 @@ def test_claude_settings_malformed_json_is_noop(tmp_path) -> None:
     assert _update_claude_settings(settings, "x") is False
 
 
-# ── bootstrap rate-limit translation ──────────────────────────────────────
+# 初始化限流错误映射
 
 
 def test_bootstrap_403_permission_surfaces_ratelimit(monkeypatch, capsys) -> None:
-    """DRF 403 'You do not have permission' must be translated to the daily limit message."""
-    from memgo_cli.commands.agent_mode_cmd import bootstrap_via_backend
-    from memgo_cli.config import MemGoConfig
+    """将初始化接口的权限拒绝映射为每日注册限额提示。"""
+    from memgo_cli.application.onboarding.agent_mode import bootstrap_via_backend
+    from memgo_cli.config.models import MemGoConfig
 
     fake_resp = MagicMock()
     fake_resp.status_code = 403
@@ -198,7 +184,7 @@ def test_bootstrap_403_permission_surfaces_ratelimit(monkeypatch, capsys) -> Non
     import typer
 
     with pytest.raises(typer.Exit):
-        bootstrap_via_backend(cfg)
+        bootstrap_via_backend(cfg, source=None, agent_caller=None)
 
     captured = capsys.readouterr()
     combined = captured.out + captured.err

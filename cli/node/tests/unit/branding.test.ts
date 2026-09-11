@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   BRAND_COLOR,
+  LOGO,
   LOGO_MINI,
   TAGLINE,
   printError,
@@ -44,6 +45,16 @@ describe('branding constants', () => {
 
   it('has correct logo mini', () => {
     expect(LOGO_MINI).toBe('◆ memgo');
+  });
+
+  it('renders the MEMGO CLI character logo', () => {
+    expect(LOGO.trim()).toBe([
+      '█   █ █████ █   █  ███   ███     ████ █     █████',
+      '██ ██ █     ██ ██ █     █   █   █     █       █',
+      '█ █ █ ████  █ █ █ █ ███ █   █   █     █       █',
+      '█   █ █     █   █ █   █ █   █   █     █       █',
+      '█   █ █████ █   █  ███   ███     ████ █████ █████',
+    ].join('\n'));
   });
 });
 

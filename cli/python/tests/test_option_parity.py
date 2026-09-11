@@ -1,4 +1,4 @@
-"""Drift test: every documented v3 add/search/list param must be reachable from the Python CLI."""
+"""验证 option_parity 的行为与兼容性。"""
 
 import json
 from pathlib import Path

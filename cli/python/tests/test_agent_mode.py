@@ -1,14 +1,4 @@
-"""Parity tests for `memgo init --agent` (Agent Mode bootstrap).
-
-Mirror of ``cli/node/tests/agent-mode.test.ts`` — both files MUST stay in
-sync so that the Python and Node CLIs expose an identical surface for the
-Agent Mode entrypoint. If you add a flag here, add the same assertion on
-the Node side (and vice versa).
-
-Network-bound bootstrap is covered by the platform-side E2E suite
-(``backend/tests/e2e/test_05_agent_mode.py``); these tests only verify
-the CLI surface that ships in the binary.
-"""
+"""验证 agent_mode 的行为与兼容性。"""
 
 from __future__ import annotations
 
@@ -31,6 +21,7 @@ def _run(args: list[str], home_dir: str | None = None) -> subprocess.CompletedPr
     for key in list(env.keys()):
         if key.startswith("MEMGO_"):
             del env[key]
+    env["MEMGO_TELEMETRY"] = "false"
     env.pop("FORCE_COLOR", None)
     env["PYTHONIOENCODING"] = "utf-8"
     if home_dir:
@@ -56,7 +47,7 @@ def clean_home(tmp_path):
 
 
 class TestInitFlagSurface:
-    """`memgo init --help` must expose the Agent Mode flags."""
+    """初始化帮助保留代理模式和认领选项。"""
 
     def test_init_help_lists_agent_flag(self):
         result = _run(["init", "--help"])
@@ -66,8 +57,8 @@ class TestInitFlagSurface:
     def test_init_help_describes_agent_mode(self):
         result = _run(["init", "--help"])
         assert result.returncode == 0
-        # Description must mention what --agent actually does so an agent
-        # reading the help can self-discover the bootstrap entrypoint.
+        # 帮助说明应解释 --agent 的行为
+        # 方便代理发现初始化入口
         assert "Agent Mode" in result.stdout or "unattended" in result.stdout.lower()
 
     def test_init_help_lists_source_flag(self):
@@ -76,7 +67,7 @@ class TestInitFlagSurface:
         assert "--source" in result.stdout
 
     def test_init_help_lists_email_and_code(self):
-        # Claim flow flags must remain present alongside Agent Mode flags.
+        # 保留邮箱认领选项
         result = _run(["init", "--help"])
         assert result.returncode == 0
         assert "--email" in result.stdout
@@ -84,19 +75,13 @@ class TestInitFlagSurface:
 
 
 class TestArgvPreprocessing:
-    """`--agent` on `init` must reach init_cmd, not be eaten by the global preprocessor.
-
-    Regression for the bug where the top-level `--agent` JSON-alias was
-    stripped from ``sys.argv`` before Typer could bind it to the init
-    subcommand, making ``memgo init --agent`` indistinguishable from a
-    plain ``memgo init`` (interactive wizard).
-    """
+    """init 的 --agent 必须保留给初始化流程，不能被全局 JSON 别名吞掉。"""
 
     def test_init_with_agent_reaches_subcommand(self, clean_home):
-        # We can't hit a real backend in unit tests, so we point the CLI at
-        # a guaranteed-dead URL and assert the failure is the bootstrap
-        # request failing — proving the --agent flag was honored and the
-        # bootstrap branch ran, not the interactive wizard.
+        # 测试不访问真实平台
+        # 使用不可达地址触发请求失败
+        # 确认 --agent 进入初始化请求分支
+        # 而非交互向导
         result = subprocess.run(
             [sys.executable, "-m", "memgo_cli", "init", "--agent"],
             capture_output=True,
@@ -104,15 +89,15 @@ class TestArgvPreprocessing:
             env={
                 **{k: v for k, v in os.environ.items() if not k.startswith("MEMGO_")},
                 "HOME": clean_home,
-                "MEMGO_BASE_URL": "http://127.0.0.1:1",  # blackhole
+                "MEMGO_BASE_URL": "http://127.0.0.1:1",  # 不可达测试地址
                 "FORCE_COLOR": "0",
                 "PYTHONIOENCODING": "utf-8",
             },
             timeout=15,
         )
         combined = _strip_ansi(result.stdout + result.stderr).lower()
-        # Either we got a connection/network error from the bootstrap POST,
-        # or the CLI surfaced an Agent Mode-specific failure message.
+        # 允许连接错误或初始化请求错误
+        # 但必须证明代理模式分支已执行
         assert (
             "agent" in combined
             or "connect" in combined
@@ -123,13 +108,7 @@ class TestArgvPreprocessing:
 
 
 class TestJsonEnvelopeParity:
-    """`memgo init --agent --json` should produce a JSON envelope on success.
-
-    Without a live backend we can only assert the failure shape: when the
-    backend is unreachable, the CLI must still exit non-zero AND not crash
-    on a Python traceback (which would mean we leaked an exception past
-    the agent-mode handler).
-    """
+    """在不可达后端下验证初始化失败，真实成功流程由本地 HTTP 验收覆盖。"""
 
     def test_init_agent_json_no_traceback_on_network_failure(self, clean_home):
         result = subprocess.run(
@@ -151,8 +130,7 @@ class TestJsonEnvelopeParity:
 
 
 class TestInitInCommandList:
-    """`memgo --help` must list `init` so agents walking the top-level help
-    can discover the Agent Mode entrypoint without prior knowledge."""
+    """顶层帮助公开 init 命令。"""
 
     def test_top_level_help_lists_init(self):
         result = _run(["--help"])

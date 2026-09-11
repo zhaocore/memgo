@@ -5,13 +5,13 @@ import ora from 'ora';
 import { getCurrentCommand, isAgentMode } from '../runtime/state.js';
 import { CLI_VERSION } from '../version.js';
 
-/** MOMGO CLI 大号字符标志。 */
+/** MEMGO CLI 大号字符标志。 */
 export const LOGO = `
-█   █  ███  █   █  ███   ███     ████ █     █████
-██ ██ █   █ ██ ██ █     █   █   █     █       █  
-█ █ █ █   █ █ █ █ █ ███ █   █   █     █       █  
-█   █ █   █ █   █ █   █ █   █   █     █       █  
-█   █  ███  █   █  ███   ███     ████ █████ █████
+█   █ █████ █   █  ███   ███     ████ █     █████
+██ ██ █     ██ ██ █     █   █   █     █       █
+█ █ █ ████  █ █ █ █ ███ █   █   █     █       █
+█   █ █     █   █ █   █ █   █   █     █       █
+█   █ █████ █   █  ███   ███     ████ █████ █████
 `;
 
 export const LOGO_MINI = '◆ memgo';

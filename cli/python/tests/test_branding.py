@@ -1,4 +1,4 @@
-"""Tests for branding and output helpers."""
+"""验证 branding 的行为与兼容性。"""
 
 from __future__ import annotations
 
@@ -6,7 +6,13 @@ from io import StringIO
 
 from rich.console import Console
 
-from memgo_cli.branding import print_banner, print_error, print_info, print_success, print_warning
+from memgo_cli.output.branding import (
+    print_banner,
+    print_error,
+    print_info,
+    print_success,
+    print_warning,
+)
 
 
 def _make_console() -> tuple[Console, StringIO]:
@@ -19,7 +25,7 @@ class TestBranding:
         console, buf = _make_console()
         print_banner(console)
         output = buf.getvalue()
-        # Banner contains the memgo ASCII art and tagline
+        # 欢迎面板包含字符标志和标语
         assert "Memory Layer" in output or "mem" in output.lower()
 
     def test_print_success(self):
@@ -37,7 +43,7 @@ class TestBranding:
 
     def test_print_error_no_hint(self):
         console, buf = _make_console()
-        print_error(console, "Failed")
+        print_error(console, "Failed", hint=None)
         output = buf.getvalue()
         assert "Failed" in output
 

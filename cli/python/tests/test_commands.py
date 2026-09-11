@@ -1,4 +1,4 @@
-"""Tests for CLI commands using mock backend."""
+"""验证 commands 的行为与兼容性。"""
 
 from __future__ import annotations
 
@@ -11,14 +11,14 @@ import pytest
 from rich.console import Console
 from typer import Exit as TyperExit
 
-from memgo_cli.commands.config_cmd import (
+from memgo_cli.cli.commands.config import (
     cmd_config_get,
     cmd_config_set,
     cmd_config_show,
 )
-from memgo_cli.commands.entities import cmd_entities_delete, cmd_entities_list
-from memgo_cli.commands.events_cmd import cmd_event_list, cmd_event_status
-from memgo_cli.commands.memory import (
+from memgo_cli.cli.commands.entities import cmd_entities_delete, cmd_entities_list
+from memgo_cli.cli.commands.events import cmd_event_list, cmd_event_status
+from memgo_cli.cli.commands.memory import (
     cmd_add,
     cmd_delete,
     cmd_delete_all,
@@ -27,7 +27,7 @@ from memgo_cli.commands.memory import (
     cmd_search,
     cmd_update,
 )
-from memgo_cli.commands.utils import (
+from memgo_cli.cli.commands.utils import (
     cmd_import,
     cmd_status,
 )
@@ -48,8 +48,8 @@ class TestAddCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
         ):
             cmd_add(
                 mock_backend,
@@ -66,6 +66,11 @@ class TestAddCommand:
                 expires=None,
                 categories=None,
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         mock_backend.add.assert_called_once()
 
@@ -74,8 +79,8 @@ class TestAddCommand:
         err_console, _err_buf = _make_err_console()
         msgs = json.dumps([{"role": "user", "content": "I love Python"}])
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
         ):
             cmd_add(
                 mock_backend,
@@ -92,6 +97,11 @@ class TestAddCommand:
                 expires=None,
                 categories=None,
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         mock_backend.add.assert_called_once()
 
@@ -99,8 +109,8 @@ class TestAddCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
         ):
             cmd_add(
                 mock_backend,
@@ -117,6 +127,11 @@ class TestAddCommand:
                 expires=None,
                 categories=None,
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         call_kwargs = mock_backend.add.call_args
         assert "metadata" in str(call_kwargs)
@@ -125,8 +140,8 @@ class TestAddCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
         ):
             cmd_add(
                 mock_backend,
@@ -143,6 +158,11 @@ class TestAddCommand:
                 expires=None,
                 categories=None,
                 output="json",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         output = buf.getvalue()
         assert '"results"' in output or '"memory"' in output
@@ -151,8 +171,8 @@ class TestAddCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
         ):
             cmd_add(
                 mock_backend,
@@ -169,18 +189,23 @@ class TestAddCommand:
                 expires=None,
                 categories=None,
                 output="quiet",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         output = buf.getvalue()
-        # In quiet mode, no memory content should be printed (spinner may appear)
+        # 静默模式不输出记忆内容
         assert "dark mode" not in output
 
     def test_add_no_content_exits(self, mock_backend):
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
-            patch("memgo_cli.commands.memory._stdin_is_piped", return_value=False),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add._stdin_is_piped", return_value=False),
             pytest.raises((SystemExit, TyperExit)),
         ):
             cmd_add(
@@ -198,14 +223,19 @@ class TestAddCommand:
                 expires=None,
                 categories=None,
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
 
     def test_add_invalid_metadata_json(self, mock_backend):
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
             pytest.raises((SystemExit, TyperExit)),
         ):
             cmd_add(
@@ -223,6 +253,11 @@ class TestAddCommand:
                 expires=None,
                 categories=None,
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
 
     def test_add_from_file(self, mock_backend, tmp_path):
@@ -231,8 +266,8 @@ class TestAddCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
         ):
             cmd_add(
                 mock_backend,
@@ -249,6 +284,11 @@ class TestAddCommand:
                 expires=None,
                 categories=None,
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         mock_backend.add.assert_called_once()
 
@@ -256,8 +296,8 @@ class TestAddCommand:
         console, _buf = _make_console()
         err_console, err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
             pytest.raises((SystemExit, TyperExit)),
         ):
             cmd_add(
@@ -275,6 +315,11 @@ class TestAddCommand:
                 expires=None,
                 categories="health,prefs",
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         assert "--custom-categories" in err_buf.getvalue()
         mock_backend.add.assert_not_called()
@@ -283,8 +328,8 @@ class TestAddCommand:
         console, _buf = _make_console()
         err_console, err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
             pytest.raises((SystemExit, TyperExit)),
         ):
             cmd_add(
@@ -303,6 +348,10 @@ class TestAddCommand:
                 categories=None,
                 custom_categories="not-json",
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         assert "--custom-categories" in err_buf.getvalue()
         mock_backend.add.assert_not_called()
@@ -311,8 +360,8 @@ class TestAddCommand:
         console, _buf = _make_console()
         err_console, err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
             pytest.raises((SystemExit, TyperExit)),
         ):
             cmd_add(
@@ -331,6 +380,10 @@ class TestAddCommand:
                 categories=None,
                 structured_data_schema="not-json",
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                timestamp=None,
             )
         assert "--structured-data-schema" in err_buf.getvalue()
         mock_backend.add.assert_not_called()
@@ -339,8 +392,8 @@ class TestAddCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
         ):
             cmd_add(
                 mock_backend,
@@ -358,6 +411,10 @@ class TestAddCommand:
                 categories=None,
                 custom_categories='[{"prefs": "user preferences"}]',
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         call_kwargs = mock_backend.add.call_args.kwargs
         assert call_kwargs["metadata"] == {"source": "test"}
@@ -366,7 +423,7 @@ class TestAddCommand:
 
 
 class TestAddDeduplicatesPending:
-    """Ensure duplicate PENDING entries with the same event_id are collapsed."""
+    """验证相同事件的待处理项合并。"""
 
     DUPLICATE_PENDING: typing.ClassVar[dict] = {
         "results": [
@@ -380,8 +437,8 @@ class TestAddDeduplicatesPending:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
         ):
             cmd_add(
                 mock_backend,
@@ -398,6 +455,11 @@ class TestAddDeduplicatesPending:
                 expires=None,
                 categories=None,
                 output=output,
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         return buf.getvalue()
 
@@ -413,7 +475,7 @@ class TestAddDeduplicatesPending:
         assert len(pending) == 1
 
     def test_agent_shows_one_pending(self, mock_backend):
-        from memgo_cli.state import set_agent_mode
+        from memgo_cli.runtime.state import set_agent_mode
 
         set_agent_mode(True)
         try:
@@ -430,8 +492,8 @@ class TestSearchCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.search.console", console),
+            patch("memgo_cli.cli.commands.memory.search.err_console", err_console),
         ):
             cmd_search(
                 mock_backend,
@@ -447,6 +509,9 @@ class TestSearchCommand:
                 filter_json=None,
                 fields=None,
                 output="text",
+                show_expired=False,
+                reference_date=None,
+                latest_only=False,
             )
         output = buf.getvalue()
         assert "Found 2" in output
@@ -455,8 +520,8 @@ class TestSearchCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.search.console", console),
+            patch("memgo_cli.cli.commands.memory.search.err_console", err_console),
         ):
             cmd_search(
                 mock_backend,
@@ -472,6 +537,9 @@ class TestSearchCommand:
                 filter_json=None,
                 fields=None,
                 output="json",
+                show_expired=False,
+                reference_date=None,
+                latest_only=False,
             )
         output = buf.getvalue()
         assert '"memory"' in output
@@ -480,8 +548,8 @@ class TestSearchCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.search.console", console),
+            patch("memgo_cli.cli.commands.memory.search.err_console", err_console),
         ):
             cmd_search(
                 mock_backend,
@@ -497,6 +565,9 @@ class TestSearchCommand:
                 filter_json=None,
                 fields=None,
                 output="table",
+                show_expired=False,
+                reference_date=None,
+                latest_only=False,
             )
         output = buf.getvalue()
         assert "dark mode" in output
@@ -506,8 +577,8 @@ class TestSearchCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.search.console", console),
+            patch("memgo_cli.cli.commands.memory.search.err_console", err_console),
         ):
             cmd_search(
                 mock_backend,
@@ -523,6 +594,9 @@ class TestSearchCommand:
                 filter_json=None,
                 fields=None,
                 output="text",
+                show_expired=False,
+                reference_date=None,
+                latest_only=False,
             )
         output = buf.getvalue()
         assert "No memories found" in output
@@ -531,8 +605,8 @@ class TestSearchCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.search.console", console),
+            patch("memgo_cli.cli.commands.memory.search.err_console", err_console),
         ):
             cmd_search(
                 mock_backend,
@@ -548,6 +622,9 @@ class TestSearchCommand:
                 filter_json='{"category": "prefs"}',
                 fields="memory,score",
                 output="text",
+                show_expired=False,
+                reference_date=None,
+                latest_only=False,
             )
         mock_backend.search.assert_called_once()
 
@@ -555,8 +632,8 @@ class TestSearchCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.search.console", console),
+            patch("memgo_cli.cli.commands.memory.search.err_console", err_console),
         ):
             cmd_search(
                 mock_backend,
@@ -587,8 +664,8 @@ class TestGetCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.get.console", console),
+            patch("memgo_cli.cli.commands.memory.get.err_console", err_console),
         ):
             cmd_get(mock_backend, "abc-123-def-456", output="text")
         output = buf.getvalue()
@@ -599,8 +676,8 @@ class TestGetCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.get.console", console),
+            patch("memgo_cli.cli.commands.memory.get.err_console", err_console),
         ):
             cmd_get(mock_backend, "abc-123-def-456", output="json")
         output = buf.getvalue()
@@ -612,8 +689,8 @@ class TestListCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.list.console", console),
+            patch("memgo_cli.cli.commands.memory.list.err_console", err_console),
         ):
             cmd_list(
                 mock_backend,
@@ -627,6 +704,8 @@ class TestListCommand:
                 after=None,
                 before=None,
                 output="table",
+                show_expired=False,
+                latest_only=False,
             )
         output = buf.getvalue()
         assert "dark mode" in output
@@ -635,8 +714,8 @@ class TestListCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.list.console", console),
+            patch("memgo_cli.cli.commands.memory.list.err_console", err_console),
         ):
             cmd_list(
                 mock_backend,
@@ -650,6 +729,8 @@ class TestListCommand:
                 after=None,
                 before=None,
                 output="json",
+                show_expired=False,
+                latest_only=False,
             )
         output = buf.getvalue()
         assert '"memory"' in output
@@ -659,8 +740,8 @@ class TestListCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.list.console", console),
+            patch("memgo_cli.cli.commands.memory.list.err_console", err_console),
         ):
             cmd_list(
                 mock_backend,
@@ -674,6 +755,8 @@ class TestListCommand:
                 after=None,
                 before=None,
                 output="text",
+                show_expired=False,
+                latest_only=False,
             )
         output = buf.getvalue()
         assert "No memories found" in output
@@ -682,8 +765,8 @@ class TestListCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.list.console", console),
+            patch("memgo_cli.cli.commands.memory.list.err_console", err_console),
         ):
             cmd_list(
                 mock_backend,
@@ -710,10 +793,18 @@ class TestUpdateCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.update.console", console),
+            patch("memgo_cli.cli.commands.memory.update.err_console", err_console),
         ):
-            cmd_update(mock_backend, "abc-123", "New text", metadata=None, output="text")
+            cmd_update(
+                mock_backend,
+                "abc-123",
+                "New text",
+                metadata=None,
+                output="text",
+                expires=None,
+                timestamp=None,
+            )
         output = buf.getvalue()
         assert "updated" in output.lower()
 
@@ -721,10 +812,18 @@ class TestUpdateCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.update.console", console),
+            patch("memgo_cli.cli.commands.memory.update.err_console", err_console),
         ):
-            cmd_update(mock_backend, "abc-123", "New text", metadata=None, output="json")
+            cmd_update(
+                mock_backend,
+                "abc-123",
+                "New text",
+                metadata=None,
+                output="json",
+                expires=None,
+                timestamp=None,
+            )
         output = buf.getvalue()
         assert '"memory"' in output
 
@@ -732,8 +831,8 @@ class TestUpdateCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.update.console", console),
+            patch("memgo_cli.cli.commands.memory.update.err_console", err_console),
         ):
             cmd_update(
                 mock_backend,
@@ -754,10 +853,17 @@ class TestDeleteCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.delete.console", console),
+            patch("memgo_cli.cli.commands.memory.delete.err_console", err_console),
         ):
-            cmd_delete(mock_backend, "abc-123", output="text")
+            cmd_delete(
+                mock_backend,
+                "abc-123",
+                output="text",
+                dry_run=False,
+                force=False,
+                delete_linked=False,
+            )
         output = buf.getvalue()
         assert "deleted" in output.lower()
 
@@ -765,10 +871,17 @@ class TestDeleteCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.delete.console", console),
+            patch("memgo_cli.cli.commands.memory.delete.err_console", err_console),
         ):
-            cmd_delete(mock_backend, "abc-123-def-456", dry_run=True, output="text")
+            cmd_delete(
+                mock_backend,
+                "abc-123-def-456",
+                dry_run=True,
+                output="text",
+                force=False,
+                delete_linked=False,
+            )
         output = buf.getvalue()
         assert "dry run" in output.lower()
         mock_backend.delete.assert_not_called()
@@ -777,10 +890,17 @@ class TestDeleteCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.delete.console", console),
+            patch("memgo_cli.cli.commands.memory.delete.err_console", err_console),
         ):
-            cmd_delete(mock_backend, "abc-123", delete_linked=True, output="text")
+            cmd_delete(
+                mock_backend,
+                "abc-123",
+                delete_linked=True,
+                output="text",
+                dry_run=False,
+                force=False,
+            )
         call_kwargs = mock_backend.delete.call_args.kwargs
         assert call_kwargs["delete_linked"] is True
 
@@ -790,8 +910,8 @@ class TestDeleteAllCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.delete_all.console", console),
+            patch("memgo_cli.cli.commands.memory.delete_all.err_console", err_console),
         ):
             cmd_delete_all(
                 mock_backend,
@@ -801,6 +921,8 @@ class TestDeleteAllCommand:
                 app_id=None,
                 run_id=None,
                 output="text",
+                dry_run=False,
+                all_=False,
             )
         output = buf.getvalue()
         assert "deleted" in output.lower()
@@ -809,8 +931,8 @@ class TestDeleteAllCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.delete_all.console", console),
+            patch("memgo_cli.cli.commands.memory.delete_all.err_console", err_console),
         ):
             cmd_delete_all(
                 mock_backend,
@@ -821,6 +943,7 @@ class TestDeleteAllCommand:
                 app_id=None,
                 run_id=None,
                 output="text",
+                all_=False,
             )
         output = buf.getvalue()
         assert "dry run" in output.lower()
@@ -830,8 +953,8 @@ class TestDeleteAllCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.delete_all.console", console),
+            patch("memgo_cli.cli.commands.memory.delete_all.err_console", err_console),
         ):
             cmd_delete_all(
                 mock_backend,
@@ -842,8 +965,11 @@ class TestDeleteAllCommand:
                 app_id=None,
                 run_id=None,
                 output="text",
+                dry_run=False,
             )
         mock_backend.delete.assert_called_once_with(
+            memory_id=None,
+            delete_linked=False,
             all=True,
             user_id="*",
             agent_id="*",
@@ -856,8 +982,8 @@ class TestDeleteAllCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.delete_all.console", console),
+            patch("memgo_cli.cli.commands.memory.delete_all.err_console", err_console),
         ):
             cmd_delete_all(
                 mock_backend,
@@ -868,6 +994,7 @@ class TestDeleteAllCommand:
                 app_id=None,
                 run_id=None,
                 output="text",
+                dry_run=False,
             )
         output = buf.getvalue()
         assert "background" in output.lower()
@@ -878,10 +1005,10 @@ class TestStatusCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.utils.console", console),
-            patch("memgo_cli.commands.utils.err_console", err_console),
+            patch("memgo_cli.cli.commands.utils.console", console),
+            patch("memgo_cli.cli.commands.utils.err_console", err_console),
         ):
-            cmd_status(mock_backend)
+            cmd_status(mock_backend, user_id=None, agent_id=None, output="text")
         output = buf.getvalue()
         assert "Connected" in output
 
@@ -894,10 +1021,10 @@ class TestStatusCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.utils.console", console),
-            patch("memgo_cli.commands.utils.err_console", err_console),
+            patch("memgo_cli.cli.commands.utils.console", console),
+            patch("memgo_cli.cli.commands.utils.err_console", err_console),
         ):
-            cmd_status(mock_backend)
+            cmd_status(mock_backend, user_id=None, agent_id=None, output="text")
         output = buf.getvalue()
         assert "Disconnected" in output
         assert "Connection refused" in output
@@ -906,10 +1033,10 @@ class TestStatusCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.utils.console", console),
-            patch("memgo_cli.commands.utils.err_console", err_console),
+            patch("memgo_cli.cli.commands.utils.console", console),
+            patch("memgo_cli.cli.commands.utils.err_console", err_console),
         ):
-            cmd_status(mock_backend, output="json")
+            cmd_status(mock_backend, output="json", user_id=None, agent_id=None)
         output = buf.getvalue()
         assert '"connected"' in output
         assert '"status"' in output
@@ -926,21 +1053,23 @@ class TestImportCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.utils.console", console),
-            patch("memgo_cli.commands.utils.err_console", err_console),
+            patch("memgo_cli.cli.commands.utils.console", console),
+            patch("memgo_cli.cli.commands.utils.err_console", err_console),
         ):
-            cmd_import(mock_backend, str(file_path), user_id="alice", agent_id=None)
+            cmd_import(mock_backend, str(file_path), user_id="alice", agent_id=None, output="text")
         assert mock_backend.add.call_count == 2
 
     def test_import_invalid_file(self, mock_backend):
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.utils.console", console),
-            patch("memgo_cli.commands.utils.err_console", err_console),
+            patch("memgo_cli.cli.commands.utils.console", console),
+            patch("memgo_cli.cli.commands.utils.err_console", err_console),
             pytest.raises((SystemExit, TyperExit)),
         ):
-            cmd_import(mock_backend, "/nonexistent/file.json", user_id=None, agent_id=None)
+            cmd_import(
+                mock_backend, "/nonexistent/file.json", user_id=None, agent_id=None, output="text"
+            )
 
     def test_import_json_output(self, mock_backend, tmp_path):
         file_path = tmp_path / "import.json"
@@ -949,8 +1078,8 @@ class TestImportCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.utils.console", console),
-            patch("memgo_cli.commands.utils.err_console", err_console),
+            patch("memgo_cli.cli.commands.utils.console", console),
+            patch("memgo_cli.cli.commands.utils.err_console", err_console),
         ):
             cmd_import(mock_backend, str(file_path), user_id="alice", agent_id=None, output="json")
         output = buf.getvalue()
@@ -962,8 +1091,8 @@ class TestEntitiesListCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.entities.console", console),
-            patch("memgo_cli.commands.entities.err_console", err_console),
+            patch("memgo_cli.cli.commands.entities.console", console),
+            patch("memgo_cli.cli.commands.entities.err_console", err_console),
         ):
             cmd_entities_list(mock_backend, "users", output="table")
         output = buf.getvalue()
@@ -973,8 +1102,8 @@ class TestEntitiesListCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.entities.console", console),
-            patch("memgo_cli.commands.entities.err_console", err_console),
+            patch("memgo_cli.cli.commands.entities.console", console),
+            patch("memgo_cli.cli.commands.entities.err_console", err_console),
             pytest.raises((SystemExit, TyperExit)),
         ):
             cmd_entities_list(mock_backend, "invalid", output="table")
@@ -983,8 +1112,8 @@ class TestEntitiesListCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.entities.console", console),
-            patch("memgo_cli.commands.entities.err_console", err_console),
+            patch("memgo_cli.cli.commands.entities.console", console),
+            patch("memgo_cli.cli.commands.entities.err_console", err_console),
         ):
             cmd_entities_list(mock_backend, "users", output="json")
         output = buf.getvalue()
@@ -993,7 +1122,8 @@ class TestEntitiesListCommand:
 
 class TestConfigCommands:
     def test_config_show(self, isolate_config):
-        from memgo_cli.config import MemGoConfig, save_config
+        from memgo_cli.config.models import MemGoConfig
+        from memgo_cli.config.store import save_config
 
         config = MemGoConfig()
         config.platform.api_key = "m0-test12345678"
@@ -1002,16 +1132,17 @@ class TestConfigCommands:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.config_cmd.console", console),
-            patch("memgo_cli.commands.config_cmd.err_console", err_console),
+            patch("memgo_cli.cli.commands.config.console", console),
+            patch("memgo_cli.cli.commands.config.err_console", err_console),
         ):
-            cmd_config_show()
+            cmd_config_show(output="text")
         output = buf.getvalue()
         assert "Configuration" in output
         assert "m0-test12345678" not in output
 
     def test_config_show_json(self, isolate_config):
-        from memgo_cli.config import MemGoConfig, save_config
+        from memgo_cli.config.models import MemGoConfig
+        from memgo_cli.config.store import save_config
 
         config = MemGoConfig()
         config.platform.api_key = "m0-test12345678"
@@ -1021,8 +1152,8 @@ class TestConfigCommands:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.config_cmd.console", console),
-            patch("memgo_cli.commands.config_cmd.err_console", err_console),
+            patch("memgo_cli.cli.commands.config.console", console),
+            patch("memgo_cli.cli.commands.config.err_console", err_console),
         ):
             cmd_config_show(output="json")
         output = buf.getvalue()
@@ -1033,23 +1164,24 @@ class TestConfigCommands:
         console1, _buf1 = _make_console()
         err_console1, _err_buf1 = _make_err_console()
         with (
-            patch("memgo_cli.commands.config_cmd.console", console1),
-            patch("memgo_cli.commands.config_cmd.err_console", err_console1),
+            patch("memgo_cli.cli.commands.config.console", console1),
+            patch("memgo_cli.cli.commands.config.err_console", err_console1),
         ):
             cmd_config_set("platform.base_url", "https://custom.api.memgo.ai")
 
         console2, buf2 = _make_console()
         err_console2, _err_buf2 = _make_err_console()
         with (
-            patch("memgo_cli.commands.config_cmd.console", console2),
-            patch("memgo_cli.commands.config_cmd.err_console", err_console2),
+            patch("memgo_cli.cli.commands.config.console", console2),
+            patch("memgo_cli.cli.commands.config.err_console", err_console2),
         ):
             cmd_config_get("platform.base_url")
         output = buf2.getvalue()
         assert "custom.api.memgo.ai" in output
 
     def test_config_show_displays_defaults(self, isolate_config):
-        from memgo_cli.config import MemGoConfig, save_config
+        from memgo_cli.config.models import MemGoConfig
+        from memgo_cli.config.store import save_config
 
         config = MemGoConfig()
         config.defaults.user_id = "alice"
@@ -1058,10 +1190,10 @@ class TestConfigCommands:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.config_cmd.console", console),
-            patch("memgo_cli.commands.config_cmd.err_console", err_console),
+            patch("memgo_cli.cli.commands.config.console", console),
+            patch("memgo_cli.cli.commands.config.err_console", err_console),
         ):
-            cmd_config_show()
+            cmd_config_show(output="text")
         output = buf.getvalue()
         assert "defaults.user_id" in output
         assert "alice" in output
@@ -1072,8 +1204,8 @@ class TestEntitiesDeleteCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.entities.console", console),
-            patch("memgo_cli.commands.entities.err_console", err_console),
+            patch("memgo_cli.cli.commands.entities.console", console),
+            patch("memgo_cli.cli.commands.entities.err_console", err_console),
         ):
             cmd_entities_delete(
                 mock_backend,
@@ -1083,6 +1215,7 @@ class TestEntitiesDeleteCommand:
                 run_id=None,
                 force=True,
                 output="text",
+                dry_run=False,
             )
         mock_backend.delete_entities.assert_called_once_with(
             user_id="alice", agent_id=None, app_id=None, run_id=None
@@ -1094,8 +1227,8 @@ class TestEntitiesDeleteCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.entities.console", console),
-            patch("memgo_cli.commands.entities.err_console", err_console),
+            patch("memgo_cli.cli.commands.entities.console", console),
+            patch("memgo_cli.cli.commands.entities.err_console", err_console),
         ):
             cmd_entities_delete(
                 mock_backend,
@@ -1105,6 +1238,7 @@ class TestEntitiesDeleteCommand:
                 run_id=None,
                 force=True,
                 output="text",
+                dry_run=False,
             )
         mock_backend.delete_entities.assert_called_once_with(
             user_id=None, agent_id="bot1", app_id=None, run_id=None
@@ -1116,8 +1250,8 @@ class TestEntitiesDeleteCommand:
         console, _buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.entities.console", console),
-            patch("memgo_cli.commands.entities.err_console", err_console),
+            patch("memgo_cli.cli.commands.entities.console", console),
+            patch("memgo_cli.cli.commands.entities.err_console", err_console),
             pytest.raises((SystemExit, TyperExit)),
         ):
             cmd_entities_delete(
@@ -1128,14 +1262,15 @@ class TestEntitiesDeleteCommand:
                 run_id=None,
                 force=True,
                 output="text",
+                dry_run=False,
             )
 
     def test_delete_entity_json_output(self, mock_backend):
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.entities.console", console),
-            patch("memgo_cli.commands.entities.err_console", err_console),
+            patch("memgo_cli.cli.commands.entities.console", console),
+            patch("memgo_cli.cli.commands.entities.err_console", err_console),
         ):
             cmd_entities_delete(
                 mock_backend,
@@ -1145,6 +1280,7 @@ class TestEntitiesDeleteCommand:
                 run_id=None,
                 force=True,
                 output="json",
+                dry_run=False,
             )
         output = buf.getvalue()
         assert '"message"' in output
@@ -1153,8 +1289,8 @@ class TestEntitiesDeleteCommand:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.entities.console", console),
-            patch("memgo_cli.commands.entities.err_console", err_console),
+            patch("memgo_cli.cli.commands.entities.console", console),
+            patch("memgo_cli.cli.commands.entities.err_console", err_console),
         ):
             cmd_entities_delete(
                 mock_backend,
@@ -1176,8 +1312,8 @@ class TestEventCommands:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.events_cmd.console", console),
-            patch("memgo_cli.commands.events_cmd.err_console", err_console),
+            patch("memgo_cli.cli.commands.events.console", console),
+            patch("memgo_cli.cli.commands.events.err_console", err_console),
         ):
             cmd_event_list(mock_backend, output="table")
         out = buf.getvalue()
@@ -1189,8 +1325,8 @@ class TestEventCommands:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.events_cmd.console", console),
-            patch("memgo_cli.commands.events_cmd.err_console", err_console),
+            patch("memgo_cli.cli.commands.events.console", console),
+            patch("memgo_cli.cli.commands.events.err_console", err_console),
         ):
             cmd_event_list(mock_backend, output="json")
         out = buf.getvalue()
@@ -1202,8 +1338,8 @@ class TestEventCommands:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.events_cmd.console", console),
-            patch("memgo_cli.commands.events_cmd.err_console", err_console),
+            patch("memgo_cli.cli.commands.events.console", console),
+            patch("memgo_cli.cli.commands.events.err_console", err_console),
         ):
             cmd_event_list(mock_backend, output="table")
         out = buf.getvalue()
@@ -1213,8 +1349,8 @@ class TestEventCommands:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.events_cmd.console", console),
-            patch("memgo_cli.commands.events_cmd.err_console", err_console),
+            patch("memgo_cli.cli.commands.events.console", console),
+            patch("memgo_cli.cli.commands.events.err_console", err_console),
         ):
             cmd_event_status(mock_backend, "evt-abc-123-def-456", output="text")
         out = buf.getvalue()
@@ -1225,8 +1361,8 @@ class TestEventCommands:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.events_cmd.console", console),
-            patch("memgo_cli.commands.events_cmd.err_console", err_console),
+            patch("memgo_cli.cli.commands.events.console", console),
+            patch("memgo_cli.cli.commands.events.err_console", err_console),
         ):
             cmd_event_status(mock_backend, "evt-abc-123-def-456", output="json")
         out = buf.getvalue()
@@ -1235,28 +1371,28 @@ class TestEventCommands:
 
 
 class TestAgentMode:
-    """Tests for --json/--agent mode: structured JSON envelope output."""
+    """验证代理模式 JSON 信封输出。"""
 
     def setup_method(self):
-        """Enable agent mode before each test."""
-        from memgo_cli.state import set_agent_mode
+        """测试前启用代理模式。"""
+        from memgo_cli.runtime.state import set_agent_mode
 
         set_agent_mode(True)
 
     def teardown_method(self):
-        """Reset agent mode after each test."""
-        from memgo_cli.state import set_agent_mode
+        """测试后恢复人工输出模式。"""
+        from memgo_cli.runtime.state import set_agent_mode
 
         set_agent_mode(False)
 
-    # ── add ──────────────────────────────────────────────────────────────────
+    # 添加命令
 
     def test_add_agent_mode_envelope(self, mock_backend):
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
         ):
             cmd_add(
                 mock_backend,
@@ -1272,7 +1408,12 @@ class TestAgentMode:
                 no_infer=False,
                 expires=None,
                 categories=None,
-                output="text",  # will be overridden to "agent"
+                output="text",  # 代理输出模式覆盖文本选项
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         raw = buf.getvalue()
         data = json.loads(raw)
@@ -1287,8 +1428,8 @@ class TestAgentMode:
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
         ):
             cmd_add(
                 mock_backend,
@@ -1305,19 +1446,24 @@ class TestAgentMode:
                 expires=None,
                 categories=None,
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         data = json.loads(buf.getvalue())
         assert data["scope"]["user_id"] == "bob"
         assert data["scope"]["agent_id"] == "agent1"
 
-    # ── search ───────────────────────────────────────────────────────────────
+    # 搜索命令
 
     def test_search_agent_mode_envelope(self, mock_backend):
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.search.console", console),
+            patch("memgo_cli.cli.commands.memory.search.err_console", err_console),
         ):
             cmd_search(
                 mock_backend,
@@ -1333,6 +1479,9 @@ class TestAgentMode:
                 filter_json=None,
                 fields=None,
                 output="text",
+                show_expired=False,
+                reference_date=None,
+                latest_only=False,
             )
         data = json.loads(buf.getvalue())
         assert data["status"] == "success"
@@ -1342,14 +1491,14 @@ class TestAgentMode:
         assert "duration_ms" in data
         assert set(data["data"][0].keys()) == {"id", "memory", "score", "created_at", "categories"}
 
-    # ── list ─────────────────────────────────────────────────────────────────
+    # 列表命令
 
     def test_list_agent_mode_envelope(self, mock_backend):
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.list.console", console),
+            patch("memgo_cli.cli.commands.memory.list.err_console", err_console),
         ):
             cmd_list(
                 mock_backend,
@@ -1362,7 +1511,9 @@ class TestAgentMode:
                 category=None,
                 after=None,
                 before=None,
-                output="table",  # will be overridden to "agent"
+                output="table",  # 代理输出模式覆盖文本选项
+                show_expired=False,
+                latest_only=False,
             )
         data = json.loads(buf.getvalue())
         assert data["status"] == "success"
@@ -1372,14 +1523,14 @@ class TestAgentMode:
         assert data["scope"]["user_id"] == "alice"
         assert set(data["data"][0].keys()) == {"id", "memory", "created_at", "categories"}
 
-    # ── get ──────────────────────────────────────────────────────────────────
+    # 读取命令
 
     def test_get_agent_mode_envelope(self, mock_backend):
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.get.console", console),
+            patch("memgo_cli.cli.commands.memory.get.err_console", err_console),
         ):
             cmd_get(mock_backend, "abc-123-def-456", output="text")
         data = json.loads(buf.getvalue())
@@ -1390,16 +1541,24 @@ class TestAgentMode:
         assert "memory" in data["data"]
         assert set(data["data"].keys()) >= {"id", "memory"}
 
-    # ── update ───────────────────────────────────────────────────────────────
+    # 更新命令
 
     def test_update_agent_mode_envelope(self, mock_backend):
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.update.console", console),
+            patch("memgo_cli.cli.commands.memory.update.err_console", err_console),
         ):
-            cmd_update(mock_backend, "abc-123", "Updated content", metadata=None, output="text")
+            cmd_update(
+                mock_backend,
+                "abc-123",
+                "Updated content",
+                metadata=None,
+                output="text",
+                expires=None,
+                timestamp=None,
+            )
         data = json.loads(buf.getvalue())
         assert data["status"] == "success"
         assert data["command"] == "update"
@@ -1407,16 +1566,23 @@ class TestAgentMode:
         assert "memory" in data["data"]
         assert "duration_ms" in data
 
-    # ── delete ───────────────────────────────────────────────────────────────
+    # 删除命令
 
     def test_delete_agent_mode_envelope(self, mock_backend):
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.delete.console", console),
+            patch("memgo_cli.cli.commands.memory.delete.err_console", err_console),
         ):
-            cmd_delete(mock_backend, "abc-123-def-456", output="text")
+            cmd_delete(
+                mock_backend,
+                "abc-123-def-456",
+                output="text",
+                dry_run=False,
+                force=False,
+                delete_linked=False,
+            )
         data = json.loads(buf.getvalue())
         assert data["status"] == "success"
         assert data["command"] == "delete"
@@ -1424,14 +1590,14 @@ class TestAgentMode:
         assert data["data"]["deleted"] is True
         assert "duration_ms" in data
 
-    # ── event list ───────────────────────────────────────────────────────────
+    # 事件列表
 
     def test_event_list_agent_mode_envelope(self, mock_backend):
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.events_cmd.console", console),
-            patch("memgo_cli.commands.events_cmd.err_console", err_console),
+            patch("memgo_cli.cli.commands.events.console", console),
+            patch("memgo_cli.cli.commands.events.err_console", err_console),
         ):
             cmd_event_list(mock_backend, output="table")
         data = json.loads(buf.getvalue())
@@ -1448,14 +1614,14 @@ class TestAgentMode:
             "created_at",
         }
 
-    # ── event status ─────────────────────────────────────────────────────────
+    # 事件状态
 
     def test_event_status_agent_mode_envelope(self, mock_backend):
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.events_cmd.console", console),
-            patch("memgo_cli.commands.events_cmd.err_console", err_console),
+            patch("memgo_cli.cli.commands.events.console", console),
+            patch("memgo_cli.cli.commands.events.err_console", err_console),
         ):
             cmd_event_status(mock_backend, "evt-abc-123-def-456", output="text")
         data = json.loads(buf.getvalue())
@@ -1467,10 +1633,10 @@ class TestAgentMode:
         assert set(data["data"]["results"][0].keys()) == {"id", "event", "user_id", "memory"}
         assert "data" not in data["data"]["results"][0]
 
-    # ── error handling ───────────────────────────────────────────────────────
+    # 错误处理
 
     def test_error_in_agent_mode_produces_json_to_stdout(self, mock_backend):
-        """Errors in agent mode must emit a JSON envelope to stdout, not stderr."""
+        """代理错误必须向标准输出写入 JSON 信封。"""
         from io import StringIO
 
         mock_backend.get.side_effect = Exception("Memory not found")
@@ -1479,27 +1645,27 @@ class TestAgentMode:
 
         captured_stdout = StringIO()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.get.console", console),
+            patch("memgo_cli.cli.commands.memory.get.err_console", err_console),
             patch("sys.stdout", captured_stdout),
             pytest.raises((SystemExit, TyperExit)),
         ):
             cmd_get(mock_backend, "bad-id", output="text")
 
         stdout_output = captured_stdout.getvalue()
-        # The error JSON envelope must be on stdout
+        # 错误 JSON 信封必须写入标准输出
         error_data = json.loads(stdout_output)
         assert error_data["status"] == "error"
         assert "error" in error_data
         assert error_data["data"] is None
 
     def test_branding_suppressed_in_agent_mode(self, mock_backend):
-        """Scope line and success message must be absent in agent mode output."""
+        """代理输出不包含品牌或范围提示。"""
         console, buf = _make_console()
         err_console, _err_buf = _make_err_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console),
+            patch("memgo_cli.cli.commands.memory.add.console", console),
+            patch("memgo_cli.cli.commands.memory.add.err_console", err_console),
         ):
             cmd_add(
                 mock_backend,
@@ -1516,24 +1682,29 @@ class TestAgentMode:
                 expires=None,
                 categories=None,
                 output="text",
+                custom_instructions=None,
+                agent_custom_instructions=None,
+                custom_categories=None,
+                structured_data_schema=None,
+                timestamp=None,
             )
         output = buf.getvalue()
-        # Must be valid JSON only — no human-readable branding
+        # 输出必须是纯 JSON，不包含品牌信息
         data = json.loads(output)
         assert data["status"] == "success"
-        # "Scope:" and "Memory processed" must NOT appear in the raw output
+        # 不得输出范围和处理完成提示
         assert "Scope:" not in output
         assert "Memory processed" not in output
         assert "spinner" not in output.lower()
 
     def test_no_spinner_in_agent_mode(self, mock_backend):
-        """timed_status must not emit spinner output in agent mode."""
+        """代理模式不显示进度状态。"""
         err_buf = StringIO()
         err_console_buf = Console(file=err_buf, force_terminal=False, no_color=True, width=120)
         console, _buf = _make_console()
         with (
-            patch("memgo_cli.commands.memory.console", console),
-            patch("memgo_cli.commands.memory.err_console", err_console_buf),
+            patch("memgo_cli.cli.commands.memory.search.console", console),
+            patch("memgo_cli.cli.commands.memory.search.err_console", err_console_buf),
         ):
             cmd_search(
                 mock_backend,
@@ -1549,8 +1720,11 @@ class TestAgentMode:
                 filter_json=None,
                 fields=None,
                 output="text",
+                show_expired=False,
+                reference_date=None,
+                latest_only=False,
             )
-        # The err_buf captures what would have been spinner/timing noise
-        # In agent mode it should be empty (no status lines printed)
+        # 捕获进度和耗时信息
+        # 代理模式下该缓冲区必须为空
         err_output = err_buf.getvalue()
         assert "Searching" not in err_output

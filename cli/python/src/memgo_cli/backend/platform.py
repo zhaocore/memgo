@@ -1,25 +1,36 @@
-"""Platform (SaaS) backend — communicates with api.memgo.ai."""
+"""MemGo Platform HTTP 连接器。"""
 
 from __future__ import annotations
 
-from typing import Any
 from urllib.parse import quote
 
 import httpx
 
 from memgo_cli import __version__
-from memgo_cli.backend.base import Backend
-from memgo_cli.config import PlatformConfig
+from memgo_cli.backend.http import read_response
+from memgo_cli.backend.json import (
+    JsonObject,
+    JsonValue,
+    json_object,
+    json_records,
+    json_result,
+    json_string,
+)
+from memgo_cli.backend.types import Backend, BackendContext
+from memgo_cli.config.models import PlatformConfig
 
 
-def _encode_path_segment(value: Any) -> str:
+def _encode_path_segment(value: object) -> str:
+    """编码完整路径段，防止 ID 中的斜杠改变请求路径。"""
     return quote(str(value), safe="")
 
 
 class PlatformBackend(Backend):
-    """Backend that talks to the memgo Platform API."""
+    """通过 HTTP 访问 MemGo Platform 的连接器。"""
 
-    def __init__(self, config: PlatformConfig) -> None:
+    def __init__(self, config: PlatformConfig, context: BackendContext) -> None:
+        """保存连接依赖并创建 HTTP 客户端。"""
+        self._context = context
         self.config = config
         self.base_url = config.base_url.rstrip("/")
         self._client = httpx.Client(
@@ -34,66 +45,46 @@ class PlatformBackend(Backend):
             timeout=30.0,
         )
 
-    def _request(self, method: str, path: str, **kwargs: Any) -> Any:
-        from memgo_cli.state import capture_notice, is_agent_mode
+    def close(self) -> None:
+        """释放 HTTP 连接池。"""
+        self._client.close()
 
-        self._client.headers["X-MemGo-Caller-Type"] = "agent" if is_agent_mode() else "user"
-        resp = self._client.request(method, path, **kwargs)
-        if resp.status_code == 401:
-            raise AuthError("Authentication failed. Your API key may be invalid or expired.")
-        if resp.status_code == 404:
-            raise NotFoundError(f"Resource not found: {path}")
-        if resp.status_code == 400:
-            # Extract API error detail when available
-            try:
-                detail = resp.json().get("detail", resp.text)
-            except Exception:
-                detail = resp.text
-            raise APIError(f"Bad request to {path}: {detail}")
-        resp.raise_for_status()
-        if resp.status_code == 204:
-            return {}
-        data = resp.json()
-
-        # Pull the unclaimed-Agent-Mode notice out of the body (or the header
-        # fallback for endpoints that return non-dict / non-dict-leading
-        # payloads) and stash it for end-of-command surfacing.
-        notice = None
-        if isinstance(data, dict) and "memgo_notice" in data:
-            notice = data.pop("memgo_notice")
-        elif (
-            isinstance(data, list)
-            and data
-            and isinstance(data[0], dict)
-            and "memgo_notice" in data[0]
-        ):
-            notice = data[0].pop("memgo_notice")
-        if notice is None:
-            notice = resp.headers.get("X-MemGo-Notice-Message") or None
-        capture_notice(notice)
-
+    def _request(
+        self, method: str, path: str, *, json: JsonObject | None, params: dict[str, str] | None
+    ) -> JsonValue:
+        """执行请求并校验响应，通知经注入函数交给调用层。"""
+        response = self._client.request(
+            method,
+            path,
+            json=json,
+            params=params,
+            headers={"X-MemGo-Caller-Type": self._context.caller_type()},
+        )
+        data, notice = read_response(response)
+        self._context.notice(notice)
         return data
 
     def add(
         self,
-        content: str | None = None,
-        messages: list[dict] | None = None,
+        content: str | None,
+        messages: list[JsonObject] | None,
         *,
-        user_id: str | None = None,
-        agent_id: str | None = None,
-        app_id: str | None = None,
-        run_id: str | None = None,
-        metadata: dict | None = None,
-        immutable: bool = False,
-        infer: bool = True,
-        expires: str | None = None,
-        custom_instructions: str | None = None,
-        agent_custom_instructions: str | None = None,
-        custom_categories: list[dict] | None = None,
-        structured_data_schema: dict | None = None,
-        timestamp: int | None = None,
-    ) -> dict:
-        payload: dict[str, Any] = {}
+        user_id: str | None,
+        agent_id: str | None,
+        app_id: str | None,
+        run_id: str | None,
+        metadata: JsonObject | None,
+        immutable: bool,
+        infer: bool,
+        expires: str | None,
+        custom_instructions: str | None,
+        agent_custom_instructions: str | None,
+        custom_categories: list[JsonObject] | None,
+        structured_data_schema: JsonObject | None,
+        timestamp: int | None,
+    ) -> JsonObject | list[JsonObject]:
+        """解析内容、消息和文件选项并添加记忆。"""
+        payload: JsonObject = {}
 
         if messages:
             payload["messages"] = messages
@@ -128,28 +119,27 @@ class PlatformBackend(Backend):
             payload["timestamp"] = timestamp
         payload["source"] = "CLI"
 
-        return self._request("POST", "/v3/memories/add/", json=payload)
+        return json_result(self._request("POST", "/v3/memories/add/", json=payload, params=None))
 
     def _build_filters(
         self,
         *,
-        user_id: str | None = None,
-        agent_id: str | None = None,
-        app_id: str | None = None,
-        run_id: str | None = None,
-        extra_filters: dict | None = None,
-    ) -> dict | None:
-        """Build a filters dict for v3 API endpoints.
+        user_id: str | None,
+        agent_id: str | None,
+        app_id: str | None,
+        run_id: str | None,
+        extra_filters: JsonObject | None,
+    ) -> JsonObject | None:
+        """构造 v3 筛选对象。
 
-        Entity IDs are ANDed (all provided IDs must match).
-        Extra filters (date ranges, categories) are also ANDed.
+        显式 filters 优先；否则实体 ID、日期和分类条件按 AND 合并。
         """
-        # If caller passed a pre-built filter structure (e.g. --filter from CLI), use it directly
+        # 显式筛选结构优先，直接使用调用方提供的 filters
         if extra_filters and ("AND" in extra_filters or "OR" in extra_filters):
             return extra_filters
 
-        # Build AND conditions for entity IDs
-        and_conditions: list[dict[str, Any]] = []
+        # 实体 ID 组成 AND 条件
+        and_conditions: list[JsonObject] = []
         if user_id:
             and_conditions.append({"user_id": user_id})
         if agent_id:
@@ -159,7 +149,7 @@ class PlatformBackend(Backend):
         if run_id:
             and_conditions.append({"run_id": run_id})
 
-        # Append any extra filters (dates, categories)
+        # 追加日期、分类等筛选条件
         if extra_filters:
             for k, v in extra_filters.items():
                 and_conditions.append({k: v})
@@ -175,21 +165,22 @@ class PlatformBackend(Backend):
         self,
         query: str,
         *,
-        user_id: str | None = None,
-        agent_id: str | None = None,
-        app_id: str | None = None,
-        run_id: str | None = None,
-        top_k: int = 10,
-        threshold: float = 0.3,
-        rerank: bool = False,
-        keyword: bool = False,
-        filters: dict | None = None,
-        fields: list[str] | None = None,
-        show_expired: bool = False,
-        reference_date: str | None = None,
-        latest_only: bool = False,
-    ) -> list[dict]:
-        payload: dict[str, Any] = {"query": query, "top_k": top_k, "threshold": threshold}
+        user_id: str | None,
+        agent_id: str | None,
+        app_id: str | None,
+        run_id: str | None,
+        top_k: int,
+        threshold: float,
+        rerank: bool,
+        keyword: bool,
+        filters: JsonObject | None,
+        fields: list[str] | None,
+        show_expired: bool,
+        reference_date: str | None,
+        latest_only: bool,
+    ) -> list[JsonObject]:
+        """解析检索选项并查询记忆。"""
+        payload: JsonObject = {"query": query, "top_k": top_k, "threshold": threshold}
 
         api_filters = self._build_filters(
             user_id=user_id,
@@ -214,46 +205,47 @@ class PlatformBackend(Backend):
             payload["latest_only"] = True
         payload["source"] = "CLI"
 
-        result = self._request("POST", "/v3/memories/search/", json=payload)
-        return (
-            result
-            if isinstance(result, list)
-            else result.get("results", result.get("memories", []))
-        )
+        result = self._request("POST", "/v3/memories/search/", json=payload, params=None)
+        return json_records(result)
 
-    def get(self, memory_id: str) -> dict:
-        return self._request(
-            "GET",
-            f"/v1/memories/{_encode_path_segment(memory_id)}/",
-            params={"source": "CLI"},
+    def get(self, memory_id: str) -> JsonObject:
+        """按 ID 获取单条记忆。"""
+        return json_object(
+            self._request(
+                "GET",
+                f"/v1/memories/{_encode_path_segment(memory_id)}/",
+                params={"source": "CLI"},
+                json=None,
+            )
         )
 
     def list_memories(
         self,
         *,
-        user_id: str | None = None,
-        agent_id: str | None = None,
-        app_id: str | None = None,
-        run_id: str | None = None,
-        page: int = 1,
-        page_size: int = 100,
-        category: str | None = None,
-        after: str | None = None,
-        before: str | None = None,
-        show_expired: bool = False,
-        latest_only: bool = False,
-    ) -> list[dict]:
-        payload: dict[str, Any] = {}
+        user_id: str | None,
+        agent_id: str | None,
+        app_id: str | None,
+        run_id: str | None,
+        page: int,
+        page_size: int,
+        category: str | None,
+        after: str | None,
+        before: str | None,
+        show_expired: bool,
+        latest_only: bool,
+    ) -> list[JsonObject]:
+        """读取指定范围的记忆列表。"""
+        payload: JsonObject = {}
         params = {"page": str(page), "page_size": str(page_size)}
 
-        # Build filters — entity IDs and date filters go inside "filters"
-        extra: dict[str, Any] = {}
+        # 实体 ID 和日期条件统一放入 filters
+        extra: JsonObject = {}
         if category:
             extra["categories"] = {"contains": category}
         if after:
-            extra["created_at"] = {**(extra.get("created_at", {})), "gte": after}
+            extra["created_at"] = {**json_object(extra.get("created_at", {})), "gte": after}
         if before:
-            extra["created_at"] = {**(extra.get("created_at", {})), "lte": before}
+            extra["created_at"] = {**json_object(extra.get("created_at", {})), "lte": before}
 
         api_filters = self._build_filters(
             user_id=user_id,
@@ -271,22 +263,19 @@ class PlatformBackend(Backend):
         payload["source"] = "CLI"
 
         result = self._request("POST", "/v3/memories/", json=payload, params=params)
-        return (
-            result
-            if isinstance(result, list)
-            else result.get("results", result.get("memories", []))
-        )
+        return json_records(result)
 
     def update(
         self,
         memory_id: str,
-        content: str | None = None,
-        metadata: dict | None = None,
+        content: str | None,
+        metadata: JsonObject | None,
         *,
-        expiration_date: str | None = None,
-        timestamp: int | None = None,
-    ) -> dict:
-        payload: dict[str, Any] = {}
+        expiration_date: str | None,
+        timestamp: int | None,
+    ) -> JsonObject:
+        """解析更新选项并执行记忆更新。"""
+        payload: JsonObject = {}
         if content:
             payload["text"] = content
         if metadata:
@@ -296,23 +285,24 @@ class PlatformBackend(Backend):
         if timestamp is not None:
             payload["timestamp"] = timestamp
         payload["source"] = "CLI"
-        return self._request(
-            "PUT",
-            f"/v1/memories/{_encode_path_segment(memory_id)}/",
-            json=payload,
+        return json_object(
+            self._request(
+                "PUT", f"/v1/memories/{_encode_path_segment(memory_id)}/", json=payload, params=None
+            )
         )
 
     def delete(
         self,
-        memory_id: str | None = None,
+        memory_id: str | None,
         *,
-        all: bool = False,
-        user_id: str | None = None,
-        agent_id: str | None = None,
-        app_id: str | None = None,
-        run_id: str | None = None,
-        delete_linked: bool = False,
-    ) -> dict:
+        all: bool,
+        user_id: str | None,
+        agent_id: str | None,
+        app_id: str | None,
+        run_id: str | None,
+        delete_linked: bool,
+    ) -> JsonObject:
+        """校验删除选项互斥关系并分发单条、范围或实体删除。"""
         if all:
             params: dict[str, str] = {"source": "CLI"}
             if user_id:
@@ -323,15 +313,18 @@ class PlatformBackend(Backend):
                 params["app_id"] = app_id
             if run_id:
                 params["run_id"] = run_id
-            return self._request("DELETE", "/v1/memories/", params=params)
+            return json_object(self._request("DELETE", "/v1/memories/", params=params, json=None))
         elif memory_id:
             params = {"source": "CLI"}
             if delete_linked:
                 params["delete_linked"] = "true"
-            return self._request(
-                "DELETE",
-                f"/v1/memories/{_encode_path_segment(memory_id)}/",
-                params=params,
+            return json_object(
+                self._request(
+                    "DELETE",
+                    f"/v1/memories/{_encode_path_segment(memory_id)}/",
+                    params=params,
+                    json=None,
+                )
             )
         else:
             raise ValueError("Either memory_id or --all is required")
@@ -339,12 +332,13 @@ class PlatformBackend(Backend):
     def delete_entities(
         self,
         *,
-        user_id: str | None = None,
-        agent_id: str | None = None,
-        app_id: str | None = None,
-        run_id: str | None = None,
-    ) -> dict:
-        # v2 endpoint: DELETE /v2/entities/{entity_type}/{entity_id}/
+        user_id: str | None,
+        agent_id: str | None,
+        app_id: str | None,
+        run_id: str | None,
+    ) -> JsonObject:
+        # 使用 v2 实体删除路径
+        """删除指定实体及关联记忆，分别保留各实体的响应。"""
         type_map = {
             "user": user_id,
             "agent": agent_id,
@@ -354,70 +348,65 @@ class PlatformBackend(Backend):
         entities = {t: v for t, v in type_map.items() if v}
         if not entities:
             raise ValueError("At least one entity ID is required for delete_entities.")
-        # Delete each provided entity via the v2 path-based endpoint. Key each
-        # response by entity type so a multi-entity delete (e.g. --user-id and
-        # --agent-id together) doesn't discard everything but the last result.
-        results: dict = {}
+        # 分别请求每个实体的 v2 删除接口
+        # 按实体类型保留各响应
+        # 避免多实体删除只剩最后一个结果
+        results: JsonObject = {}
         for entity_type, entity_id in entities.items():
             results[entity_type] = self._request(
                 "DELETE",
                 f"/v2/entities/{_encode_path_segment(entity_type)}/{_encode_path_segment(entity_id)}/",
                 params={"source": "CLI"},
+                json=None,
             )
         return results
 
-    def ping(self, timeout: float | None = None) -> dict:
-        """Call the ping endpoint and return the raw response.
-
-        When *timeout* is given it overrides the client-level timeout so that
-        validation pings can fail fast without blocking the user.
-        """
+    def ping(self, timeout: float | None) -> JsonObject:
+        """探测服务，提供超时时覆盖客户端默认值。"""
         if timeout is not None:
-            resp = self._client.get("/v1/ping/", timeout=timeout)
-            if resp.status_code == 401:
-                raise AuthError("Authentication failed. Your API key may be invalid or expired.")
-            resp.raise_for_status()
-            return resp.json()
-        return self._request("GET", "/v1/ping/")
+            response = self._client.get("/v1/ping/", timeout=timeout)
+            data, notice = read_response(response)
+            self._context.notice(notice)
+            return json_object(data)
+        return json_object(self._request("GET", "/v1/ping/", json=None, params=None))
 
     def status(
         self,
         *,
-        user_id: str | None = None,
-        agent_id: str | None = None,
-    ) -> dict[str, Any]:
-        """Check connectivity using the ping endpoint."""
+        user_id: str | None,
+        agent_id: str | None,
+    ) -> JsonObject:
+        """通过 ping 接口检查连接和鉴权状态。"""
         try:
-            self.ping()
+            self.ping(timeout=None)
             return {"connected": True, "backend": "platform", "base_url": self.base_url}
         except Exception as e:
             return {"connected": False, "backend": "platform", "error": str(e)}
 
-    def entities(self, entity_type: str) -> list[dict]:
-        result = self._request("GET", "/v1/entities/")
-        items = result if isinstance(result, list) else result.get("results", [])
-        # Filter by entity type client-side (API returns all types)
+    def entities(self, entity_type: str) -> list[JsonObject]:
+        """读取实体列表并按类型筛选。"""
+        result = self._request("GET", "/v1/entities/", json=None, params=None)
+        items = json_records(result)
+        # API 返回所有类型，在客户端按类型筛选
         type_map = {"users": "user", "agents": "agent", "apps": "app", "runs": "run"}
         target_type = type_map.get(entity_type)
         if target_type:
-            items = [e for e in items if e.get("type", "").lower() == target_type]
+            items = [
+                e
+                for e in items
+                if json_string(e.get("type", ""), "entity.type").lower() == target_type
+            ]
         return items
 
-    def list_events(self) -> list[dict]:
-        result = self._request("GET", "/v1/events/")
-        return result if isinstance(result, list) else result.get("results", [])
+    def list_events(self) -> list[JsonObject]:
+        """读取最近的后台事件。"""
+        result = self._request("GET", "/v1/events/", json=None, params=None)
+        return json_records(result)
 
-    def get_event(self, event_id: str) -> dict:
-        return self._request("GET", f"/v1/event/{_encode_path_segment(event_id)}/")
-
-
-class AuthError(Exception):
-    pass
-
-
-class NotFoundError(Exception):
-    pass
-
-
-class APIError(Exception):
-    pass
+    def get_event(self, event_id: str) -> JsonObject:
+        """读取指定事件状态。"""
+        return json_object(
+            self._request(
+                "GET", f"/v1/event/{_encode_path_segment(event_id)}/", json=None, params=None
+            )
+        )

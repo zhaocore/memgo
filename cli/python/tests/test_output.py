@@ -1,4 +1,4 @@
-"""Tests for output formatting."""
+"""验证 output 的行为与兼容性。"""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from io import StringIO
 
 from rich.console import Console
 
-from memgo_cli.output import (
+from memgo_cli.output.format import (
     format_add_result,
     format_memories_table,
     format_memories_text,
@@ -41,7 +41,7 @@ SAMPLE_MEMORIES = [
 class TestTextFormat:
     def test_format_memories_text(self):
         console, buf = _make_console()
-        format_memories_text(console, SAMPLE_MEMORIES)
+        format_memories_text(console, SAMPLE_MEMORIES, title="memories")
         output = buf.getvalue()
         assert "Found 2 memories" in output
         assert "dark mode" in output
@@ -50,34 +50,38 @@ class TestTextFormat:
 
     def test_format_memories_text_empty(self):
         console, buf = _make_console()
-        format_memories_text(console, [])
+        format_memories_text(console, [], title="memories")
         output = buf.getvalue()
         assert "Found 0" in output
 
     def test_format_memories_text_handles_null_fields(self):
         console, buf = _make_console()
-        format_memories_text(console, [{"id": None, "memory": None, "created_at": None}])
+        format_memories_text(
+            console, [{"id": None, "memory": None, "created_at": None}], title="memories"
+        )
         assert "Found 1 memories" in buf.getvalue()
 
 
 class TestTableFormat:
     def test_format_memories_table(self):
         console, buf = _make_console()
-        format_memories_table(console, SAMPLE_MEMORIES)
+        format_memories_table(console, SAMPLE_MEMORIES, show_score=False)
         output = buf.getvalue()
         assert "dark mode" in output
         assert "abc-123-" in output
 
     def test_format_memories_table_empty(self):
         console, buf = _make_console()
-        format_memories_table(console, [])
+        format_memories_table(console, [], show_score=False)
         output = buf.getvalue()
-        # Should still render (empty table)
+        # 空列表仍应渲染表格
         assert "ID" in output
 
     def test_format_memories_table_handles_null_fields(self):
         console, buf = _make_console()
-        format_memories_table(console, [{"id": None, "memory": None, "created_at": None}])
+        format_memories_table(
+            console, [{"id": None, "memory": None, "created_at": None}], show_score=False
+        )
         output = buf.getvalue()
         assert "ID" in output
         assert "Memory" in output
@@ -163,8 +167,8 @@ class TestAddResult:
         }
         format_add_result(console, result, "text")
         output = buf.getvalue()
-        # Should show only one PENDING block despite two entries with same event_id
-        assert output.count("evt-dup") == 2  # event_id line + status hint line
+        # 同一 event_id 只显示一组 PENDING 信息
+        assert output.count("evt-dup") == 2  # 事件 ID 行与状态提示行
         assert output.count("Queued") == 1
 
     def test_format_add_result_empty(self):

@@ -1,17 +1,14 @@
-"""Tests for configuration management."""
+"""验证 config 的行为与兼容性。"""
 
 from __future__ import annotations
 
 import os
 
-from memgo_cli.config import (
-    MemGoConfig,
-    get_nested_value,
-    load_config,
-    redact_key,
-    save_config,
-    set_nested_value,
-)
+import pytest
+
+from memgo_cli.config.models import MemGoConfig
+from memgo_cli.config.resolve import get_nested_value, redact_key, set_nested_value
+from memgo_cli.config.store import load_config, save_config
 
 
 class TestRedactKey:
@@ -27,7 +24,7 @@ class TestRedactKey:
         assert "abcdefgh" not in result
 
     def test_exact_8_chars(self):
-        # 8 chars is <= 8, so it gets the short redaction
+        # 长度不超过八个字符，使用完整遮罩
         assert redact_key("12345678") == "12***"
 
 
@@ -64,7 +61,7 @@ class TestConfig:
         config.platform.api_key = "secret"
         save_config(config)
 
-        from memgo_cli.config import CONFIG_FILE
+        from memgo_cli.config.store import CONFIG_FILE
 
         mode = os.stat(CONFIG_FILE).st_mode & 0o777
         if os.name != "nt":
@@ -97,13 +94,13 @@ class TestConfig:
         assert loaded.defaults.agent_id == "env-agent"
 
     def test_backward_compat_no_defaults_key(self, isolate_config):
-        """Old config files without 'defaults' key should load fine."""
+        """兼容不含 defaults 的旧配置。"""
         import json
 
-        from memgo_cli.config import CONFIG_FILE, ensure_config_dir
+        from memgo_cli.config.store import CONFIG_FILE, ensure_config_dir
 
         ensure_config_dir()
-        # Write a config without the "defaults" key
+        # 写入没有 defaults 字段的旧配置
         data = {
             "version": 1,
             "platform": {"api_key": "m0-test", "base_url": "https://api.memgo.ai"},
@@ -136,17 +133,20 @@ class TestNestedAccess:
 
     def test_set_nested_value(self):
         config = MemGoConfig()
-        assert set_nested_value(config, "platform.api_key", "new-key")
-        assert config.platform.api_key == "new-key"
+        updated = set_nested_value(config, "platform.api_key", "new-key")
+        assert updated.platform.api_key == "new-key"
+        assert config.platform.api_key == ""
 
     def test_set_int_value_rejects_invalid_input(self):
         config = MemGoConfig()
-        assert set_nested_value(config, "version", "abc") is False
+        with pytest.raises(ValueError):
+            set_nested_value(config, "version", "abc")
         assert config.version == 1
 
     def test_set_nonexistent_key(self):
         config = MemGoConfig()
-        assert set_nested_value(config, "nonexistent.key", "val") is False
+        with pytest.raises(ValueError):
+            set_nested_value(config, "nonexistent.key", "val")
 
     def test_get_defaults_user_id(self):
         config = MemGoConfig()
@@ -155,47 +155,44 @@ class TestNestedAccess:
 
     def test_set_defaults_user_id(self):
         config = MemGoConfig()
-        assert set_nested_value(config, "defaults.user_id", "bob")
-        assert config.defaults.user_id == "bob"
+        updated = set_nested_value(config, "defaults.user_id", "bob")
+        assert updated.defaults.user_id == "bob"
+        assert config.defaults.user_id == ""
 
 
 class TestResolveIds:
     def test_cli_flag_overrides_default(self):
-        from memgo_cli.app import _resolve_ids
+        from memgo_cli.application.entity_ids import _resolve_ids
 
         config = MemGoConfig()
         config.defaults.user_id = "default-user"
-        ids = _resolve_ids(
-            config,
-            user_id="cli-user",
-            agent_id=None,
-        )
+        ids = _resolve_ids(config, user_id="cli-user", agent_id=None, app_id=None, run_id=None)
         assert ids["user_id"] == "cli-user"
 
     def test_default_used_when_flag_is_none(self):
-        from memgo_cli.app import _resolve_ids
+        from memgo_cli.application.entity_ids import _resolve_ids
 
         config = MemGoConfig()
         config.defaults.user_id = "default-user"
         config.defaults.agent_id = "default-agent"
-        ids = _resolve_ids(config, user_id=None, agent_id=None)
+        ids = _resolve_ids(config, user_id=None, agent_id=None, app_id=None, run_id=None)
         assert ids["user_id"] == "default-user"
         assert ids["agent_id"] == "default-agent"
 
     def test_none_when_neither_set(self):
-        from memgo_cli.app import _resolve_ids
+        from memgo_cli.application.entity_ids import _resolve_ids
 
         config = MemGoConfig()
-        ids = _resolve_ids(config, user_id=None, agent_id=None)
+        ids = _resolve_ids(config, user_id=None, agent_id=None, app_id=None, run_id=None)
         assert ids["user_id"] is None
         assert ids["agent_id"] is None
         assert ids["app_id"] is None
         assert ids["run_id"] is None
 
     def test_empty_string_treated_as_unset(self):
-        from memgo_cli.app import _resolve_ids
+        from memgo_cli.application.entity_ids import _resolve_ids
 
         config = MemGoConfig()
         config.defaults.user_id = ""
-        ids = _resolve_ids(config, user_id=None)
+        ids = _resolve_ids(config, user_id=None, agent_id=None, app_id=None, run_id=None)
         assert ids["user_id"] is None

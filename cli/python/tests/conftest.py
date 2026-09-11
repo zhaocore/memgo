@@ -1,4 +1,4 @@
-"""Shared fixtures for memgo CLI tests."""
+"""验证 conftest 的行为与兼容性。"""
 
 from __future__ import annotations
 
@@ -7,32 +7,36 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from memgo_cli.backend.base import Backend
-from memgo_cli.config import MemGoConfig
+from memgo_cli.backend.types import Backend
+from memgo_cli.config.models import MemGoConfig
 
 
 @pytest.fixture(autouse=True)
 def isolate_config(tmp_path, monkeypatch):
-    """Redirect config to a temp directory so tests don't touch real config."""
+    """隔离配置目录和环境变量，避免访问用户真实配置。"""
     fake_config_dir = tmp_path / ".memgo"
     fake_config_file = fake_config_dir / "config.json"
-    monkeypatch.setattr("memgo_cli.config.CONFIG_DIR", fake_config_dir)
-    monkeypatch.setattr("memgo_cli.config.CONFIG_FILE", fake_config_file)
-    # Also patch the commands that import config
-    monkeypatch.setattr("memgo_cli.commands.config_cmd.CONFIG_DIR", fake_config_dir, raising=False)
-    # Clear any MEMGO env vars
+    monkeypatch.setattr("memgo_cli.config.store.CONFIG_DIR", fake_config_dir)
+    monkeypatch.setattr("memgo_cli.config.store.CONFIG_FILE", fake_config_file)
+    # 同时替换直接导入配置的命令引用
+    monkeypatch.setattr("memgo_cli.cli.commands.config.CONFIG_DIR", fake_config_dir, raising=False)
+    # 清理 MEMGO 环境变量
     for key in list(os.environ.keys()):
         if key.startswith("MEMGO_"):
             monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("MEMGO_TELEMETRY", "false")
+    monkeypatch.setattr("memgo_cli.application.onboarding.init.CONFIG_FILE", fake_config_file)
+    monkeypatch.setattr("memgo_cli.integrations.plugin_sync._CLAUDE_SETTINGS", tmp_path / ".claude/settings.json")
+    monkeypatch.setattr("memgo_cli.integrations.plugin_sync._SHELL_RCS", [tmp_path / ".zshrc", tmp_path / ".bashrc"])
     return fake_config_dir
 
 
 @pytest.fixture
 def mock_backend():
-    """Return a mock backend with all methods stubbed."""
+    """提供具有固定返回值的测试后端。"""
     backend = MagicMock(spec=Backend)
 
-    # Default return values
+    # 后端默认返回值
     backend.add.return_value = {
         "results": [
             {
@@ -139,7 +143,7 @@ def mock_backend():
 
 @pytest.fixture
 def sample_config():
-    """Return a sample config object."""
+    """提供测试使用的配置对象。"""
     config = MemGoConfig()
     config.platform.api_key = "m0-test-key-12345678"
     config.platform.base_url = "https://api.memgo.ai"
