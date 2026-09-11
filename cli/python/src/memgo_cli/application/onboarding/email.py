@@ -36,10 +36,6 @@ def _email_login(
 ) -> JsonObject:
     """发送并验证邮箱验证码，返回登录响应对象。"""
     url = base_url.rstrip("/")
-    _source_headers = {
-        "X-MemGo-Source": "cli",
-        "X-MemGo-Client-Language": "python",
-    }
 
     if not code:
         # 第一步：请求发送验证码

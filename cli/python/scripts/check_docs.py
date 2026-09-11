@@ -38,7 +38,9 @@ def check_file(path: Path) -> list[str]:
 def main() -> None:
     """检查维护的源码、测试和脚本，发现违规时返回非零状态。"""
     root = Path(__file__).resolve().parents[1]
-    paths = sorted(path for folder in ("src", "tests", "scripts") for path in (root / folder).rglob("*.py"))
+    paths = sorted(
+        path for folder in ("src", "tests", "scripts") for path in (root / folder).rglob("*.py")
+    )
     failures = [message for path in paths for message in check_file(path)]
     if failures:
         print("\n".join(failures))

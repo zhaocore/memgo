@@ -16,24 +16,23 @@ from rich.text import Text
 _err = Console(stderr=True)
 
 LOGO = r"""
-███╗   ███╗███████╗███╗   ███╗ ██████╗  ██████╗     ██╗     ██╗
-████╗ ████║██╔════╝████╗ ████║██╔════╝ ██╔═══██╗    ██║     ██║
-██╔████╔██║█████╗  ██╔████╔██║██║  ███╗██║   ██║    ██║     ██║
-██║╚██╔╝██║██╔══╝  ██║╚██╔╝██║██║   ██║██║   ██║    ██║     ██║
-██║ ╚═╝ ██║███████╗██║ ╚═╝ ██║╚██████╔╝╚██████╔╝    ███████╗██║
-╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝ ╚═════╝  ╚═════╝     ╚══════╝╚═╝
+█   █ █████ █   █  ███   ███     ████ █     █████
+██ ██ █     ██ ██ █     █   █   █     █       █
+█ █ █ ████  █ █ █ █ ███ █   █   █     █       █
+█   █ █     █   █ █   █ █   █   █     █       █
+█   █ █████ █   █  ███   ███     ████ █████ █████
 """
 
 LOGO_MINI = "◆ memgo"
 
 TAGLINE = "The Memory Layer for AI Agents"
 
-BRAND_COLOR = "#8b5cf6"  # 紫色主色
-ACCENT_COLOR = "#a78bfa"
-SUCCESS_COLOR = "#22c55e"
-ERROR_COLOR = "#ef4444"
-WARNING_COLOR = "#f59e0b"
-DIM_COLOR = "#6b7280"
+BRAND_COLOR = "#f472b6"
+ACCENT_COLOR = "#67e8f9"
+SUCCESS_COLOR = "#34d399"
+ERROR_COLOR = "#fb7185"
+WARNING_COLOR = "#facc15"
+DIM_COLOR = "#94a3b8"
 
 
 def _sym(fancy: str, plain: str) -> str:

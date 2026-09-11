@@ -26,8 +26,12 @@ def isolate_config(tmp_path, monkeypatch):
             monkeypatch.delenv(key, raising=False)
     monkeypatch.setenv("MEMGO_TELEMETRY", "false")
     monkeypatch.setattr("memgo_cli.application.onboarding.init.CONFIG_FILE", fake_config_file)
-    monkeypatch.setattr("memgo_cli.integrations.plugin_sync._CLAUDE_SETTINGS", tmp_path / ".claude/settings.json")
-    monkeypatch.setattr("memgo_cli.integrations.plugin_sync._SHELL_RCS", [tmp_path / ".zshrc", tmp_path / ".bashrc"])
+    monkeypatch.setattr(
+        "memgo_cli.integrations.plugin_sync._CLAUDE_SETTINGS", tmp_path / ".claude/settings.json"
+    )
+    monkeypatch.setattr(
+        "memgo_cli.integrations.plugin_sync._SHELL_RCS", [tmp_path / ".zshrc", tmp_path / ".bashrc"]
+    )
     return fake_config_dir
 
 
@@ -148,3 +152,15 @@ def sample_config():
     config.platform.api_key = "m0-test-key-12345678"
     config.platform.base_url = "https://api.memgo.ai"
     return config
+
+
+@pytest.fixture(autouse=True)
+def isolate_invocation():
+    """隔离直接调用命令函数的测试状态，并关闭测试创建的连接。"""
+    from memgo_cli.runtime.state import finish_invocation, start_invocation
+
+    token = start_invocation(False)
+    try:
+        yield
+    finally:
+        finish_invocation(token)

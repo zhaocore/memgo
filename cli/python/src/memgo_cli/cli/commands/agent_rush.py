@@ -24,11 +24,6 @@ _PII_WARNING_LINES = (
     "",
 )
 
-_SOURCE_HEADERS = {
-    "X-MemGo-Source": "cli",
-    "X-MemGo-Client-Language": "python",
-    "X-MemGo-Mode": "agent-rush",
-}
 
 _ERROR_HINTS = {
     "agentrush_search_first": "Run 3 'memgo agent-rush search' commands before adding.",

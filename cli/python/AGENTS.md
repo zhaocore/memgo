@@ -1,47 +1,9 @@
-# Python CLI (`cli/python/`)
+# Python CLI 协作规范
 
-The `memgo-cli` package on PyPI. Typer-based, entry point `memgo`.
-
-## Commands
-
-```bash
-pip install -e ".[dev]"   # dev install: ruff + pytest
-ruff check .              # lint
-ruff format .             # format
-pytest                    # test
-hatch build               # build
-```
-
-## Conventions
-
-> **Line length is 100 here, not 120.** The root Python SDK uses 120. Running the root
-> `make format` over this directory reformats every file and fails CI. Use the local
-> `ruff` invocations above.
-
-- **Python 3.10+.** Not 3.9, unlike the root SDK.
-- **Ruff** with an extended rule set: `E`, `F`, `I`, `W`, `UP`, `B`, `SIM`, `RUF`.
-  Ignores `E501` (formatter handles it), `B008` (required by Typer's argument defaults),
-  and `SIM108`.
-- **Ruff format:** double quotes, space indent, `docstring-code-format = true`.
-- **isort** first-party is `memgo_cli` only.
-- **pytest** for tests.
-- Target version pinned to `py310`.
-
-## Layout
-
-```
-cli/python/
-├── src/memgo_cli/     package source (src layout)
-└── tests/
-```
-
-Entry point: `memgo = "memgo_cli.app:main"`.
-
-## Dependencies
-
-Typer + Rich + httpx. `memgoai` is **optional**, exposed through the `[oss]` extra for OSS mode. Do not promote it to a required dependency.
-
-## CI and release
-
-- CI: `cli-python-ci.yml`, ruff + pytest + `hatch build` on Python 3.10, 3.11, 3.12.
-- Release: tag prefix `cli-v*` dispatches `cli-python-cd.yml`, publishing to PyPI over OIDC.
+- 遵循仓库根规范；本目录已获得用户重写授权，保持 Python 3.10+ 和 Platform 命令合同。
+- 修改前阅读 [开发指南](development.md) 及受影响测试；用户命令说明见 [README](README.md)。
+- 参数注册、命令执行、用例、配置和外部连接器各归其位；优先函数，避免新增全局可变调用状态。
+- 源码注释和标准 docstring 使用中文；英文帮助通过显式 `help=` 保持兼容。
+- 使用项目 `uv.lock` 和 `.venv`，不全局安装依赖；不要把缓存或构建产物加入版本控制。
+- 完成前运行开发指南中的 Ruff、中文文档检查、mypy、完整 pytest 和构建；打包变更须在隔离环境安装实际 wheel 验收。
+- 新协议和 CLI 行为变更同步根需求与当日计划。保持未提交，不发布。

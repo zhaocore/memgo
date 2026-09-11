@@ -22,6 +22,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
@@ -46,7 +48,7 @@ memgo = "memgo_cli.app:main"
 packages = ["src/memgo_cli"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/memgo_cli", "tests", "README.md", "pyproject.toml", "uv.lock"]
+include = ["src/memgo_cli", "tests", "scripts", "README.md", "development.md", "pyproject.toml", "uv.lock"]
 
 [tool.ruff]
 target-version = "py310"

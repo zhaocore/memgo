@@ -21,7 +21,15 @@ def main() -> None:
         args = ["--json", *[arg for arg in args if arg not in flags]]
     try:
         create_app()(args=args, prog_name="memgo")
-    except (APIError, AuthError, NotFoundError, httpx.HTTPError, ValueError, OSError, EOFError) as error:
+    except (
+        APIError,
+        AuthError,
+        NotFoundError,
+        httpx.HTTPError,
+        ValueError,
+        OSError,
+        EOFError,
+    ) as error:
         if "--json" in args:
             command_args = [arg for arg in args if arg != "--json"]
             command = command_args[0] if command_args else ""

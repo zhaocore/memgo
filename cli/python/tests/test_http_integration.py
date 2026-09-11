@@ -124,7 +124,10 @@ def test_crud_protocol_and_json_output(run_cli, platform_server):
     assert requests[-1][3] == b""
 
 
-@pytest.mark.parametrize("status,payload", [(503, {"error": "offline", "api_key": "local-test-key"}), (200, b"bad json"), (200, [])])
+@pytest.mark.parametrize(
+    "status,payload",
+    [(503, {"error": "offline", "api_key": "local-test-key"}), (200, b"bad json"), (200, [])],
+)
 def test_preflight_failures_are_json_and_do_not_write(run_cli, platform_server, status, payload):
     run, _env = run_cli
     _url, records, replies = platform_server
@@ -153,7 +156,9 @@ def test_project_dry_run_never_deletes(run_cli, platform_server):
     assert all(record[0] == "GET" for record in records)
 
 
-@pytest.mark.parametrize("options", [["--messages", '[{"role":"user"}]'], ["--metadata", "[]"], ["--messages", "42"]])
+@pytest.mark.parametrize(
+    "options", [["--messages", '[{"role":"user"}]'], ["--metadata", "[]"], ["--messages", "42"]]
+)
 def test_invalid_inputs_never_reach_add(run_cli, platform_server, options):
     run, _env = run_cli
     _url, records, _replies = platform_server
@@ -165,15 +170,23 @@ def test_bootstrap_claim_and_private_config(run_cli, platform_server, tmp_path):
     run, env = run_cli
     env.pop("MEMGO_API_KEY")
     _url, records, replies = platform_server
-    replies[("POST", "/api/v1/auth/agent_mode/")] = (200, {"api_key": "local-new-key", "default_user_id": "user_local"})
-    replies[("POST", "/api/v1/auth/email_code/verify/")] = (200, {"claimed": True, "claimed_at": "2026-09-11T00:00:00Z"})
-    run(["init", "--agent", "--agent-caller", "test-agent"])
+    replies[("POST", "/api/v1/auth/agent_mode/")] = (
+        200,
+        {"api_key": "local-new-key", "default_user_id": "user_local"},
+    )
+    replies[("POST", "/api/v1/auth/email_code/verify/")] = (
+        200,
+        {"claimed": True, "claimed_at": "2026-09-11T00:00:00Z"},
+    )
+    result = run(["init", "--agent", "--agent-caller", "test-agent", "--json"])
+    assert json.loads(result.stdout)["data"]["agent_mode"] is True
     path = tmp_path / ".memgo/config.json"
     config = json.loads(path.read_text())
     assert config["platform"]["api_key"] == "local-new-key"
     assert config["defaults"]["user_id"] == "user_local"
     assert path.stat().st_mode & 0o777 == 0o600
-    run(["init", "--email", "local@example.test", "--code", "123456"])
+    result = run(["init", "--email", "local@example.test", "--code", "123456", "--json"])
+    assert json.loads(result.stdout)["data"]["claimed"] is True
     config = json.loads(path.read_text())
     assert config["platform"]["agent_mode"] is False
     assert config["platform"]["api_key"] == "local-new-key"
@@ -185,14 +198,27 @@ def test_telemetry_sender_uses_stdin_and_local_http(run_cli, platform_server, tm
     url, records, replies = platform_server
     replies[("POST", "/capture")] = (200, {})
     context = {
-        "payload": {"api_key": "local-public-key", "event": "acceptance", "distinct_id": "local-user", "properties": {}},
+        "payload": {
+            "api_key": "local-public-key",
+            "event": "acceptance",
+            "distinct_id": "local-user",
+            "properties": {},
+        },
         "posthog_host": url + "/capture",
         "needs_email": False,
         "memgo_api_key": "local-test-key",
         "memgo_base_url": url,
         "config_path": "",
     }
-    result = subprocess.run([sys.executable, "-m", "memgo_cli.integrations.telemetry_sender"], input=json.dumps(context), text=True, capture_output=True, env=env, cwd=tmp_path, timeout=15)
+    result = subprocess.run(
+        [sys.executable, "-m", "memgo_cli.integrations.telemetry_sender"],
+        input=json.dumps(context),
+        text=True,
+        capture_output=True,
+        env=env,
+        cwd=tmp_path,
+        timeout=15,
+    )
     assert result.returncode == 0, result.stderr
     assert json.loads(records[-1][3])["event"] == "acceptance"
     assert "local-test-key" not in result.stdout + result.stderr
@@ -201,6 +227,30 @@ def test_telemetry_sender_uses_stdin_and_local_http(run_cli, platform_server, tm
 def test_installed_console_entrypoint(run_cli, tmp_path):
     _run, env = run_cli
     entry = Path(sys.executable).with_name("memgo")
-    result = subprocess.run([str(entry), "--version"], capture_output=True, text=True, env=env, cwd=tmp_path, timeout=15)
+    result = subprocess.run(
+        [str(entry), "--version"], capture_output=True, text=True, env=env, cwd=tmp_path, timeout=15
+    )
     assert result.returncode == 0, result.stderr
     assert "CLI v" in result.stdout
+
+
+def test_import_failure_reports_counts_and_nonzero_exit(run_cli, platform_server, tmp_path):
+    run, _env = run_cli
+    _url, _records, replies = platform_server
+    replies[("POST", "/v3/memories/add/")] = (503, {"error": "maintenance"})
+    path = tmp_path / "import.json"
+    path.write_text(json.dumps([{"memory": "first"}, {"memory": "second"}]))
+    result = run(["import", str(path), "--json"], expected=1)
+    envelope = json.loads(result.stdout)
+    assert envelope["status"] == "error"
+    assert envelope["data"] == {"added": 0, "failed": 2}
+    assert "HTTP 503" in envelope["error"]
+
+
+def test_import_validates_all_records_before_writing(run_cli, platform_server, tmp_path):
+    run, _env = run_cli
+    _url, records, _replies = platform_server
+    path = tmp_path / "import.json"
+    path.write_text(json.dumps([{"memory": "first"}, {"memory": 42}]))
+    run(["import", str(path), "--json"], expected=1)
+    assert all(record[0] == "GET" for record in records)

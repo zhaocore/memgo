@@ -29,6 +29,8 @@ from memgo_cli.output.branding import (
     print_info,
     print_success,
 )
+from memgo_cli.output.format import format_json_envelope
+from memgo_cli.runtime.state import is_agent_mode
 from memgo_cli.runtime.warning import warn_optional
 
 console = Console()
@@ -224,6 +226,9 @@ def run_init(
         )
 
         save_config(config)
+        if is_agent_mode():
+            _print_json_init(config)
+            return
 
         console.print()
         print_success(console, "Authenticated! Configuration saved to ~/.memgo/config.json")
@@ -256,6 +261,9 @@ def run_init(
         config.defaults.user_id = user_id
         config = _validate_platform(config)
         save_config(config)
+        if is_agent_mode():
+            _print_json_init(config)
+            return
         print_success(console, "Configuration saved to ~/.memgo/config.json")
         return
 
@@ -301,6 +309,9 @@ def run_init(
             )
 
             save_config(config)
+            if is_agent_mode():
+                _print_json_init(config)
+                return
 
             console.print()
             print_success(console, "Authenticated! Configuration saved to ~/.memgo/config.json")
@@ -326,6 +337,9 @@ def run_init(
     config = _validate_platform(config)
 
     save_config(config)
+    if is_agent_mode():
+        _print_json_init(config)
+        return
     console.print()
     print_success(console, "Configuration saved to ~/.memgo/config.json")
     console.print()
@@ -337,3 +351,21 @@ def run_init(
         console.print(f'  [{DIM_COLOR}]  memgo add "I prefer dark mode" --user-id alice[/]')
         console.print(f'  [{DIM_COLOR}]  memgo search "preferences" --user-id alice[/]')
     console.print()
+
+
+def _print_json_init(config: MemGoConfig) -> None:
+    """输出初始化成功信封，不包含明文密钥。"""
+    format_json_envelope(
+        console,
+        command="init",
+        data={
+            "api_key_saved": True,
+            "agent_mode": config.platform.agent_mode,
+            "default_user_id": config.defaults.user_id,
+        },
+        duration_ms=None,
+        scope=None,
+        count=None,
+        status="success",
+        error=None,
+    )

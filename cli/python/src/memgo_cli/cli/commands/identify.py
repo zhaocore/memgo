@@ -14,11 +14,6 @@ from memgo_cli.output.branding import print_error, print_success
 console = Console()
 err_console = Console(stderr=True)
 
-_SOURCE_HEADERS = {
-    "X-MemGo-Source": "cli",
-    "X-MemGo-Client-Language": "python",
-}
-
 
 def run_identify(name: str) -> None:
     """更新当前代理模式密钥的调用方名称。"""

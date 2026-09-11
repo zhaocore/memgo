@@ -78,8 +78,8 @@ health:
 
 # python CLI 测试 (venv 隔离, 不污染用户环境)
 cli-py-test:
-	python3 -m venv /tmp/memgopycli && /tmp/memgopycli/bin/pip install -q -e cli/python pytest
-	cd cli/python && /tmp/memgopycli/bin/python -m pytest tests -q
+	cd cli/python && uv sync --frozen --extra dev
+	cd cli/python && uv run --frozen pytest tests -q
 
 # node CLI 测试 (vitest)
 cli-node-test:

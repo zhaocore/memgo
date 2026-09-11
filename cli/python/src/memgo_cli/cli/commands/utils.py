@@ -6,12 +6,15 @@ import json
 import time as _time
 from pathlib import Path
 
+import httpx
 import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
 
 from memgo_cli import __version__
+from memgo_cli.application.memory.import_records import parse_import_records
+from memgo_cli.backend.errors import APIError, AuthError, NotFoundError
 from memgo_cli.backend.types import Backend
 from memgo_cli.output.branding import (
     BRAND_COLOR,
@@ -118,30 +121,23 @@ def cmd_import(
         output = "agent"
 
     try:
-        data = json.loads(Path(file_path).read_text())
-    except (FileNotFoundError, json.JSONDecodeError) as e:
+        data = parse_import_records(json.loads(Path(file_path).read_text(encoding="utf-8")))
+    except (OSError, ValueError) as e:
         print_error(err_console, f"Failed to read file: {e}", hint=None)
         raise typer.Exit(1) from None
 
-    if not isinstance(data, list):
-        data = [data]
-
     added = 0
-    failed = 0
+    errors: list[str] = []
     _start = _time.perf_counter()
     for item in track(
         data, description=f"[{DIM_COLOR}]Importing memories...[/]", console=err_console
     ):
-        content = item.get("memory", item.get("text", item.get("content", "")))
-        if not content:
-            failed += 1
-            continue
         try:
             backend.add(
-                content=content,
-                user_id=user_id or item.get("user_id"),
-                agent_id=agent_id or item.get("agent_id"),
-                metadata=item.get("metadata"),
+                content=item.content,
+                user_id=user_id or item.user_id,
+                agent_id=agent_id or item.agent_id,
+                metadata=item.metadata,
                 messages=None,
                 app_id=None,
                 run_id=None,
@@ -155,9 +151,29 @@ def cmd_import(
                 timestamp=None,
             )
             added += 1
-        except Exception:
-            failed += 1
+        except (APIError, AuthError, NotFoundError, httpx.HTTPError, ValueError) as error:
+            errors.append(f"Record {added + len(errors) + 1}: {error}")
     _elapsed = _time.perf_counter() - _start
+
+    failed = len(errors)
+    if failed:
+        from memgo_cli.output.format import format_json_envelope
+
+        message = "Import failed: " + "; ".join(errors)
+        if output in ("json", "agent"):
+            format_json_envelope(
+                console,
+                command="import",
+                data={"added": added, "failed": failed},
+                duration_ms=int(_elapsed * 1000),
+                scope=None,
+                count=None,
+                status="error",
+                error=message,
+            )
+        else:
+            print_error(err_console, f"Imported {added} memories; {message}", hint=None)
+        raise typer.Exit(1)
 
     if output in ("json", "agent"):
         scope = {k: v for k, v in {"user_id": user_id, "agent_id": agent_id}.items() if v}
@@ -172,5 +188,3 @@ def cmd_import(
         return
 
     print_success(err_console, f"Imported {added} memories ({_elapsed:.2f}s)")
-    if failed:
-        print_error(err_console, f"{failed} memories failed to import.", hint=None)

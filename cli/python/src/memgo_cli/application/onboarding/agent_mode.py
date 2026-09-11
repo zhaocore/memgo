@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 
 from memgo_cli.backend.auth import bootstrap_agent, send_email_code, verify_email_code
-from memgo_cli.backend.json import JsonObject
+from memgo_cli.backend.json import JsonObject, json_object, json_string
 from memgo_cli.config.models import MemGoConfig
 from memgo_cli.config.store import save_config
 from memgo_cli.output.branding import (
@@ -25,11 +25,6 @@ from memgo_cli.output.branding import (
 
 console = Console()
 err_console = Console(stderr=True)
-
-_SOURCE_HEADERS = {
-    "X-MemGo-Source": "cli",
-    "X-MemGo-Client-Language": "python",
-}
 
 
 def _validate_envelope(envelope: object) -> None:
@@ -111,6 +106,28 @@ def bootstrap_via_backend(
     config.defaults.user_id = envelope["default_user_id"]
     save_config(config)
 
+    from memgo_cli.output.format import format_json_envelope
+    from memgo_cli.runtime.state import capture_notice, is_agent_mode
+
+    if is_agent_mode():
+        notice = envelope.get("memgo_notice")
+        capture_notice(None if notice is None else json_string(notice, "memgo_notice"))
+        format_json_envelope(
+            console,
+            command="init",
+            data={
+                "api_key_saved": True,
+                "agent_mode": True,
+                "default_user_id": envelope["default_user_id"],
+            },
+            duration_ms=None,
+            scope=None,
+            count=None,
+            status="success",
+            error=None,
+        )
+        return
+
     print_success(console, f"Agent Mode active. Default user_id: {envelope['default_user_id']}")
     notice = envelope.get("memgo_notice")
     if notice:
@@ -191,16 +208,33 @@ def claim_via_otp(config: MemGoConfig, *, email: str, code: str | None) -> None:
             )
         raise typer.Exit(1)
 
-    claim_body = verify.json()
-    if not claim_body.get("claimed"):
-        print_error(err_console, f"Unexpected verify response: {claim_body}", hint=None)
+    claim_body = json_object(verify.json())
+    if claim_body.get("claimed") is not True:
+        print_error(err_console, "Unexpected verify response: claimed must be true", hint=None)
         raise typer.Exit(1)
 
     config.platform.agent_mode = False
-    config.platform.claimed_at = claim_body.get("claimed_at") or _utcnow_iso()
+    config.platform.claimed_at = json_string(
+        claim_body.get("claimed_at") or _utcnow_iso(), "claimed_at"
+    )
     config.platform.user_email = email
     config.platform.created_via = "email"
     save_config(config)
+    from memgo_cli.output.format import format_json_envelope
+    from memgo_cli.runtime.state import is_agent_mode
+
+    if is_agent_mode():
+        format_json_envelope(
+            console,
+            command="init",
+            data={"claimed": True, "agent_mode": False, "user_email": email},
+            duration_ms=None,
+            scope=None,
+            count=None,
+            status="success",
+            error=None,
+        )
+        return
     print_success(console, f"Agent claimed to {email}. Your API key is unchanged.")
 
 

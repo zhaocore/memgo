@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import typer
 from rich.console import Console
 from rich.table import Table
 
@@ -97,7 +98,7 @@ def cmd_config_get(key: str) -> None:
 
     if value is None:
         print_error(err_console, f"Unknown config key: {key}", hint=None)
-        return
+        raise typer.Exit(1)
 
     display_value = (
         redact_key(str(value)) if ("api_key" in key or "key" in key.split(".")[-1:]) else str(value)
@@ -125,22 +126,19 @@ def cmd_config_set(key: str, value: str) -> None:
     config = load_config()
     try:
         updated = set_nested_value(config, key, value)
-    except ValueError:
-        print_error(err_console, f"Unknown or invalid config key: {key}", hint=None)
-        return
-    if updated:
-        save_config(updated)
-        display = redact_key(value) if "key" in key else value
-        if is_agent_mode():
-            format_agent_envelope(
-                console,
-                command="config set",
-                data={"key": key, "value": display},
-                duration_ms=None,
-                scope=None,
-                count=None,
-            )
-        else:
-            print_success(console, f"{key} = {display}")
+    except ValueError as error:
+        print_error(err_console, str(error), hint=None)
+        raise typer.Exit(1) from None
+    save_config(updated)
+    display = redact_key(value) if "key" in key else value
+    if is_agent_mode():
+        format_agent_envelope(
+            console,
+            command="config set",
+            data={"key": key, "value": display},
+            duration_ms=None,
+            scope=None,
+            count=None,
+        )
     else:
-        print_error(err_console, f"Unknown config key: {key}", hint=None)
+        print_success(console, f"{key} = {display}")

@@ -53,3 +53,32 @@ jobs:
           node-version: ${{ matrix.runtime }}
       - name: 运行安装包跨版本验收
         run: node tests/package/smoke.mjs "$RUNNER_TEMP/memgo-install/node_modules/@zhaots/memgo-cli/dist/index.js"
+  python-cli:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    defaults:
+      run:
+        working-directory: cli/python
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      MEMGO_TELEMETRY: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv python install "${{ matrix.python }}"
+      - run: uv sync --frozen --extra dev --python "${{ matrix.python }}"
+      - if: matrix.python == '3.13'
+        run: |
+          uv run --frozen ruff check .
+          uv run --frozen ruff format --check .
+          uv run --frozen python scripts/check_docs.py
+          uv run --frozen mypy
+      - run: uv build
+      - name: 安装实际发布包并运行完整验收
+        run: |
+          uv venv "$RUNNER_TEMP/python-cli" --python "${{ matrix.python }}"
+          uv pip install --python "$RUNNER_TEMP/python-cli/bin/python" dist/*.whl pytest
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/python-cli/bin/python" -m pytest "$GITHUB_WORKSPACE/cli/python/tests" -q

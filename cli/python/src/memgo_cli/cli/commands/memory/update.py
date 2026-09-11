@@ -6,11 +6,10 @@ import json
 import time as _time
 
 import typer
-
-from memgo_cli.backend.json import json_object
 from rich.console import Console
 
 from memgo_cli.application.memory.expiration import _validate_expires
+from memgo_cli.backend.json import json_object
 from memgo_cli.backend.types import Backend
 from memgo_cli.output.branding import (
     print_error,
