@@ -83,7 +83,7 @@ cli-py-test:
 
 # node CLI 测试 (vitest)
 cli-node-test:
-	cd cli/node && pnpm install --silent && npx vitest run
+	cd cli/node && pnpm install --frozen-lockfile && pnpm test
 
 # go CLI parity + 单测
 cli-go-test:

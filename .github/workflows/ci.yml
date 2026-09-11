@@ -16,3 +16,40 @@ jobs:
       - run: go vet ./...
       - run: go test ./...
       - uses: golangci/golangci-lint-action@v6
+  node-cli:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [18, 20, 22, 24]
+    defaults:
+      run:
+        working-directory: cli/node
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - run: pnpm install --frozen-lockfile
+      - if: matrix.runtime == 24
+        run: pnpm typecheck && pnpm lint && pnpm test && pnpm test:terminal
+      - run: pnpm build
+      - name: 安装实际发布包
+        run: |
+          mkdir -p "$RUNNER_TEMP/memgo-pack" "$RUNNER_TEMP/memgo-install"
+          pnpm pack --pack-destination "$RUNNER_TEMP/memgo-pack"
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          const pack = path.join(process.env.RUNNER_TEMP, 'memgo-pack');
+          const archive = fs.readdirSync(pack).find(name => name.endsWith('.tgz'));
+          fs.writeFileSync(path.join(process.env.RUNNER_TEMP, 'memgo-install/package.json'), JSON.stringify({ private: true, dependencies: { '@zhaots/memgo-cli': `file:${path.join(pack, archive)}` } }));
+          JS
+          pnpm --dir "$RUNNER_TEMP/memgo-install" install --prod --ignore-scripts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.runtime }}
+      - name: 运行安装包跨版本验收
+        run: node tests/package/smoke.mjs "$RUNNER_TEMP/memgo-install/node_modules/@zhaots/memgo-cli/dist/index.js"

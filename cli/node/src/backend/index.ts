@@ -1,15 +1,13 @@
-/**
- * Backend factory re-export.
- */
+/** 后端端口与工厂的公开入口。 */
 
-export { getBackend } from "./base.js";
+export { APIError, AuthError, NotFoundError } from './errors.js';
+export { getBackend } from './factory.js';
+export { OSSBackend } from './oss.js';
 export type {
-	Backend,
-	AddOptions,
-	SearchOptions,
-	ListOptions,
-	DeleteOptions,
-	EntityIds,
-} from "./base.js";
-export { AuthError, NotFoundError, APIError } from "./base.js";
-export { OSSBackend } from "./oss.js";
+  AddOptions,
+  Backend,
+  DeleteOptions,
+  EntityIds,
+  ListOptions,
+  SearchOptions,
+} from './types.js';

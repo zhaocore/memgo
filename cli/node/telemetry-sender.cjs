@@ -1,155 +1,122 @@
+/** 独立遥测发送器；凭据只从 stdin 读取，不经进程参数。 */
+'use strict';
+const fs = require('node:fs');
+
 /**
- * Standalone telemetry sender — runs as a detached child process.
- *
- * Usage: node telemetry-sender.cjs   (JSON context is read from stdin; a single
- * argv argument is still accepted as a legacy fallback)
- *
- * This script is spawned by telemetry.captureEvent() and runs independently
- * of the parent CLI process. It:
- *
- * 1. Resolves the user's email via /v1/ping/ if not already cached
- * 2. Caches the email in ~/.memgo/config.json for future runs
- * 3. Sends the PostHog event
- *
- * All errors are silently swallowed — this process must never produce output
- * or affect the user experience.
+ * 遥测事件负载。
+ * @typedef {{api_key: string, distinct_id: string, event: string, properties: Record<string, unknown>}} Payload
+ */
+/**
+ * 子进程上下文。
+ * @typedef {{payload: Payload, posthogHost: string, needsEmail: boolean, memgoApiKey: string, memgoBaseUrl: string, configPath: string, anonDistinctIdToAlias: string | null}} Context
  */
 
-"use strict";
-
-const https = require("https");
-const fs = require("fs");
-
-function loadContext() {
-	return new Promise((resolve, reject) => {
-		if (process.argv[2]) {
-			try {
-				resolve(JSON.parse(process.argv[2]));
-			} catch (err) {
-				reject(err);
-			}
-			return;
-		}
-
-		let data = "";
-		process.stdin.setEncoding("utf8");
-		process.stdin.on("data", (chunk) => (data += chunk));
-		process.stdin.on("end", () => {
-			try {
-				resolve(JSON.parse(data));
-			} catch (err) {
-				reject(err);
-			}
-		});
-		process.stdin.on("error", reject);
-	});
+/**
+ * 从标准输入读取并校验发送上下文。
+ * @returns {Promise<Context>} 校验后的发送上下文。
+ */
+async function loadContext() {
+  let text = '';
+  process.stdin.setEncoding('utf8');
+  for await (const chunk of process.stdin) text += chunk;
+  const value = JSON.parse(text);
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    !value.payload ||
+    typeof value.payload.event !== 'string' ||
+    typeof value.payload.api_key !== 'string' ||
+    typeof value.payload.distinct_id !== 'string' ||
+    typeof value.posthogHost !== 'string' ||
+    typeof value.memgoBaseUrl !== 'string' ||
+    typeof value.memgoApiKey !== 'string' ||
+    typeof value.configPath !== 'string'
+  )
+    throw new Error('Invalid telemetry context');
+  return value;
 }
-
-function httpsRequest(url, method, headers, body) {
-	return new Promise((resolve, reject) => {
-		const u = new URL(url);
-		const opts = {
-			hostname: u.hostname,
-			path: u.pathname + u.search,
-			method,
-			headers,
-			timeout: 10000,
-		};
-		const req = https.request(opts, (res) => {
-			let data = "";
-			res.on("data", (chunk) => (data += chunk));
-			res.on("end", () => {
-				try {
-					resolve(JSON.parse(data));
-				} catch {
-					resolve({});
-				}
-			});
-		});
-		req.on("error", reject);
-		req.on("timeout", () => {
-			req.destroy();
-			reject(new Error("timeout"));
-		});
-		if (body) {
-			req.end(body);
-		} else {
-			req.end();
-		}
-	});
+/**
+ * 单次请求失败时保留 HTTP 状态，不输出凭据。
+ * @param {string} url - 请求地址。
+ * @param {string} method - HTTP 方法。
+ * @param {Record<string, string>} headers - 请求头。
+ * @param {string | undefined} body - 请求正文。
+ * @returns {Promise<Response>} 成功的 HTTP 响应。
+ */
+async function request(url, method, headers, body) {
+  const response = await fetch(url, {
+    method,
+    headers,
+    body,
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!response.ok) throw new Error(`Telemetry ${method} failed: HTTP ${response.status}`);
+  return response;
 }
-
-async function resolveAndCacheEmail(ctx, payload) {
-	try {
-		const pingUrl = ctx.memgoBaseUrl.replace(/\/+$/, "") + "/v1/ping/";
-		const data = await httpsRequest(pingUrl, "GET", {
-			Authorization: "Token " + ctx.memgoApiKey,
-			"Content-Type": "application/json",
-		});
-		if (data.user_email) {
-			payload.distinct_id = data.user_email;
-			cacheEmail(ctx.configPath, data.user_email);
-		}
-	} catch {
-		// silently swallow
-	}
+/**
+ * 获取账号邮箱并缓存，构造更新身份后的事件负载。
+ * @param {Context} context - 发送上下文。
+ * @returns {Promise<Payload>} 已解析身份的负载；无需查询时返回原负载。
+ */
+async function resolveEmail(context) {
+  if (!context.needsEmail || !context.memgoApiKey) return context.payload;
+  const response = await request(
+    `${context.memgoBaseUrl.replace(/\/+$/, '')}/v1/ping/`,
+    'GET',
+    { Authorization: `Token ${context.memgoApiKey}` },
+    undefined
+  );
+  const data = await response.json();
+  if (typeof data.user_email !== 'string')
+    throw new Error('Telemetry ping response missing user_email');
+  const config = JSON.parse(fs.readFileSync(context.configPath, 'utf8'));
+  fs.writeFileSync(
+    context.configPath,
+    JSON.stringify(
+      {
+        ...config,
+        platform: { ...config.platform, user_email: data.user_email },
+      },
+      null,
+      2
+    )
+  );
+  return { ...context.payload, distinct_id: data.user_email };
 }
-
-function cacheEmail(configPath, email) {
-	if (!configPath) return;
-	try {
-		const raw = fs.readFileSync(configPath, "utf-8");
-		const cfg = JSON.parse(raw);
-		if (!cfg.platform) cfg.platform = {};
-		cfg.platform.user_email = email;
-		fs.writeFileSync(configPath, JSON.stringify(cfg, null, 2));
-	} catch {
-		// silently swallow
-	}
+/**
+ * 发送事件，不重试可能造成重复计数的写请求。
+ * @param {string} host - 遥测接收地址。
+ * @param {Payload} payload - 待发送的事件。
+ * @returns {Promise<void>} 事件发送完成。
+ */
+async function send(host, payload) {
+  await request(host, 'POST', { 'Content-Type': 'application/json' }, JSON.stringify(payload));
 }
-
-async function sendPosthogEvent(posthogHost, payload) {
-	try {
-		const body = JSON.stringify(payload);
-		await httpsRequest(posthogHost, "POST", {
-			"Content-Type": "application/json",
-			"Content-Length": Buffer.byteLength(body),
-		}, body);
-	} catch {
-		// silently swallow
-	}
-}
-
-async function sendIdentifyEvent(ctx, payload, anonId) {
-	const identifyPayload = {
-		api_key: payload.api_key,
-		event: "$identify",
-		distinct_id: payload.distinct_id,
-		properties: {
-			$anon_distinct_id: anonId,
-			$lib: (payload.properties && payload.properties.$lib) || "posthog-node",
-		},
-	};
-	await sendPosthogEvent(ctx.posthogHost, identifyPayload);
-}
-
+/**
+ * 先关联匿名身份，再发送原事件。
+ * @returns {Promise<void>} 本次发送流程完成。
+ */
 async function main() {
-	const ctx = await loadContext();
-	const payload = ctx.payload;
-
-	if (ctx.needsEmail && ctx.memgoApiKey) {
-		await resolveAndCacheEmail(ctx, payload);
-	}
-
-	// Fire $identify *after* email resolution so PostHog links the stored
-	// anonymous id directly to the final identity (email, not the api-key
-	// hash). The regular event is sent next so it lands under the merged
-	// profile.
-	if (ctx.anonDistinctIdToAlias) {
-		await sendIdentifyEvent(ctx, payload, ctx.anonDistinctIdToAlias);
-	}
-
-	await sendPosthogEvent(ctx.posthogHost, payload);
+  const context = await loadContext();
+  let payload = context.payload;
+  try {
+    payload = await resolveEmail(context);
+  } catch {
+    process.stderr.write('Telemetry identity lookup failed; retaining the existing identity.\n');
+  }
+  if (context.anonDistinctIdToAlias)
+    await send(context.posthogHost, {
+      api_key: payload.api_key,
+      distinct_id: payload.distinct_id,
+      event: '$identify',
+      properties: {
+        $anon_distinct_id: context.anonDistinctIdToAlias,
+        $lib: 'posthog-node',
+      },
+    });
+  await send(context.posthogHost, payload);
 }
-
-main().catch(() => {});
+main().catch(() => {
+  process.stderr.write('Telemetry delivery failed.\n');
+  process.exitCode = 1;
+});

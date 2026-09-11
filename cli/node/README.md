@@ -1,345 +1,64 @@
-# memgo CLI (Node.js)
+# MemGo Node CLI
 
-The official command-line interface for [memgo](https://memgo.ai) — the memory layer for AI agents. TypeScript implementation.
+`@zhaots/memgo-cli` 提供 `memgo` 命令，用于管理平台或自托管 MemGo 的记忆。发布产物支持 Node.js 18+，包含 Node.js 24；开发环境使用 Node.js 24 和 pnpm 11.21.0。
 
-> **Built for AI agents.** Pass `--agent` (or `--json`) as a global flag on any command to get structured JSON output optimized for programmatic consumption — sanitized fields, no colors or spinners, and errors as JSON too.
+## 安装与连接
 
-## Prerequisites
-
-- Node.js **18+**
-- pnpm (`npm install -g pnpm`) — for development only
-
-## Installation
+在使用方项目安装后运行，不需要全局安装：
 
 ```bash
-npm install -g @zhaots/memgo-cli
+pnpm add @zhaots/memgo-cli
+pnpm exec memgo --help
+pnpm exec memgo init
 ```
 
-## Quick start
+已有凭据时，通过 `MEMGO_API_KEY` 提供密钥。`MEMGO_BASE_URL` 指向 `https://api.memgo.ai` 时使用平台协议；指向其他 HTTP(S) 服务地址时使用 OSS 协议。不要把真实密钥写进脚本或提交到仓库。
 
 ```bash
-# Interactive setup wizard
-memgo init
-
-# Or login via email
-memgo init --email alice@company.com
-
-# Or authenticate with an existing API key
-memgo init --api-key m0-xxx
-
-# Add a memory
-memgo add "I prefer dark mode and use vim keybindings" --user-id alice
-
-# Search memories
-memgo search "What are Alice's preferences?" --user-id alice
-
-# List all memories for a user
-memgo list --user-id alice
-
-# Get a specific memory
-memgo get <memory-id>
-
-# Update a memory
-memgo update <memory-id> "I switched to light mode"
-
-# Delete a memory
-memgo delete <memory-id>
+pnpm exec memgo add "偏好简洁的代码" --user-id alice
+pnpm exec memgo search "代码偏好" --user-id alice
+pnpm exec memgo list --user-id alice
+pnpm exec memgo get <memory-id>
+pnpm exec memgo update <memory-id> "偏好明确的模块边界"
+pnpm exec memgo delete <memory-id> --force
 ```
 
-## Commands
+配置保存到 `~/.memgo/config.json`，权限为 `0600`；优先级为命令参数、环境变量、配置文件、默认值。`config show` 和 `config get` 对密钥脱敏。保存配置时只更新已有 Claude `MEMGO_API_KEY` 和 shell 导出，不创建新条目。
 
-### `memgo init`
+## 命令
 
-Interactive setup wizard. Prompts for your API key and default user ID.
+| 命令 | 用途 |
+| --- | --- |
+| `init` | 交互配置、API key 配置、邮箱验证码登录或 Agent Mode 初始化 |
+| `add` / `search` / `get` / `list` / `update` | 记忆读写与查询 |
+| `delete` | 单条、指定范围或实体级删除；用 `--help` 查看互斥规则 |
+| `import <filePath>` | 从 JSON 文件批量导入 |
+| `config show/get/set` | 查看、读取和修改配置 |
+| `entity list/delete` | 实体查询和删除 |
+| `event list/status` | 平台后台任务状态 |
+| `identify` / `whoami` | 声明及查询代理身份 |
+| `agent-rush add/search` | 公开活动记忆的提交与查询 |
+| `status` / `version` / `help` | 连接状态、版本和帮助 |
+
+参数、默认值和示例以 `memgo <command> --help` 为准。OSS 不支持平台专属选项，例如 `--immutable`、`--keyword`、app 范围和 event 命令；这些请求明确报错，不静默忽略。项目级 `--dry-run` 不受支持，会在删除前报错。
+
+## 自动化与输入
+
+全局 `--json` 或 `--agent` 选择机器输出，成功和错误均使用 JSON。`init --agent` 是创建 Agent Mode 账号的选项，与放在子命令前的全局 `--agent` 含义不同。
 
 ```bash
-memgo init
-memgo init --api-key m0-xxx --user-id alice
-memgo init --email alice@company.com
+pnpm exec memgo --json search "偏好" --user-id alice
+pnpm exec memgo init --agent --json
+pnpm exec memgo init --email alice@example.com --code 123456
+pnpm exec memgo add --file messages.json --user-id alice -o json
 ```
 
-If an existing configuration is detected, the CLI asks for confirmation before overwriting. Use `--force` to skip the prompt (useful in CI/CD).
+`messages.json` 是含 `role` 和 `content` 的消息对象数组。普通模式下，add、search 和 update 可读取管道或文件重定向；全局代理模式不自动读取 stdin，避免无人值守流程挂起。使用子进程 API 时直接传参数数组，不拼 shell 字符串。
 
-```bash
-memgo init --api-key m0-xxx --user-id alice --force
-```
+`--json` 使用命令信封；各命令的 `-o json` 保留既有形状，不能假定二者完全一致。诊断和进度使用 stderr。业务请求、无效输入及配置错误返回非零退出码；GET 瞬时网络错误或 502/503/504 最多尝试两次，写请求不自动重试。批量导入保留逐项统计合同，自动化调用还须检查结果中的 `failed`。
 
-| Flag | Description |
-|------|-------------|
-| `--api-key` | API key (skip prompt) |
-| `-u, --user-id` | Default user ID (skip prompt) |
-| `--email` | Login via email verification code |
-| `--code` | Verification code (use with `--email` for non-interactive login) |
-| `--force` | Overwrite existing config without confirmation |
+## 遥测与开发
 
-### `memgo add`
+`MEMGO_TELEMETRY=false` 禁用遥测。开启时沿用设备匿名标识、已有身份关联和独立发送子进程；凭据通过 stdin 传递。发送器打包在包内，可选同步或遥测故障不撤销已完成的业务操作。
 
-Add a memory from text, a JSON messages array, a file, or stdin.
-
-```bash
-memgo add "I prefer dark mode" --user-id alice
-memgo add --file conversation.json --user-id alice
-echo "Loves hiking on weekends" | memgo add --user-id alice
-```
-
-| Flag | Description |
-|------|-------------|
-| `-u, --user-id` | Scope to a user |
-| `--agent-id` | Scope to an agent |
-| `--messages` | Conversation messages as JSON |
-| `-f, --file` | Read messages from a JSON file |
-| `-m, --metadata` | Custom metadata as JSON |
-| `--categories` | Categories (JSON array or comma-separated) |
-| `--graph / --no-graph` | Enable or disable graph memory extraction |
-| `-o, --output` | Output format: `text`, `json`, `quiet` |
-
-### `memgo search`
-
-Search memories using natural language.
-
-```bash
-memgo search "dietary restrictions" --user-id alice
-memgo search "preferred tools" --user-id alice --output json --top-k 5
-```
-
-| Flag | Description |
-|------|-------------|
-| `-u, --user-id` | Filter by user |
-| `-k, --top-k` | Number of results (default: 10) |
-| `--threshold` | Minimum similarity score (default: 0.3) |
-| `--rerank` | Enable reranking |
-| `--keyword` | Use keyword search instead of semantic |
-| `--filter` | Advanced filter expression (JSON) |
-| `--graph / --no-graph` | Enable or disable graph in search |
-| `-o, --output` | Output format: `text`, `json`, `table` |
-
-### `memgo list`
-
-List memories with optional filters and pagination.
-
-```bash
-memgo list --user-id alice
-memgo list --user-id alice --category preferences --output json
-memgo list --user-id alice --after 2024-01-01 --page-size 50
-```
-
-| Flag | Description |
-|------|-------------|
-| `-u, --user-id` | Filter by user |
-| `--page` | Page number (default: 1) |
-| `--page-size` | Results per page (default: 100) |
-| `--category` | Filter by category |
-| `--after` | Created after date (YYYY-MM-DD) |
-| `--before` | Created before date (YYYY-MM-DD) |
-| `-o, --output` | Output format: `text`, `json`, `table` |
-
-### `memgo get`
-
-Retrieve a specific memory by ID.
-
-```bash
-memgo get 7b3c1a2e-4d5f-6789-abcd-ef0123456789
-memgo get 7b3c1a2e-4d5f-6789-abcd-ef0123456789 --output json
-```
-
-### `memgo update`
-
-Update the text or metadata of an existing memory.
-
-```bash
-memgo update <memory-id> "Updated preference text"
-memgo update <memory-id> --metadata '{"priority": "high"}'
-echo "new text" | memgo update <memory-id>
-```
-
-### `memgo delete`
-
-Delete a single memory, all memories for a scope, or an entire entity.
-
-```bash
-# Delete a single memory
-memgo delete <memory-id>
-
-# Delete all memories for a user
-memgo delete --all --user-id alice --force
-
-# Delete all memories project-wide
-memgo delete --all --project --force
-
-# Preview what would be deleted
-memgo delete --all --user-id alice --dry-run
-```
-
-| Flag | Description |
-|------|-------------|
-| `--all` | Delete all memories matching scope filters |
-| `--entity` | Delete the entity and all its memories |
-| `--project` | With `--all`: delete all memories project-wide |
-| `--dry-run` | Preview without deleting |
-| `--force` | Skip confirmation prompt |
-
-### `memgo import`
-
-Bulk import memories from a JSON file.
-
-```bash
-memgo import data.json --user-id alice
-```
-
-The file should be a JSON array where each item has a `memory` (or `text` or `content`) field and optional `user_id`, `agent_id`, and `metadata` fields.
-
-### `memgo config`
-
-View or modify the local CLI configuration.
-
-```bash
-memgo config show              # Display current config (secrets redacted)
-memgo config get api_key       # Get a specific value
-memgo config set user_id bob   # Set a value
-```
-
-### `memgo entity`
-
-List or delete entities (users, agents, apps, runs).
-
-```bash
-memgo entity list users
-memgo entity list agents --output json
-memgo entity delete --user-id alice --force
-```
-
-### `memgo event`
-
-Inspect background processing events created by async operations (e.g. bulk deletes, large add jobs).
-
-```bash
-# List recent events
-memgo event list
-
-# Check the status of a specific event
-memgo event status <event-id>
-```
-
-| Flag | Description |
-|------|-------------|
-| `-o, --output` | Output format: `text`, `json` |
-
-### `memgo status`
-
-Verify your API connection and display the current project.
-
-```bash
-memgo status
-```
-
-## Agent mode
-
-Pass `--agent` (or its alias `--json`) as a **global flag** on any command to get output designed for AI agent tool loops:
-
-```bash
-memgo --agent search "user preferences" --user-id alice
-memgo --agent add "User prefers dark mode" --user-id alice
-memgo --agent list --user-id alice
-memgo --agent delete --all --user-id alice --force
-```
-
-Every command returns the same envelope shape:
-
-```json
-{
-  "status": "success",
-  "command": "search",
-  "duration_ms": 134,
-  "scope": { "user_id": "alice" },
-  "count": 2,
-  "data": [
-    { "id": "abc-123", "memory": "User prefers dark mode", "score": 0.97, "created_at": "2026-01-15", "categories": ["preferences"] }
-  ]
-}
-```
-
-What agent mode does differently from `--output json`:
-
-- **Sanitized `data`**: only the fields an agent needs (id, memory, score, etc.) — no internal API noise
-- **No human output**: spinners, colors, and banners are suppressed entirely
-- **Errors as JSON**: errors go to stdout as `{"status": "error", "command": "...", "error": "..."}` with a non-zero exit code
-
-Use `memgo help --json` to get the full command tree as JSON — useful for agents that need to self-discover available commands.
-
-## Output formats
-
-Control how results are displayed with `--output`:
-
-| Format | Description |
-|--------|-------------|
-| `text` | Human-readable with colors and formatting (default) |
-| `json` | Structured JSON for piping to `jq` (raw API response) |
-| `table` | Tabular format (default for `list`) |
-| `quiet` | Minimal — just IDs or status codes |
-| `agent` | Structured JSON envelope with sanitized fields (set by `--agent`/`--json`) |
-
-## Global flags
-
-These flags are available on all commands:
-
-| Flag | Description |
-|------|-------------|
-| `--json` | Enable agent mode: structured JSON envelope output, no colors or spinners |
-| `--agent` | Alias for `--json` |
-| `--api-key` | Override the configured API key for this request |
-| `--base-url` | Override the configured API base URL for this request |
-| `-o, --output` | Set the output format |
-
-`memgo --version` prints the CLI version. It is only valid before a subcommand, not after one.
-
-## Environment variables
-
-| Variable | Description |
-|----------|-------------|
-| `MEMGO_API_KEY` | API key (overrides config file) |
-| `MEMGO_BASE_URL` | API base URL |
-| `MEMGO_USER_ID` | Default user ID |
-| `MEMGO_AGENT_ID` | Default agent ID |
-| `MEMGO_APP_ID` | Default app ID |
-| `MEMGO_RUN_ID` | Default run ID |
-| `MEMGO_ENABLE_GRAPH` | Enable graph memory (`true` / `false`) |
-
-Environment variables take precedence over values in the config file, which take precedence over defaults.
-
-## Development
-
-```bash
-cd cli/node
-pnpm install
-
-# Development mode (runs TypeScript directly, no build needed)
-pnpm dev --help
-pnpm dev add "test memory" --user-id alice
-pnpm dev search "test" --user-id alice
-
-# Or build first, then run the compiled JS
-pnpm build
-node dist/index.js --help
-```
-
-## Self-hosted (OSS) backend
-
-The CLI works against a self-hosted MemGo server: point `--base-url` (or `MEMGO_BASE_URL`) at your server and use an API key created on that server. Any base URL other than `api.memgo.ai` selects the OSS backend automatically (`X-API-Key` auth, doc-02 contract).
-
-```bash
-export MEMGO_BASE_URL=http://localhost:8888
-export MEMGO_API_KEY=m0sk_...
-memgo status
-memgo add "I like hiking" -u alice --no-infer
-memgo search "hiking" -u alice -o table
-```
-
-Platform-only features (app_id, immutable, keyword search, events, entity apps) are rejected with an explicit error on the OSS backend.
-
-## Documentation
-
-Full documentation is available at [docs.memgo.ai/platform/cli](https://docs.memgo.ai/platform/cli).
-
-## License
-
-Apache-2.0
+开发步骤、目录职责和验收命令见 [development.md](development.md)。此次重写尚未发布；本地安装包的验证结果见仓库 [重写计划](../../docs/node-cli-rewrite-plan.md)。
