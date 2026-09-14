@@ -9,7 +9,7 @@ import (
 )
 
 // APIKeyPrefix m0sk_ 前缀 (doc-02 §5)。
-const APIKeyPrefix = "m0sk_"
+const APIKeyPrefix = "mgsk_"
 
 // GenerateAPIKey 对齐 generate_api_key: 32 字节 urlsafe → 43 字符 raw。
 // 返回 (full_key, prefix[:12], raw)。

@@ -28,7 +28,7 @@ services:
       dockerfile: deploy/Dockerfile.server
     restart: on-failure
     ports:
-      - "${API_HOST_PORT:-8888}:8000"
+      - "${API_HOST_PORT:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -61,7 +61,7 @@ services:
       - "${DASHBOARD_HOST_PORT:-3000}:3000"
     profiles: ["dashboard"]
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8888
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
       - API_INTERNAL_URL=http://memgo-server:8000
       - NEXT_PUBLIC_INSTANCE_NAME=MemGo
     depends_on:

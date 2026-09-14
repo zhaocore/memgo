@@ -9,6 +9,7 @@
 - 自托管 REST API 的路径、鉴权优先级、状态码、JSON 形状、错误信封、`X-Request-ID`、`WWW-Authenticate` 与 OpenAPI 必须与 `tests/contract/` 的 Python 基线及 `tests/contract/goldens/` 一致。
 - `GET /memories` 两种模式的不同响应形状是合同；PUT 必须区分字段缺失、显式 `null` 与有值。仅 `metadata` 不改内容；`expiration_date: null` 清除字段；`text: null` 与空更新返回 400。
 - `/configure` 必须递归 deep-merge 且递归脱敏敏感字段。内置 provider 范围固定为 LLM `openai`、`anthropic`、`gemini`；embedder `openai`、`gemini`；vector store `pgvector`。
+- DEFAULT_CONFIG 显式携带 embedding 维数：`embedder.config.embedding_dims` 与 `vector_store.config.embedding_model_dims`，默认 1536，可用 `MEMGO_EMBEDDING_DIMS` 环境变量统一覆盖；两值必须一致，否则插入报维数不匹配。修改既有 collection 维数需重建向量表。
 
 ### 数据与安全
 

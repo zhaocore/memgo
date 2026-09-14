@@ -7,3 +7,4 @@ tests/contract/openapi/golden.json.tmp
 .DS_Store
 node_modules/
 dist/
+history

@@ -2,6 +2,7 @@
   "embedder": {
     "config": {
       "api_key": "[redacted]",
+      "embedding_dims": 1536,
       "model": "text-embedding-3-small"
     },
     "provider": "openai"
@@ -19,6 +20,7 @@
     "config": {
       "collection_name": "memories",
       "dbname": "postgres",
+      "embedding_model_dims": 1536,
       "host": "<HOST>",
       "password": "[redacted]",
       "port": "<PORT>",

@@ -52,12 +52,13 @@ func main() {
 		"vector_store": map[string]any{
 			"provider": "pgvector",
 			"config": map[string]any{
-				"host":            envOr("POSTGRES_HOST", "postgres"),
-				"port":            jsonNumber(envOr("POSTGRES_PORT", "5432")),
-				"dbname":          envOr("POSTGRES_DB", "postgres"),
-				"user":            envOr("POSTGRES_USER", "postgres"),
-				"password":        envOr("POSTGRES_PASSWORD", "postgres"),
-				"collection_name": envOr("POSTGRES_COLLECTION_NAME", "memories"),
+				"host":                 envOr("POSTGRES_HOST", "postgres"),
+				"port":                 jsonNumber(envOr("POSTGRES_PORT", "5432")),
+				"dbname":               envOr("POSTGRES_DB", "postgres"),
+				"user":                 envOr("POSTGRES_USER", "postgres"),
+				"password":             envOr("POSTGRES_PASSWORD", "postgres"),
+				"collection_name":      envOr("POSTGRES_COLLECTION_NAME", "memories"),
+				"embedding_model_dims": jsonNumber(envOr("MEMGO_EMBEDDING_DIMS", "1536")),
 			},
 		},
 		"llm": map[string]any{
@@ -71,8 +72,9 @@ func main() {
 		"embedder": map[string]any{
 			"provider": "openai",
 			"config": map[string]any{
-				"api_key": os.Getenv("OPENAI_API_KEY"),
-				"model":   envOr("MEMGO_DEFAULT_EMBEDDER_MODEL", "text-embedding-3-small"),
+				"api_key":        os.Getenv("OPENAI_API_KEY"),
+				"model":          envOr("MEMGO_DEFAULT_EMBEDDER_MODEL", "text-embedding-3-small"),
+				"embedding_dims": jsonNumber(envOr("MEMGO_EMBEDDING_DIMS", "1536")),
 			},
 		},
 		"history_db_path": envOr("HISTORY_DB_PATH", "/app/history/history.db"),
