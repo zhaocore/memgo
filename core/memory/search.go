@@ -214,13 +214,26 @@ func (m *Memory) searchVectorStore(query string, filters map[string]any, limit i
 			}
 		}
 	}
-	// Step 6: 实体加成
+	// Step 6: 实体加成 + 多跳图遍历
 	entityBoosts := map[string]float64{}
+	multiHopBoosts := map[string]float64{}
 	if len(queryEntities) > 0 && m.entityStore != nil {
-		entityBoosts = newEntityStore(m).ComputeBoosts(queryEntities, filters)
+		store := newEntityStore(m)
+		if m.graphIndex != nil && m.graphCfg.EnableMultiHop {
+			entityBoosts, multiHopBoosts = store.ComputeGraphBoosts(queryEntities, filters, m.graphCfg.MaxHops, m.graphCfg.DecayFactor)
+		} else {
+			entityBoosts = store.ComputeBoosts(queryEntities, filters)
+		}
 	}
-	// Step 7: 候选集 (过期过滤)
+	// Step 6.5: 合并多跳加成到 entityBoosts (同记忆取 max)
+	for mid, boost := range multiHopBoosts {
+		if existing, ok := entityBoosts[mid]; !ok || boost > existing {
+			entityBoosts[mid] = boost
+		}
+	}
+	// Step 7: 候选集 (过期过滤 + 多跳记忆补充到候选集)
 	var candidates []rankCandidate
+	candidateIDs := map[string]bool{}
 	for _, mem := range semanticResults {
 		if !showExpired && payloadIsExpired(mem.Payload) {
 			continue
@@ -230,6 +243,21 @@ func (m *Memory) searchVectorStore(query string, filters map[string]any, limit i
 			score = *mem.Score
 		}
 		candidates = append(candidates, rankCandidate{id: mem.ID, score: score, payload: mem.Payload})
+		candidateIDs[mem.ID] = true
+	}
+	// 多跳发现但不在语义结果中的记忆: 从向量库拉取
+	for mid := range multiHopBoosts {
+		if candidateIDs[mid] {
+			continue
+		}
+		row, err := m.VectorStore.Get(mid)
+		if err != nil || row == nil {
+			continue
+		}
+		if !showExpired && payloadIsExpired(row.Payload) {
+			continue
+		}
+		candidates = append(candidates, rankCandidate{id: row.ID, score: 0, payload: row.Payload})
 	}
 	// Step 8: 评分排序
 	scored := scoreAndRank(candidates, bm25Scores, entityBoosts, threshold, limit, explain)

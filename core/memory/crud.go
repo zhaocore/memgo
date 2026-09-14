@@ -233,8 +233,13 @@ func (m *Memory) updateMemory(memoryID string, data *string, existingEmbeddings 
 }
 
 // newEntityStore 以实体 collection 构建实体包 Store (惰性; 未注入则退主库)。
+// 同时传播当前图索引 (如果已构建)。
 func newEntityStore(m *Memory) *entity.Store {
-	return entity.NewStore(m.EntityStore(), m.EmbeddingModel)
+	store := entity.NewStore(m.EntityStore(), m.EmbeddingModel)
+	if m.graphIndex != nil {
+		store.SetGraphIndex(m.graphIndex)
+	}
+	return store
 }
 
 // linkEntitiesForMemory 对齐 _link_entities_for_memory (抽取恒空 → 无操作)。

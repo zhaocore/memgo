@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/zhao-core/memgo/core/embedder"
+	"github.com/zhao-core/memgo/core/graph"
 	"github.com/zhao-core/memgo/core/vectorstore"
 )
 
@@ -14,11 +15,17 @@ type Store struct {
 	vec   vectorstore.VectorStore
 	emb   embedder.Embedder
 	scope func(filters map[string]any) map[string]any
+	gi    *graph.GraphIndex // 可选图索引, nil 时不启用多跳
 }
 
 // NewStore 构造; scope 抽取 user_id/agent_id/run_id 非空键 (对齐 Python 内联推导)。
 func NewStore(vec vectorstore.VectorStore, emb embedder.Embedder) *Store {
 	return &Store{vec: vec, emb: emb, scope: ScopeKeys}
+}
+
+// SetGraphIndex 注入图索引 (可选; nil 时多跳功能不启用)。
+func (s *Store) SetGraphIndex(gi *graph.GraphIndex) {
+	s.gi = gi
 }
 
 // ScopeKeys 抽取实体查询作用域键 (仅非空 user_id/agent_id/run_id)。
@@ -76,14 +83,18 @@ func (s *Store) Upsert(entityText, entityType, memoryID string, filters map[stri
 	}
 	if match != nil {
 		payload := match.Payload
-		linked := linkedIDs(payload)
-		if !contains(linked, memoryID) {
-			linked = append(linked, memoryID)
+		oldLinked := linkedIDs(payload)
+		linked := appendUnique(oldLinked, memoryID)
+		if len(linked) != len(oldLinked) {
 			payload["linked_memory_ids"] = linked
 			_ = s.vec.Update(match.ID, nil, payload)
+			if s.gi != nil {
+				s.gi.OnEntityUpsert(match.ID, linked, oldLinked)
+			}
 		}
 		return
 	}
+	newID := newUUID()
 	newPayload := map[string]any{
 		"data":              entityText,
 		"entity_type":       entityType,
@@ -92,7 +103,10 @@ func (s *Store) Upsert(entityText, entityType, memoryID string, filters map[stri
 	for k, v := range searchFilters {
 		newPayload[k] = v
 	}
-	_ = s.vec.Insert([][]float64{embedding}, []string{newUUID()}, []map[string]any{newPayload})
+	_ = s.vec.Insert([][]float64{embedding}, []string{newID}, []map[string]any{newPayload})
+	if s.gi != nil {
+		s.gi.OnEntityUpsert(newID, []string{memoryID}, nil)
+	}
 }
 
 // existingByText 对齐 _existing_entities_by_text: list 全量后按归一化文本索引。
@@ -180,6 +194,10 @@ func (s *Store) RemoveMemoryFromStore(memoryID string, filters map[string]any) {
 			_ = s.vec.Update(row.ID, vec, newPayload)
 		}
 	}
+	// 图索引: 删除该记忆的所有边
+	if s.gi != nil {
+		s.gi.OnMemoryRemove(memoryID)
+	}
 }
 
 // EntityBoostWeight 对齐 scoring.ENTITY_BOOST_WEIGHT。
@@ -240,4 +258,108 @@ func (s *Store) ComputeBoosts(queryEntities []Extracted, filters map[string]any)
 		}
 	}
 	return boosts
+}
+
+// BuildIndex 启动时调用: 从 entity store 全量扫描构建图索引。
+// scope 限制 entity 作用域 (user_id/agent_id/run_id), 可传 nil 不限域。
+func (s *Store) BuildIndex(scope map[string]any) error {
+	if s.gi == nil {
+		return nil
+	}
+	return s.gi.Build(func(onEntity func(entityID string, linkedMemoryIDs []string)) error {
+		listed, err := s.vec.List(scope, 10000)
+		if err != nil {
+			return fmt.Errorf("entity store list failed: %w", err)
+		}
+		for _, rows := range listed {
+			for i := range rows {
+				row := rows[i]
+				linked := linkedIDs(row.Payload)
+				onEntity(row.ID, linked)
+			}
+		}
+		return nil
+	})
+}
+
+// ComputeGraphBoosts 一次完成实体搜索 + 单跳加成 + 多跳图遍历加成。
+// 返回 entityBoosts 和 multiHopBoosts 两路 map, 调用方取 max 合并。
+// 若图索引未启用 (s.gi == nil), multiHopBoosts 恒为 nil。
+func (s *Store) ComputeGraphBoosts(queryEntities []Extracted, filters map[string]any, maxHops int, decayFactor float64) (entityBoosts map[string]float64, multiHopBoosts map[string]float64) {
+	entityBoosts = map[string]float64{}
+	seen := map[string]bool{}
+	var deduped []Extracted
+	for _, e := range queryEntities {
+		if len(deduped) >= 8 {
+			break
+		}
+		key := NormalizeText(e.Text)
+		if key != "" && !seen[key] {
+			seen[key] = true
+			deduped = append(deduped, e)
+		}
+	}
+	if len(deduped) == 0 {
+		return entityBoosts, nil
+	}
+	searchFilters := s.scope(filters)
+	texts := make([]string, 0, len(deduped))
+	for _, e := range deduped {
+		texts = append(texts, e.Text)
+	}
+	embeddings, err := s.emb.EmbedBatch(texts, "search")
+	if err != nil || len(embeddings) != len(texts) {
+		return entityBoosts, nil
+	}
+
+	// 收集匹配的实体 ID (用于后续多跳遍历)
+	var matchedEntityIDs []string
+
+	for i, e := range deduped {
+		matches, err := s.vec.Search(e.Text, embeddings[i], 500, searchFilters)
+		if err != nil {
+			continue
+		}
+		for _, match := range matches {
+			if match.Score == nil || *match.Score < 0.5 {
+				continue
+			}
+			matchedEntityIDs = append(matchedEntityIDs, match.ID)
+			linked := linkedIDs(match.Payload)
+			n := len(linked)
+			if n < 1 {
+				n = 1
+			}
+			weight := 1.0 / (1.0 + 0.001*float64((n-1)*(n-1)))
+			boost := *match.Score * EntityBoostWeight * weight
+			for _, mid := range linked {
+				if mid == "" {
+					continue
+				}
+				if boost > entityBoosts[mid] {
+					entityBoosts[mid] = boost
+				}
+			}
+		}
+	}
+
+	// 多跳
+	if s.gi != nil && len(matchedEntityIDs) > 0 {
+		results := s.gi.MultiHopSearch(matchedEntityIDs, maxHops, decayFactor)
+		multiHopBoosts = make(map[string]float64, len(results))
+		for mid, r := range results {
+			multiHopBoosts[mid] = r.Boost
+		}
+	}
+	return entityBoosts, multiHopBoosts
+}
+
+// appendUnique 追加去重 (保持原序, 确保 linked_memory_ids 不重复)。
+func appendUnique(slice []string, v string) []string {
+	for _, s := range slice {
+		if s == v {
+			return slice
+		}
+	}
+	return append(slice, v)
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/zhao-core/memgo/core/config"
 	"github.com/zhao-core/memgo/core/embedder"
 	"github.com/zhao-core/memgo/core/entity"
+	"github.com/zhao-core/memgo/core/graph"
 	"github.com/zhao-core/memgo/core/history"
 	"github.com/zhao-core/memgo/core/llm"
 	"github.com/zhao-core/memgo/core/vectorstore"
@@ -29,13 +30,19 @@ type Memory struct {
 	CollectionName     string
 	CustomInstructions string
 
-	entityStore     vectorstore.VectorStore
+	entityStore     vectorstore.VectorStore // pgvector entity collection 实例
 	entityExtractor EntityExtractor
+	graphIndex      *graph.GraphIndex // 内存图索引 (Build 后非 nil)
+	graphCfg        config.GraphMemoryConfig
 }
 
 // New 按配置装配 Memory (对齐 Memory.__init__; provider 工厂由调用方注入,
 // pgvector/openai 组合由 server 与 cli 构造)。
 func New(cfg *config.MemoryConfig, vec vectorstore.VectorStore, emb embedder.Embedder, language llm.LLM, db *history.Manager, extractor EntityExtractor) *Memory {
+	gmCfg := cfg.GraphMemory
+	if gmCfg.MaxHops == 0 {
+		gmCfg = config.DefaultGraphMemoryConfig()
+	}
 	return &Memory{
 		Config:             cfg,
 		VectorStore:        vec,
@@ -45,7 +52,25 @@ func New(cfg *config.MemoryConfig, vec vectorstore.VectorStore, emb embedder.Emb
 		CollectionName:     strOrCfg(cfg.VectorStore.Config["collection_name"]),
 		CustomInstructions: cfg.CustomInstructions,
 		entityExtractor:    extractor,
+		graphCfg:           gmCfg,
 	}
+}
+
+// BuildGraphIndex 在 entity store 注入后调用, 从 pgvector 全量构建图索引。
+// 幂等: 多次调用会重建索引。需在 SetEntityStore 之后调用。
+func (m *Memory) BuildGraphIndex() error {
+	if !m.graphCfg.EnableMultiHop {
+		return nil
+	}
+	m.graphIndex = graph.NewGraphIndex()
+	store := newEntityStore(m)
+	if err := store.BuildIndex(nil); err != nil {
+		m.graphIndex = nil
+		return err
+	}
+	// 同时将图索引注入到 entity store (供 Upsert/Remove 回调同步)
+	store.SetGraphIndex(m.graphIndex)
+	return nil
 }
 
 // EntityStore 惰性初始化实体 collection (对齐 entity_store 属性; collection 命名规则对齐)。
