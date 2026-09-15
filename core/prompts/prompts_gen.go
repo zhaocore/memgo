@@ -889,6 +889,3 @@ Remember the following:
 
 Following is a conversation between the user and the assistant. You have to extract the relevant facts and preferences about the user, if any, from the conversation and return them in the json format as shown above.
 `
-
-// parityManifest 供 parity_test 与 Python 版逐常量比对。
-const parityManifestJSON = `["ADDITIVE_EXTRACTION_PROMPT", "AGENT_CONTEXT_SUFFIX", "AGENT_MEMORY_EXTRACTION_PROMPT", "DEFAULT_UPDATE_MEMORY_PROMPT", "FACT_RETRIEVAL_PROMPT", "MEMORY_ANSWER_PROMPT", "PROCEDURAL_MEMORY_SYSTEM_PROMPT", "USER_MEMORY_EXTRACTION_PROMPT"]`
