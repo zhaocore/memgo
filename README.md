@@ -1,6 +1,7 @@
 # MemGo
 
 AI Agent 记忆层 —— 为你的 AI 应用提供持久化、统一可检索的长期记忆。Go 实现，单二进制部署。
+为你的Claude、Codex、DeepSeek 等 AI 工具接入统一记忆层,跨会话记忆贯穿工作流。
 
 ## 快速开始（Docker）
 

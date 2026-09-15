@@ -15,7 +15,7 @@ export const COLLAPSED_SIDEBAR_WIDTH_WITHOUT_PADDING =
 
 function AuthLoadingState() {
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center">
+    <div className="flex min-h-[100dvh] w-screen flex-col items-center justify-center">
       <ThemeAwareLogo />
       <LinearProgress value={66} className="mt-8 h-1 w-[180px]" />
     </div>

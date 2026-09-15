@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import '@/styles/globals.css';
 import { ClientLayout } from './clientLayout';
 import { cn } from '@/lib/utils';
-import { Inter, InterDisplay, Roboto, Fustat, DMMono } from './fonts';
+import { InterDisplay, Roboto, Fustat, DMMono } from './fonts';
 import { Provider } from 'react-redux';
 import store from '@/store/store';
 import { AuthProvider } from '@/lib/auth';
@@ -28,10 +28,9 @@ export function DashboardClientLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          Inter.className,
+          Fustat.className,
           InterDisplay.variable,
           Roboto.variable,
-          Fustat.variable,
           DMMono.variable,
         )}
         suppressHydrationWarning

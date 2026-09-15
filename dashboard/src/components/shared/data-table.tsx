@@ -25,16 +25,16 @@ interface DataTableProps<T> {
 const classes = {
   tableHeaderRow: 'h-[38px] border-b border-memBorder-primary',
   tableHeaderCell:
-    'w-[230px] h-[38px] p-2 align-middle bg-surface-default-fg-secondary text-onSurface-default-secondary',
+    'w-[230px] h-[38px] p-2 align-middle text-onSurface-default-secondary',
   tableHeaderCheckCell:
-    'w-[40px] h-[38px] p-2 align-middle bg-surface-default-fg-secondary',
+    'w-[40px] h-[38px] p-2 align-middle',
   tableHeaderCheckWrap: 'flex items-center gap-2',
   tableHeaderCheckBox:
     'box-border flex h-4 w-4 items-center gap-2.5 rounded-sm border border-memBorder-primary p-1',
   tableHeaderDivider:
-    'w-px self-stretch border border-memBorder-primary shrink-0',
+    'w-px self-stretch bg-memBorder-primary shrink-0',
   tableRow:
-    'h-[38px] border-t border-memBorder-primary bg-surface-default-primary hover:bg-surface-default-primary-hover',
+    'h-[38px] border-b border-memBorder-primary/50 bg-surface-default-primary hover:bg-surface-default-primary-hover transition-colors duration-150',
   tableCell:
     'text-sm font-medium text-onSurface-default-primary px-4 py-2 justify-start align-middle font-[Fustat] leading-[140%] tracking-normal',
   tableCellFlush: 'align-middle',
@@ -155,13 +155,14 @@ export function DataTable<T>({
             })}
           </tr>
         </thead>
-        <tbody className="transition-all duration-300 ease-in-out">
+        <tbody>
           {data.map((row, rowIndex) => (
             <tr
               key={getRowKey ? String(getRowKey(row, rowIndex)) : rowIndex}
               className={`${classes.tableRow} ${
                 onRowClick ? 'cursor-pointer' : ''
-              } ${getRowClassName ? (getRowClassName(row, rowIndex) ?? '') : ''} animate-fade-in`}
+              } ${getRowClassName ? (getRowClassName(row, rowIndex) ?? '') : ''} fade-in`}
+              style={{ animationDelay: `${Math.min(rowIndex * 40, 200)}ms` }}
               onClick={onRowClick ? () => onRowClick(row, rowIndex) : undefined}
             >
               {columns.map((column, colIndex) => {

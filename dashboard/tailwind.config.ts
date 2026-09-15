@@ -29,13 +29,11 @@ const config = {
         "2.5": "0.625rem",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui"],
+        sans: ["var(--font-fustat)", "system-ui"],
         serif: ["ui-serif", "Georgia"],
         mono: ["Monaco", "Consolas", '"Courier New"', "monospace"],
-        "inter-display": ["var(--font-inter)", "sans-serif"], // Now uses same as Inter
-        inter: ["var(--font-inter)", "sans-serif"],
+        fustat: ["var(--font-fustat)", "sans-serif"],
         roboto: ["var(--font-roboto-mono)", "sans-serif"],
-        fustat: ["var(--font-fustat, ui-sans-serif)", "sans-serif"],
         "dm-mono": ["var(--font-dm-mono, ui-monospace)", "monospace"],
       },
       colors: {

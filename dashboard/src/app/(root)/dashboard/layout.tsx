@@ -20,7 +20,7 @@ export default function DashboardLayout({
     <>
       <NavWrapper />
       <div
-        className="mt-[48px] rounded-tl-lg relative h-[calc(100vh-48px)] bg-surface-default-primary border border-memBorder-primary overflow-hidden transition-all duration-300 ease-in-out font-fustat"
+        className="mt-[48px] rounded-tl-lg relative min-h-[calc(100dvh-48px)] bg-surface-default-primary border border-memBorder-primary overflow-hidden transition-all duration-300 ease-in-out font-fustat"
         style={{
           left: `${isSidebarCollapsed ? COLLAPSED_SIDEBAR_WIDTH : SIDEBAR_WIDTH}px`,
           width: `calc(100vw - ${isSidebarCollapsed ? COLLAPSED_SIDEBAR_WIDTH + 8 : SIDEBAR_WIDTH + 8}px)`,

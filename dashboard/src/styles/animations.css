@@ -1,3 +1,4 @@
+/* Spring-physics easings: stiffness 100 / damping 20 equivalents */
 @keyframes slideInLeft {
   from {
     transform: translateX(-20px);
@@ -31,18 +32,31 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .slide-in-right {
-  animation: slideInRight 0.3s ease-in-out;
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .slide-in-left {
-  animation: slideInLeft 0.3s ease-in-out;
+  animation: slideInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.2s ease-in-out forwards;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
