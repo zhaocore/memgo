@@ -4,7 +4,7 @@
 
 每个任务开始前必须依次完成：
 
-1. 阅读本文件、`docs/REQUIREMENTS.md`、相关的当日 `docs/PLAN_md/PLAN_yymmdd.md`、`docs/go-refactor-plan.md`，以及受影响目录的测试。
+1. 阅读本文件、`docs/REQUIREMENTS.md`、相关的当日 `docs/PLAN_md/PLAN_yymmdd.md`，以及受影响目录的测试。
 2. 执行 `git status --short`，保留所有既有未提交改动；不得重置、覆盖或顺手清理无关文件。
 3. 将任务拆成按时间顺序的复选项，写入当日 `docs/PLAN_md/PLAN_yymmdd.md`；目录或文件缺失时必须创建。完成后勾选对应项。
 4. 对照 `docs/REQUIREMENTS.md` 判断本次改动是否改变既有行为、HTTP 合同、CLI 行为或数据格式。冲突或含义不明确时必须向用户说明，不得自行猜测。
@@ -12,9 +12,6 @@
 `docs/REQUIREMENTS.md` 是唯一的需求真源，使用最多三级标题维护。它是活文档：行为变更、验收条件澄清和用户反馈都必须同步更新。当前文件尚未建立，首个产品改动必须创建它，不能以缺失为由跳过需求维护。
 
 ## 仓库现状与地图
-
-MemGo 是 `memgo` 自托管服务从 Python 迁移到 Go 的单模块项目，模块路径为 `github.com/zhao-core/memgo`。目标和分期以 `docs/go-refactor-plan.md` 为准；该计划不是需求真源。
-
 | 路径 | 当前职责 |
 | --- | --- |
 | `cmd/server/main.go` | `memgo-server` 入口：启动校验、DEFAULT_CONFIG、迁移、HTTP 装配。 |
@@ -22,10 +19,11 @@ MemGo 是 `memgo` 自托管服务从 Python 迁移到 Go 的单模块项目，�
 | `cli/go/` | Go CLI（cobra）：命令面、Backend 接口（platform/OSS）、config、output、telemetry；二进制入口 `cli/go/cmd/memgo/main.go`。 |
 | `cli/python/` | 已授权改造的 Python CLI，保持命令与协议合同；测试入口 `make cli-py-test`。 |
 | `cli/node/` | 已获授权重写的 TypeScript CLI，开发使用 Node 24，发布兼容 Node 18+；测试入口 `make cli-node-test`。 |
-| `core/config/` | `MemoryConfig` 解析、深合并和敏感配置脱敏。 |
+| `core/config/` | `MemoryConfig` 解析、深合并、敏感配置脱敏及 `GraphMemoryConfig` 多跳参数。 |
 | `core/llm/`、`core/embedder/` | LLM/embedder 端口与 openai、anthropic、gemini 客户端。 |
 | `core/prompts/` | 上游 prompt 常量及消息拼装；`prompts_gen.go` 是生成文件。 |
 | `core/memory/`、`core/entity/` | 记忆流水线（add/search/get/update/delete/history/reset）与实体抽取/加成。 |
+| `core/graph/` | 内存图索引 `GraphIndex`：双邻接表 + BFS 多跳遍历, 不依赖外部图数据库。 |
 | `core/vectorstore/`、`core/history/` | pgvector 实现（含过滤翻译）与 SQLite 历史库。 |
 | `server/` | HTTP 层（doc-02 合同）：store+goose 迁移、auth 三层依赖、middleware、api、errpkg。 |
 | `tests/contract/` | Python 基线与 Go 实现共用的黑盒 HTTP 契约套件、golden 和 OpenAI 兼容桩；CLI parity golden 与 OSS 冒烟脚本。 |
@@ -55,6 +53,7 @@ MemGo 是 `memgo` 自托管服务从 Python 迁移到 Go 的单模块项目，�
 ## 领域与兼容性红线
 
 - 自托管 REST API 的路径、鉴权优先级、状态码、JSON 形状、错误信封、`X-Request-ID`、`WWW-Authenticate` 和 OpenAPI 都是兼容合同。以 `tests/contract/` 的 Python 基线和 `tests/contract/goldens/` 为可执行事实，不得按 Go 惯例自行改形状。
+- Swagger/ReDoc/OpenAPI 端点可通过 `DISABLE_DOCS=true` 环境变量关闭（部署入口：`cmd/server/main.go` 的 `envTrue("DISABLE_DOCS")`；路由层：`server/api/server.go` `Config.DisableDocs` 条件注册）。
 - `GET /memories` 的两种模式形状不一致也是合同；PUT 必须保留字段缺失、显式 `null` 和有值之间的语义差异。实测基线：仅 `metadata` 不改内容、`expiration_date: null` 清除字段、`text: null` 返回 400、空更新返回 400。
 - `/configure` 是递归 deep-merge，不是整体替换；敏感键递归脱敏；内置 provider 范围固定为 LLM `openai`/`anthropic`/`gemini`、embedder `openai`/`gemini`、vector store `pgvector`，扩大范围必须先记录决策。
 - prompt 文本是行为的一部分。修改上游 prompt 对齐时必须通过 `tools/gen_prompts.py` 生成 `core/prompts/prompts_gen.go`，并执行 `MEMGO_SOURCE=<memgo仓库根目录> go test ./core/prompts`。不得手改生成文件。

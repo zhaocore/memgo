@@ -15,6 +15,21 @@
 
 - `memgo_app` 只存用户、API key、refresh JTI、请求日志和 settings；pgvector 库只存记忆向量。两库不得混存。
 - 密钥、JWT secret、数据库密码和 provider 凭据只经环境变量或未跟踪 `.env` 提供，日志与响应必须脱敏。
+- Swagger/ReDoc/OpenAPI 端点可通过 `DISABLE_DOCS=true` 环境变量关闭。默认（未设）时保持开启；生产部署建议关闭。
+
+## 记忆引擎
+
+### Graph Memory（图记忆）
+
+- 图记忆通过内存图索引 `core/graph/GraphIndex` 实现：双邻接表 + BFS 多跳遍历，零外部图数据库依赖。
+- 启动时从 pgvector entity store 全量构建图索引；运行时通过 entity store 的 Upsert/Remove 回调增量同步。
+- 搜索时通过 `ComputeGraphBoosts` 一次完成实体语义搜索 + 多跳图遍历加成。
+- 多跳参数由 `MemoryConfig.graph_memory` 配置：
+  - `enable_multi_hop`（默认 true）：false 时关闭多跳，回退纯 entity boost。
+  - `max_hops`（默认 2）：0 仅直达，1 直达+一跳邻居，2 直达+两跳邻居。
+  - `decay_factor`（默认 0.5）：跳数 n 的 boost = decayFactor^(n-1)，同记忆多次到达取 max。
+- 多跳发现但不在语义结果中的记忆，从向量库按 ID 拉取补齐到候选集。
+- `relations` 字段恒空 `[]`。
 
 ## 客户端与界面
 
