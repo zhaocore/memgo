@@ -1,0 +1,104 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "MEMGO_PLATFORM=codex ${PLUGIN_ROOT}/scripts/block_memory_write.sh",
+            "timeout": 3
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__memgo__add_memory|mcp__memgo__search_memories|mcp__memgo__get_memories|mcp__memgo__delete_all_memories",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "MEMGO_PLATFORM=codex ${PLUGIN_ROOT}/scripts/enforce_metadata_defaults.sh",
+            "timeout": 3
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "MEMGO_PLATFORM=codex ${PLUGIN_ROOT}/scripts/on_file_read.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "MEMGO_PLATFORM=codex ${PLUGIN_ROOT}/scripts/on_session_start.sh",
+            "statusMessage": "Loading MemGo context..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "MEMGO_PLATFORM=codex ${PLUGIN_ROOT}/scripts/on_user_prompt.sh",
+            "statusMessage": "Checking memory relevance...",
+            "timeout": 12
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__memgo__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "MEMGO_PLATFORM=codex ${PLUGIN_ROOT}/scripts/on_post_tool_use.sh",
+            "timeout": 3
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "MEMGO_PLATFORM=codex ${PLUGIN_ROOT}/scripts/on_bash_output.sh",
+            "timeout": 12
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "MEMGO_PLATFORM=codex ${PLUGIN_ROOT}/scripts/on_stop.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "MEMGO_PLATFORM=codex ${PLUGIN_ROOT}/scripts/on_pre_compact.sh",
+            "statusMessage": "Preparing pre-compaction summary..."
+          }
+        ]
+      }
+    ]
+  }
+}

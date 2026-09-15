@@ -1,0 +1,283 @@
+#!/usr/bin/env python3
+"""Capture session state via the MemGo OSS API.
+
+PreCompact 和 Stop hooks 的兜底安全网 — 读取 transcript JSONL, 提取结构化
+会话状态, 直接写入 MemGo(同步返回 results, 无事件轮询)。
+
+Used by:
+  - PreCompact hook: Tags with "pre-compaction" (context about to be lost)
+  - Stop hook:       Tags with "session-end" (session ending)
+
+Input:  JSON on stdin with transcript_path, session_id, cwd
+Output: stderr logs only (exit 0 always — must not block)
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _api import add_memory
+from _identity import resolve_api_key, resolve_user_id
+from _project import resolve_agent_id, resolve_branch
+
+log = logging.getLogger("memgo-capture")
+log.setLevel(logging.DEBUG)
+_handler = logging.StreamHandler(sys.stderr)
+_handler.setFormatter(logging.Formatter("[memgo-capture] %(message)s"))
+log.addHandler(_handler)
+
+if os.environ.get("MEMGO_DEBUG"):
+    _log_dir = os.path.expanduser("~/.memgo")
+    try:
+        os.makedirs(_log_dir, exist_ok=True)
+        _file_handler = logging.FileHandler(os.path.join(_log_dir, "hooks.log"))
+        _file_handler.setFormatter(logging.Formatter("[memgo-capture] %(asctime)s %(message)s"))
+        log.addHandler(_file_handler)
+    except OSError:
+        pass
+
+MAX_TAIL_LINES = 500
+MAX_USER_MESSAGES = 30
+MAX_BASH_COMMANDS = 20
+MAX_ASSISTANT_TEXT = 10000
+
+
+def tail_lines(filepath: str, n: int) -> list[str]:
+    """高效读取文件末尾 n 行。"""
+    try:
+        with open(filepath, "rb") as f:
+            f.seek(0, 2)
+            file_size = f.tell()
+            if file_size == 0:
+                return []
+            chunk_size = min(file_size, n * 4096)
+            f.seek(max(0, file_size - chunk_size))
+            data = f.read().decode("utf-8", errors="replace")
+            return data.splitlines()[-n:]
+    except OSError:
+        return []
+
+
+def parse_transcript(lines: list[str]) -> dict:
+    """解析 transcript JSONL 行, 提取会话状态。"""
+    user_messages: list[str] = []
+    files_modified: set[str] = set()
+    bash_commands: list[str] = []
+    last_assistant_text = ""
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        entry_type = entry.get("type")
+        if entry_type not in ("user", "assistant"):
+            continue
+        if entry.get("isSidechain"):
+            continue
+
+        message = entry.get("message", {})
+        content_blocks = message.get("content", [])
+
+        if entry_type == "user":
+            parts = []
+            if isinstance(content_blocks, str):
+                parts.append(content_blocks)
+            elif isinstance(content_blocks, list):
+                for block in content_blocks:
+                    if isinstance(block, str):
+                        parts.append(block)
+                    elif isinstance(block, dict) and block.get("type") == "text":
+                        parts.append(block.get("text", ""))
+            text = "\n".join(parts).strip()
+            if text and len(text) > 10 and not text.startswith("<"):
+                user_messages.append(text)
+
+        elif entry_type == "assistant":
+            for block in content_blocks:
+                if not isinstance(block, dict):
+                    continue
+                if block.get("type") == "text":
+                    text = block.get("text", "").strip()
+                    if text:
+                        last_assistant_text = text
+                if block.get("type") == "tool_use":
+                    tool_name = block.get("name", "")
+                    tool_input = block.get("input", {})
+                    if tool_name in ("Write", "Edit"):
+                        fp = tool_input.get("file_path", "")
+                        if fp:
+                            files_modified.add(fp)
+                    elif tool_name == "Bash":
+                        cmd = tool_input.get("command", "")
+                        if cmd:
+                            bash_commands.append(cmd)
+
+    return {
+        "user_messages": user_messages[-MAX_USER_MESSAGES:],
+        "files_modified": sorted(files_modified),
+        "bash_commands": bash_commands[-MAX_BASH_COMMANDS:],
+        "last_assistant_text": last_assistant_text[:MAX_ASSISTANT_TEXT],
+    }
+
+
+def build_content(state: dict, source: str) -> str:
+    """构造最小上下文 — 只保留恢复工作所需内容。
+
+    这是兜底安全网, 不是主捕获路径。MemGo server 端 infer=True 会抽取结构化事实。
+    """
+    parts = []
+
+    if state["files_modified"]:
+        parts.append(f"Files touched: {', '.join(state['files_modified'][:15])}")
+
+    if state["bash_commands"]:
+        git_cmds = [c for c in state["bash_commands"] if "git " in c]
+        if git_cmds:
+            parts.append(f"Git operations: {len(git_cmds)}")
+
+    return "\n".join(parts)
+
+
+def store_memory(content: str, user_id: str, source: str, session_id: str = "", agent_id: str = "", branch: str = "") -> bool:
+    """通过 OSS 面写入会话状态记忆。"""
+    metadata = {
+        "type": "session_state",
+        "source": source,
+        "session_id": session_id,
+    }
+    if branch:
+        metadata["branch"] = branch
+    try:
+        results = add_memory(
+            [{"role": "user", "content": content}],
+            user_id=user_id,
+            agent_id=agent_id,
+            run_id=session_id or None,
+            metadata=metadata,
+            infer=True,
+        )
+        log.info("Session state stored (%d memory(-ies))", len(results))
+        return True
+    except Exception as e:
+        log.warning("API call failed: %s", e)
+        return False
+
+
+def format_status(state: dict, source: str, stored: bool, skipped_reason: str = "") -> str:
+    """构造干净的终端可读状态行。"""
+    files_count = len(state.get("files_modified", []))
+    git_cmds = [c for c in state.get("bash_commands", []) if "git " in c]
+    user_msgs = len(state.get("user_messages", []))
+
+    parts = []
+    if files_count:
+        parts.append(f"{files_count} file{'s' if files_count != 1 else ''} touched")
+    if git_cmds:
+        parts.append(f"{len(git_cmds)} git op{'s' if len(git_cmds) != 1 else ''}")
+    if user_msgs:
+        parts.append(f"{user_msgs} exchange{'s' if user_msgs != 1 else ''}")
+
+    activity = ", ".join(parts) if parts else "minimal activity"
+
+    if source == "pre-compaction":
+        icon = "✨"
+        label = "Pre-compaction snapshot"
+    else:
+        icon = "\U0001f4be"  # 💾
+        label = "Session-end snapshot"
+
+    if skipped_reason:
+        return f"{icon} MemGo {label} — {activity} — {skipped_reason}"
+    elif stored:
+        return f"{icon} MemGo {label} — {activity} — saved to MemGo"
+    else:
+        return f"{icon} MemGo {label} — {activity} — nothing to capture"
+
+
+def main():
+    source = "pre-compaction"
+    show_status = False
+    for arg in sys.argv[1:]:
+        if arg.startswith("--source="):
+            source = arg.split("=", 1)[1]
+        elif arg == "--status":
+            show_status = True
+
+    if not resolve_api_key():
+        log.debug("MEMGO_API_KEY not set, skipping capture")
+        if show_status:
+            print("✨ MemGo — no API key, skipping capture")
+        return
+
+    try:
+        hook_input = json.loads(sys.stdin.read())
+    except (json.JSONDecodeError, OSError):
+        log.debug("No valid JSON on stdin")
+        return
+
+    transcript_path = hook_input.get("transcript_path", "")
+    if not transcript_path:
+        log.debug("No transcript_path provided")
+        return
+
+    session_id = hook_input.get("session_id", "")
+    cwd = hook_input.get("cwd") or None
+    user_id = resolve_user_id()
+    project_id = resolve_agent_id(cwd)
+    branch = resolve_branch(cwd)
+
+    lines = tail_lines(transcript_path, MAX_TAIL_LINES)
+    if not lines:
+        log.debug("Transcript empty or unreadable: %s", transcript_path)
+        return
+
+    state = parse_transcript(lines)
+
+    # Skip if agent already stored memories this session — avoid duplicate writes.
+    stats_file = f"/tmp/memgo_session_stats_{os.environ.get('USER', 'default')}.json"
+    try:
+        with open(stats_file) as f:
+            stats = json.load(f)
+        if stats.get("adds", 0) >= 1:
+            log.info("Agent stored %d memories this session — skipping fallback", stats["adds"])
+            if show_status:
+                print(format_status(state, source, False, f"agent already stored {stats['adds']} memor{'ies' if stats['adds'] != 1 else 'y'}"))
+            return
+    except (OSError, json.JSONDecodeError):
+        pass
+
+    if not state["files_modified"]:
+        log.debug("No files modified — skipping fallback capture")
+        if show_status:
+            print(format_status(state, source, False))
+        return
+
+    content = build_content(state, source)
+    if not content.strip():
+        log.debug("No content to store")
+        if show_status:
+            print(format_status(state, source, False))
+        return
+
+    log.info("Fallback capture: %d files modified", len(state["files_modified"]))
+    stored = store_memory(content, user_id, source, session_id, project_id, branch)
+
+    if show_status:
+        print(format_status(state, source, stored))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        log.error("Unexpected error: %s", e)
+    sys.exit(0)

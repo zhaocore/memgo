@@ -1,0 +1,18 @@
+# DeepSeek Harness 配置示例: 加载 memgo-deepseek-plugin 与内置工具插件。加载方式:
+#
+#   pnpm dsh web --patch ./integrations/deepseek-plugin/cordis.example.yml
+#
+# 工具插件(以及 system-prompt 依赖)必须存在, 因为记忆工具会贡献 system prompt
+# 需要渲染的 schema。
+
+- name: "@deepseek-ai/dsh-system-prompt"
+- name: "@deepseek-ai/dsh-tools"
+- insert:
+    - id: memgo
+      # 指向本目录编译产物的绝对路径(先运行 `pnpm build`), 开发期可指向
+      # src/index.ts 经 tsx 运行。
+      name: "/Users/johnson/work/zhao-core/memgo/integrations/deepseek-plugin/dist/index.js"
+      config:
+        # apiKey 缺省时从 MEMGO_API_KEY 环境变量读取。
+        userId: "your-user-id"
+        # host: "https://memgo.wxget.com"   # 可选: 缺省读 MEMGO_BASE_URL, 再回退到默认地址

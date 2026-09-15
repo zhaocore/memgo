@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "memgo": {
+      "command": "python3",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/core/mcp_server.py"],
+      "env": {
+        "MEMGO_CODE_DATA_DIR": "${CLAUDE_PLUGIN_DATA}"
+      }
+    }
+  }
+}

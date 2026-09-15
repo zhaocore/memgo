@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "memgo": {
+      "command": "python3",
+      "args": ["${CODEX_PLUGIN_ROOT}/../mcp/memgo_mcp.py"]
+    }
+  }
+}
