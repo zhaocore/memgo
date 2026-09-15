@@ -1,5 +1,4 @@
 package graph
-package graph
 
 import (
 	"sort"

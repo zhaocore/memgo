@@ -113,6 +113,7 @@ func main() {
 		AuthDisabled:  authDisabled,
 		DashboardURL:  envOr("DASHBOARD_URL", "http://localhost:3000"),
 		DefaultConfig: defaultConfig,
+		DisableDocs:   envTrue("DISABLE_DOCS"),
 	}, st, state)
 	defer srv.Close()
 

@@ -16,6 +16,7 @@ type Config struct {
 	AuthDisabled  bool
 	DashboardURL  string
 	DefaultConfig map[string]any
+	DisableDocs   bool
 }
 
 // Server 聚合依赖。
@@ -58,9 +59,11 @@ func (s *Server) Routes() http.Handler {
 
 	// 公开
 	r.Get("/", s.redirectDocs)
-	r.Get("/docs", s.serveDocs)
-	r.Get("/redoc", s.serveRedoc)
-	r.Get("/openapi.json", s.serveOpenAPI)
+	if !s.cfg.DisableDocs {
+		r.Get("/docs", s.serveDocs)
+		r.Get("/redoc", s.serveRedoc)
+		r.Get("/openapi.json", s.serveOpenAPI)
+	}
 	r.Get("/api/health", s.health)
 	r.Get("/auth/setup-status", s.setupStatus)
 
@@ -117,6 +120,10 @@ func (s *Server) wrapLimit(rl *middleware.RateLimiter, label string, next http.H
 }
 
 func (s *Server) redirectDocs(w http.ResponseWriter, r *http.Request) {
+	if s.cfg.DisableDocs {
+		writeDetail(w, http.StatusNotFound, "Not Found")
+		return
+	}
 	http.Redirect(w, r, "/docs", http.StatusTemporaryRedirect)
 }
 
