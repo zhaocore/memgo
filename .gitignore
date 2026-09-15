@@ -8,3 +8,5 @@ tests/contract/openapi/golden.json.tmp
 node_modules/
 dist/
 history
+.codegraph
+.cursor

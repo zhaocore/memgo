@@ -1,6 +1,6 @@
 // Package graph 提供内存图索引, 在 entity store 的 pgvector 实体数据之上构建
 // 双邻接表 (entitiesToMemories, memoriesToEntities), 支持多跳 BFS 遍历以增强记忆检索。
-// 对齐 mem0 v3 native Graph Memory 的实体-记忆关联图理念, 不依赖外部图数据库。
+// v3 native Graph Memory 的实体-记忆关联图理念, 不依赖外部图数据库。
 //
 // 本包不依赖 entity / vectorstore / memory 包, 避免循环引用。
 // Build 逻辑由调用方 (entity.Store 或 memory.Memory) 负责编排, 通过 Build 回调注入。

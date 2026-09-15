@@ -29,7 +29,7 @@ type MemoryConfig struct {
 	GraphMemory        GraphMemoryConfig `json:"graph_memory"`
 }
 
-// GraphMemoryConfig 图记忆多跳检索参数。对齐 mem0 v3 native Graph Memory。
+// GraphMemoryConfig 图记忆多跳检索参数。对齐 v3 native Graph Memory。
 type GraphMemoryConfig struct {
 	// EnableMultiHop 是否启用多跳图遍历扩展 (默认 true)。false 时仅保留现有 entity boost。
 	EnableMultiHop bool `json:"enable_multi_hop"`
