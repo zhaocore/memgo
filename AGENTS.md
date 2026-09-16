@@ -25,7 +25,7 @@
 | `core/memory/`、`core/entity/` | 记忆流水线（add/search/get/update/delete/history/reset）与实体抽取/加成；add 含 custom_categories 分类打标（规则见 `docs/REQUIREMENTS.md`）。 |
 | `core/graph/` | 内存图索引 `GraphIndex`：双邻接表 + BFS 多跳遍历, 不依赖外部图数据库。 |
 | `core/vectorstore/`、`core/history/` | pgvector 实现（含过滤翻译）与 SQLite 历史库。 |
-| `server/` | HTTP 层（doc-02 合同）：store+goose 迁移、auth 三层依赖、middleware、api、errpkg；`server/webhook` 为记忆事件投递器（`/webhooks` 注册表）。 |
+| `server/` | HTTP 层（doc-02 合同）：store+goose 迁移、auth 三层依赖、middleware、api、errpkg；`server/webhook` 为记忆事件投递器（`/webhooks` 注册表）；`/analytics` 聚合 `request_logs`（admin）。 |
 | `tests/contract/` | Python 基线与 Go 实现共用的黑盒 HTTP 契约套件、golden 和 OpenAI 兼容桩；CLI parity golden 与 OSS 冒烟脚本。 |
 | `tests/bench/` | add/search P95 基线脚本。 |
 | `tools/` | 生成器：gen_prompts.py（prompt 机械搬运）、gen_cli_parity.py（CLI 命令×选项矩阵 golden）。 |

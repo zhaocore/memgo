@@ -95,6 +95,7 @@ func (s *Server) Routes() http.Handler {
 	r.Get("/entities", s.handler(s.listEntities, authVerify))
 	r.Delete("/entities/{entity_type}/{entity_id}", s.handler(s.deleteEntity, authAdmin))
 	r.Get("/requests", s.handler(s.listRequests, authAdmin))
+	r.Get("/analytics", s.handler(s.getAnalytics, authAdmin))
 	r.Post("/auth/onboarding-complete", s.handler(s.onboardingComplete, authRequireAuth))
 	r.Get("/auth/me", s.handler(s.me, authRequireAuth))
 	r.Patch("/auth/me", s.handler(s.updateMe, authRequireAuth))

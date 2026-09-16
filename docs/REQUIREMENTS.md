@@ -51,6 +51,13 @@
 - core 侧事件落点：ADD（infer=true 新记忆 + infer=false 直存 + procedural）、UPDATE、DELETE（DeleteAll 逐条触发）、CATEGORIZE（分类打标命中时，紧跟对应 ADD）。core 不做 HTTP，通知经端口注入，nil sink 行为不变。
 - Dashboard Webhooks 页提供管理界面（admin 可增删改，非 admin 只读）。
 
+### Analytics（操作统计）
+
+- `GET /analytics?days=N`（admin）是记忆操作聚合（memgo 扩展），数据源为应用库 `request_logs`，不新增埋点。口径 = 记忆操作路径（`/memories`、`/memories/*`、`/search`）；`days` 为窗口天数（默认 7，1-90），越界按既有 query 校验返回 422。
+- 响应：`total_operations`（窗口内操作数）、`avg_latency_ms`（平均延迟，一位小数）、`success_rate`（status_code < 400 占比，0-100 一位小数）、`operations_over_time`（按 UTC 日补零的连续 `{"date","count"}` 序列，今天含内）。
+- 窗口内无数据时 `avg_latency_ms` 与 `success_rate` 为 0；dashboard 无数据日显示 "—" 而非 0/100 的假象。
+- 统计面向 admin（`request_logs` 无用户维度，无法按用户切分）；dashboard Analytics 页非 admin 显示只读提示。
+
 ## 客户端与界面
 
 ### Go CLI

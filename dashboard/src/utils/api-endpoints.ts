@@ -28,6 +28,10 @@ export const WEBHOOK_ENDPOINTS = {
   BY_ID: (webhookId: string) => `/webhooks/${webhookId}`,
 } as const;
 
+export const ANALYTICS_ENDPOINTS = {
+  BASE: '/analytics',
+} as const;
+
 export const REQUEST_ENDPOINTS = {
   BASE: '/requests',
 } as const;

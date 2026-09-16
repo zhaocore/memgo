@@ -1,54 +1,132 @@
 'use client';
 
-import { LockedPage } from '@/components/self-hosted/locked-page';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/use-auth';
+import { useApiQuery } from '@/hooks/use-api-query';
+import { api } from '@/utils/api';
+import { ANALYTICS_ENDPOINTS } from '@/utils/api-endpoints';
 
-function AnalyticsMockup() {
+const DAYS = 14;
+
+type DailyBucket = {
+  date: string;
+  count: number;
+};
+
+type AnalyticsSummary = {
+  total_operations: number;
+  avg_latency_ms: number;
+  success_rate: number;
+  operations_over_time: DailyBucket[];
+};
+
+function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { label: 'Total Operations', value: '12,847' },
-          { label: 'Avg Latency', value: '142ms' },
-          { label: 'Success Rate', value: '99.7%' },
-        ].map((stat) => (
-          <Card key={stat.label} className="border-memBorder-primary">
-            <CardContent className="p-4">
-              <p className="text-xs text-onSurface-default-tertiary">
-                {stat.label}
-              </p>
-              <p className="text-2xl font-semibold mt-1">{stat.value}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <Card className="border-memBorder-primary">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Operations over time</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          <div className="h-[200px] flex items-end gap-1">
-            {[40, 65, 45, 80, 55, 90, 70, 85, 60, 95, 75, 50].map((h, i) => (
-              <div
-                key={i}
-                className="flex-1 bg-surface-default-brand rounded-t"
-                style={{ height: `${h}%` }}
-              />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="border-memBorder-primary">
+      <CardContent className="p-4">
+        <p className="text-xs text-onSurface-default-tertiary">{label}</p>
+        <p className="mt-1 text-2xl font-semibold">{value}</p>
+      </CardContent>
+    </Card>
   );
 }
 
 export default function AnalyticsPage() {
+  const { isAdmin } = useAuth();
+  const { data, isLoading } = useApiQuery<AnalyticsSummary>(
+    async () => {
+      const res = await api.get<AnalyticsSummary>(
+        `${ANALYTICS_ENDPOINTS.BASE}?days=${DAYS}`,
+      );
+      return res.data;
+    },
+    { errorToast: 'Failed to load analytics' },
+  );
+
+  if (!isAdmin) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-1">
+          <h1 className="font-fustat text-xl font-semibold">Analytics</h1>
+          <p className="text-sm text-onSurface-default-secondary">
+            Track memory operations, latency, and usage patterns over time.
+          </p>
+        </div>
+        <Card className="border-memBorder-primary">
+          <CardContent className="p-4">
+            <p className="text-sm text-onSurface-default-secondary">
+              Admin role required to view analytics.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const summary = data;
+  const hasData = (summary?.total_operations ?? 0) > 0;
+  const maxCount = Math.max(
+    1,
+    ...(summary?.operations_over_time ?? []).map((b) => b.count),
+  );
+
   return (
-    <LockedPage
-      title="Analytics"
-      description="Track memory operations, latency, and usage patterns over time."
-      previewContent={<AnalyticsMockup />}
-      utmMedium="dashboard-locked-analytics"
-    />
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <h1 className="font-fustat text-xl font-semibold">Analytics</h1>
+        <p className="text-sm text-onSurface-default-secondary">
+          Memory operations, latency, and success rate over the last {DAYS}{' '}
+          days.
+        </p>
+      </div>
+
+      {isLoading ? (
+        <p className="text-sm text-onSurface-default-tertiary">
+          Loading analytics...
+        </p>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <StatTile
+              label="Total Operations"
+              value={String(summary?.total_operations ?? 0)}
+            />
+            <StatTile
+              label="Avg Latency"
+              value={hasData ? `${summary?.avg_latency_ms ?? 0}ms` : '—'}
+            />
+            <StatTile
+              label="Success Rate"
+              value={hasData ? `${summary?.success_rate ?? 0}%` : '—'}
+            />
+          </div>
+
+          <Card className="border-memBorder-primary">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Operations over time</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="flex h-[200px] items-end gap-1">
+                {(summary?.operations_over_time ?? []).map((bucket) => (
+                  <div
+                    key={bucket.date}
+                    title={`${bucket.date}: ${bucket.count}`}
+                    className="h-full flex-1"
+                  >
+                    <div
+                      className="rounded-t bg-surface-default-brand"
+                      style={{
+                        height: `${(bucket.count / maxCount) * 100}%`,
+                        minHeight: bucket.count > 0 ? '2px' : undefined,
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
+    </div>
   );
 }
