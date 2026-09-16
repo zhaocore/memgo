@@ -58,6 +58,13 @@
 - 窗口内无数据时 `avg_latency_ms` 与 `success_rate` 为 0；dashboard 无数据日显示 "—" 而非 0/100 的假象。
 - 统计面向 admin（`request_logs` 无用户维度，无法按用户切分）；dashboard Analytics 页非 admin 显示只读提示。
 
+### Export（记忆导出）
+
+- `GET /export`（memgo 扩展）导出记忆，`format` 参数三选一：`json`（默认）| `csv` | `schema`；未知格式返回 400。响应带 `Content-Disposition: attachment` 与对应 Content-Type（json/csv/schema.json）。
+- 条目面：`id`、`content`（payload `data`）、`user_id`、`created_at` 固定；`agent_id`、`run_id`、`category` 仅非空时出现（JSON）；CSV 固定七列 `id,content,user_id,agent_id,run_id,category,created_at`（encoding/csv 标准转义）；`schema` 返回 `MemoryItem` 的 JSON Schema 类型定义而非数据。metadata 内部字段（hash 等）不导出。
+- scope 与鉴权对齐 `GET /memories` 两模式：带 `user_id`/`agent_id`/`run_id` 过滤 = 常规鉴权面；三者全空 = 全量导出限 admin（403 文案提示提供 scope）。单次上限 10000 条；导出含已过期记忆（原始库存数据）。
+- dashboard Export 页：格式选择、scope 输入、样例预览、blob 下载（文件名客户端拼装 `memgo-export-YYYYMMDD.<ext>`，跨域响应头不保证可读）。
+
 ## 客户端与界面
 
 ### Go CLI

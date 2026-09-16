@@ -32,6 +32,10 @@ export const ANALYTICS_ENDPOINTS = {
   BASE: '/analytics',
 } as const;
 
+export const EXPORT_ENDPOINTS = {
+  BASE: '/export',
+} as const;
+
 export const REQUEST_ENDPOINTS = {
   BASE: '/requests',
 } as const;
