@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "memgo-plugins",
+  "description": "MemGo plugins: cross-session memory and token savings for coding agents",
+  "owner": {
+    "name": "MemGo",
+    "url": "https://memgo.wxget.com"
+  },
+  "plugins": [
+    {
+      "name": "memgo",
+      "description": "Cross-session memory and token savings for coding agents",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}
