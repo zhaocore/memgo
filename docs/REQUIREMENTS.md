@@ -42,6 +42,15 @@
 - `/configure` 对 config 级 `custom_categories` 做形态校验（400）；`POST /memories` 对 per-call 字段同样校验（400）。dashboard Categories 页提供目录管理（admin 可编辑，保存走 `POST /configure`；非 admin 只读）。
 - 内置 15 分类目录导出为 `config.DefaultCategories()` 备用但不默认启用；配置目录即启用功能，不另设总开关。
 
+### Webhooks（事件通知）
+
+- `/webhooks` 是事件通知端点注册（memgo 扩展）：`POST /webhooks`（admin，创建）、`GET /webhooks`（登录可见，裸数组）、`PUT /webhooks/{id}`（admin，部分更新：缺省字段保留原值）、`DELETE /webhooks/{id}`（admin）。注册表存应用库 `webhooks` 表（迁移 007），不进向量库。
+- 可订阅事件固定四种：`memory_add`、`memory_update`、`memory_delete`、`memory_categorize`；创建时缺省 `event_types` = 全部订阅，未知事件名返回 400；显式空列表合法（不投递）。`url` 仅接受 http(s) 绝对 URL。
+- 投递由 `server/webhook.Dispatcher` 实现 core 的 `EventSink` 端口：异步、不阻塞记忆写路径、单次 10s 超时、失败仅告警不重试（尽力而为语义）。未注册任何端点时零开销。
+- payload：记忆事件 `{"event": "ADD|UPDATE|DELETE", "memory_id", "data"}`（UPDATE 携带新文本，DELETE 携带删除时当前文本）；CATEGORIZE 事件 `{"event": "CATEGORIZE", "memory_id", "categories": [...]}`。请求头带 `X-Memgo-Event: <订阅事件名>` 与 `Content-Type: application/json`。
+- core 侧事件落点：ADD（infer=true 新记忆 + infer=false 直存 + procedural）、UPDATE、DELETE（DeleteAll 逐条触发）、CATEGORIZE（分类打标命中时，紧跟对应 ADD）。core 不做 HTTP，通知经端口注入，nil sink 行为不变。
+- Dashboard Webhooks 页提供管理界面（admin 可增删改，非 admin 只读）。
+
 ## 客户端与界面
 
 ### Go CLI

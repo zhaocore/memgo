@@ -30,6 +30,7 @@ type Memory struct {
 	CollectionName     string
 	CustomInstructions string
 	CustomCategories   []config.Category
+	Sink               EventSink // 事件出口端口 (webhook 等; nil=无通知)
 
 	entityStore     vectorstore.VectorStore // pgvector entity collection 实例
 	entityExtractor EntityExtractor
@@ -81,6 +82,11 @@ func (m *Memory) EntityStore() vectorstore.VectorStore {
 		return m.VectorStore // 由调用方以实体 collection 配置注入时替换; 此处保守返回主库
 	}
 	return m.entityStore
+}
+
+// SetEventSink 注入事件出口端口 (config 重建后需重新注入)。
+func (m *Memory) SetEventSink(sink EventSink) {
+	m.Sink = sink
 }
 
 // SetEntityStore 注入实体 collection 实例 (工厂按 EntityCollectionName 建好)。

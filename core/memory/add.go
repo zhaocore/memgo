@@ -435,6 +435,10 @@ func (m *Memory) persistRecords(records []memoryRecord, searchFilters map[string
 			item["category"] = c
 		}
 		returned = append(returned, item)
+		m.emitAdd(r.id, r.text)
+		if c, ok := r.meta["category"].(string); ok && c != "" {
+			m.emitCategorize(r.id, c)
+		}
 	}
 	return returned, nil
 }
@@ -535,5 +539,6 @@ func (m *Memory) createMemory(data string, embedding []float64, metadata map[str
 	}); err != nil {
 		return "", err
 	}
+	m.emitAdd(memID, data)
 	return memID, nil
 }

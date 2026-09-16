@@ -13,6 +13,7 @@ import (
 	"github.com/zhao-core/memgo/internal/dotenv"
 	"github.com/zhao-core/memgo/server/api"
 	"github.com/zhao-core/memgo/server/store"
+	"github.com/zhao-core/memgo/server/webhook"
 )
 
 func envOr(k, def string) string {
@@ -102,7 +103,7 @@ func main() {
 		}
 		return m, nil
 	}
-	state, err := api.NewAppState(defaultConfig, loadOverrides)
+	state, err := api.NewAppState(defaultConfig, loadOverrides, webhook.NewDispatcher(st))
 	if err != nil {
 		log.Fatalf("Memory 初始化失败: %v", err)
 	}

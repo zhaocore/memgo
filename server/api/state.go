@@ -22,10 +22,11 @@ type AppState struct {
 	mainVec  vectorstore.VectorStore
 	entVec   vectorstore.VectorStore
 	closeOld func()
+	sink     memory.EventSink
 }
 
 // NewAppState 初始化: default + overrides 深合并 + 建 Memory。
-func NewAppState(defaultConfig map[string]any, loadOverrides func() (map[string]any, error)) (*AppState, error) {
+func NewAppState(defaultConfig map[string]any, loadOverrides func() (map[string]any, error), sink memory.EventSink) (*AppState, error) {
 	cfgMap := deepCopyMap(defaultConfig)
 	overrides, err := loadOverrides()
 	if err != nil {
@@ -34,7 +35,7 @@ func NewAppState(defaultConfig map[string]any, loadOverrides func() (map[string]
 	if len(overrides) > 0 {
 		cfgMap = config.DeepMerge(cfgMap, overrides)
 	}
-	st := &AppState{cfgMap: cfgMap}
+	st := &AppState{cfgMap: cfgMap, sink: sink}
 	if err := st.rebuild(); err != nil {
 		return nil, err
 	}
@@ -105,6 +106,7 @@ func (s *AppState) rebuildFrom(cfgMap map[string]any) error {
 		return err
 	}
 	mem := memory.New(parsed, mainVec, emb, language, db, nil)
+	mem.SetEventSink(s.sink)
 	oldClose := s.closeOld
 	s.mainVec, s.entVec, s.history, s.memory = mainVec, entVec, db, mem
 	s.closeOld = func() {

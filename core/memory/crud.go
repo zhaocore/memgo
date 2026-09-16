@@ -229,6 +229,7 @@ func (m *Memory) updateMemory(memoryID string, data *string, existingEmbeddings 
 		store.RemoveMemoryFromStore(memoryID, sessionFilters)
 		m.linkEntitiesForMemory(memoryID, *data, sessionFilters)
 	}
+	m.emitUpdate(memoryID, *data)
 	return nil
 }
 
@@ -362,6 +363,7 @@ func (m *Memory) deleteMemory(memoryID string, existing *vectorstore.OutputData)
 	if m.entityStore != nil {
 		newEntityStore(m).RemoveMemoryFromStore(memoryID, sessionFilters)
 	}
+	m.emitDelete(memoryID, prevValue)
 	return nil
 }
 
