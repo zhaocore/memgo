@@ -35,6 +35,13 @@ func (s *Server) setConfig(w http.ResponseWriter, r *http.Request, ac *auth.Cont
 		writeDetail(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	// memgo 扩展: config 级分类目录, 形态校验 (DeepMerge 对数组整体替换, 空=清空)。
+	if raw, ok := updates["custom_categories"]; ok {
+		if _, err := config.ParseCategories(raw); err != nil {
+			writeDetail(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	}
 	persist := func(merged map[string]any) error {
 		raw, err := json.Marshal(merged)
 		if err != nil {

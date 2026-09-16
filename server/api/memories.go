@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/zhao-core/memgo/core/config"
 	"github.com/zhao-core/memgo/core/memory"
 	"github.com/zhao-core/memgo/server/auth"
 	"github.com/zhao-core/memgo/server/store"
@@ -84,6 +85,18 @@ func (s *Server) addMemory(w http.ResponseWriter, r *http.Request, ac *auth.Cont
 		write422(w, errs)
 		return
 	}
+	// memgo 扩展: per-call custom_categories ([{"分类名": "描述"}], 非空时整体替换 config 级)。
+	var perCallCats []config.Category
+	if raw, ok := fields["custom_categories"]; ok && string(raw) != "null" {
+		var anyVal any
+		_ = json.Unmarshal(raw, &anyVal)
+		cats, err := config.ParseCategories(anyVal)
+		if err != nil {
+			writeDetail(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		perCallCats = cats
+	}
 
 	var params memory.AddParams
 	params.UserID = strFromFields(fields, "user_id")
@@ -99,6 +112,7 @@ func (s *Server) addMemory(w http.ResponseWriter, r *http.Request, ac *auth.Cont
 	}
 	params.MemoryType = strFromFields(fields, "memory_type")
 	params.Prompt = strFromFields(fields, "prompt")
+	params.CustomCategories = perCallCats
 
 	var messages []map[string]any
 	_ = json.Unmarshal(rawMessages, &messages)

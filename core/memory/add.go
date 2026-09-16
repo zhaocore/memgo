@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/zhao-core/memgo/core/config"
 	"github.com/zhao-core/memgo/core/entity"
 	"github.com/zhao-core/memgo/core/history"
 	"github.com/zhao-core/memgo/core/llm"
@@ -23,6 +24,8 @@ type AddParams struct {
 	Infer          bool   // 默认 true 由调用方填
 	MemoryType     string // 仅 "procedural_memory" 特判
 	Prompt         string
+	// CustomCategories per-call 分类目录 (非空时整体替换 config 级, 不合并 —— memgo 扩展)。
+	CustomCategories []config.Category
 }
 
 // AddResultItem 是 add 返回 results 数组的元素。
@@ -52,7 +55,9 @@ func (m *Memory) Add(messages []map[string]any, p AddParams) ([]AddResultItem, e
 		return result, nil
 	}
 	messages = parseVisionMessages(messages)
-	return m.addToVectorStore(messages, metadata, filters, p.Infer, p.Prompt)
+	// 分类目录解析 (memgo 扩展): per-call 整体替换 config 级; 都空 = 功能关闭。
+	activeCategories := resolveCategories(p.CustomCategories, m.CustomCategories)
+	return m.addToVectorStore(messages, metadata, filters, p.Infer, p.Prompt, activeCategories)
 }
 
 func (m *Memory) warn(msg string) {}
@@ -92,7 +97,7 @@ func parseVisionMessages(messages []map[string]any) []map[string]any {
 }
 
 // addToVectorStore 对齐 _add_to_vector_store: infer=false 直存分支 + infer=true 阶段化流水线。
-func (m *Memory) addToVectorStore(messages []map[string]any, metadata, filters map[string]any, infer bool, prompt string) ([]AddResultItem, error) {
+func (m *Memory) addToVectorStore(messages []map[string]any, metadata, filters map[string]any, infer bool, prompt string, activeCategories []config.Category) ([]AddResultItem, error) {
 	if !infer {
 		var returned []AddResultItem
 		for _, msg := range messages {
@@ -131,11 +136,11 @@ func (m *Memory) addToVectorStore(messages []map[string]any, metadata, filters m
 		}
 		return returned, nil
 	}
-	return m.addInferred(messages, metadata, filters, prompt)
+	return m.addInferred(messages, metadata, filters, prompt, activeCategories)
 }
 
 // addInferred 对齐 _add_to_vector_store 的 V3 阶段化批量流水线 (Phase 0-8)。
-func (m *Memory) addInferred(messages []map[string]any, metadata, filters map[string]any, prompt string) ([]AddResultItem, error) {
+func (m *Memory) addInferred(messages []map[string]any, metadata, filters map[string]any, prompt string, activeCategories []config.Category) ([]AddResultItem, error) {
 	sessionScope := buildSessionScope(filters)
 	parsedMessages := parseMessages(messages)
 
@@ -194,7 +199,7 @@ func (m *Memory) addInferred(messages []map[string]any, metadata, filters map[st
 		}
 		return []AddResultItem{}, nil
 	}
-	return m.persistExtracted(extractedMemories, existingResults, metadata, searchFilters, messages, sessionScope)
+	return m.persistExtracted(extractedMemories, existingResults, metadata, searchFilters, messages, sessionScope, activeCategories)
 }
 
 // parseMessages 对齐 memory/utils.parse_messages: "role: content\n" 拼接, 跳过无 content。
@@ -302,7 +307,7 @@ type memoryRecord struct {
 }
 
 // persistExtracted 对齐 Phase 3-8: 批量嵌入 → hash 去重 → 插入 → 历史 → 实体联动 → 存消息。
-func (m *Memory) persistExtracted(extractedMemories []map[string]any, existingResults []vectorstore.OutputData, metadata, searchFilters map[string]any, messages []map[string]any, sessionScope string) ([]AddResultItem, error) {
+func (m *Memory) persistExtracted(extractedMemories []map[string]any, existingResults []vectorstore.OutputData, metadata, searchFilters map[string]any, messages []map[string]any, sessionScope string, activeCategories []config.Category) ([]AddResultItem, error) {
 	// Phase 3: 批量嵌入
 	var memTexts []string
 	for _, mm := range extractedMemories {
@@ -370,6 +375,21 @@ func (m *Memory) persistExtracted(extractedMemories []map[string]any, existingRe
 		}
 		return []AddResultItem{}, nil
 	}
+	// Phase 5.5 (memgo 扩展): 分类打标 — 生效目录非空时对新记忆单次 LLM 打标, 失败显式报错。
+	if len(activeCategories) > 0 {
+		texts := make([]string, 0, len(records))
+		for _, r := range records {
+			texts = append(texts, r.text)
+		}
+		assigned, err := m.classifyCategories(texts, activeCategories)
+		if err != nil {
+			// LLM 输出不可解析/缺项/未知分类 → 整个 add 显式失败, 不静默回退。
+			return nil, err
+		}
+		for i := range records {
+			records[i].meta["category"] = assigned[i]
+		}
+	}
 	return m.persistRecords(records, searchFilters, messages, sessionScope)
 }
 
@@ -409,7 +429,12 @@ func (m *Memory) persistRecords(records []memoryRecord, searchFilters map[string
 	}
 	returned := make([]AddResultItem, 0, len(records))
 	for _, r := range records {
-		returned = append(returned, map[string]any{"id": r.id, "memory": r.text, "event": "ADD"})
+		item := map[string]any{"id": r.id, "memory": r.text, "event": "ADD"}
+		// 分类目录生效时 (memgo 扩展) 返回打标结果; 功能关闭与 Python 基线形状一致。
+		if c, ok := r.meta["category"]; ok {
+			item["category"] = c
+		}
+		returned = append(returned, item)
 	}
 	return returned, nil
 }

@@ -161,8 +161,19 @@ func (f *fakeVectorStore) Reset() error                { f.rows = map[string]map
 func (f *fakeVectorStore) Close()                      {}
 
 // fakeLLM: 固定抽取响应 (契约 stub 同构)。
-type fakeLLM struct{ response string }
+// queue 非空时按序弹出 (第二次调用 = 分类打标), calls 记录各次调用消息供断言。
+type fakeLLM struct {
+	response string
+	queue    []string
+	calls    [][]llm.Message
+}
 
 func (f *fakeLLM) GenerateResponse(messages []llm.Message, opts llm.GenerateOptions) (string, error) {
+	f.calls = append(f.calls, append([]llm.Message(nil), messages...))
+	if len(f.queue) > 0 {
+		r := f.queue[0]
+		f.queue = f.queue[1:]
+		return r, nil
+	}
 	return f.response, nil
 }

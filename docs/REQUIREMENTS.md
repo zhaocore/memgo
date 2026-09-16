@@ -31,6 +31,17 @@
 - 多跳发现但不在语义结果中的记忆，从向量库按 ID 拉取补齐到候选集。
 - `relations` 字段恒空 `[]`。
 
+### Custom Categories（自定义分类）
+
+- `custom_categories` 是可选记忆分类目录，wire 形态为 `[{"分类名": "描述"}]`：每项必须是恰好一个键的对象，键为非空分类名，值为字符串描述；空列表合法（显式关闭打标）。
+- 生效目录解析顺序：单次 add 调用传入的非空 `custom_categories`（整体替换，不合并）> `/configure` 配置的 `custom_categories` > 未配置（功能关闭）。
+- 功能关闭时不发分类 LLM 调用，记忆 payload 与 add 响应均不含 `category` 键，与 Python 契约基线形状逐字节一致；契约 golden 不得因本功能变化。
+- 打标只在 ingest 阶段（`infer=true` 的抽取 + hash 去重后、持久化前）对新记忆进行，单次 LLM 调用完成；修改目录不回改存量记忆。`infer=false` 与 procedural memory 不打标。
+- 分类 LLM 输出缺项、越界、重复或未知分类时整个 add 显式报错（502），不做静默回退。
+- 打标结果落 payload `category` 键（search/GET 随 payload 返回），add 响应项携带可选 `category` 键。
+- `/configure` 对 config 级 `custom_categories` 做形态校验（400）；`POST /memories` 对 per-call 字段同样校验（400）。dashboard Categories 页提供目录管理（admin 可编辑，保存走 `POST /configure`；非 admin 只读）。
+- 内置 15 分类目录导出为 `config.DefaultCategories()` 备用但不默认启用；配置目录即启用功能，不另设总开关。
+
 ## 客户端与界面
 
 ### Go CLI

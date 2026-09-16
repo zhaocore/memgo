@@ -29,6 +29,7 @@ type Memory struct {
 	DB                 *history.Manager
 	CollectionName     string
 	CustomInstructions string
+	CustomCategories   []config.Category
 
 	entityStore     vectorstore.VectorStore // pgvector entity collection 实例
 	entityExtractor EntityExtractor
@@ -51,6 +52,7 @@ func New(cfg *config.MemoryConfig, vec vectorstore.VectorStore, emb embedder.Emb
 		DB:                 db,
 		CollectionName:     strOrCfg(cfg.VectorStore.Config["collection_name"]),
 		CustomInstructions: cfg.CustomInstructions,
+		CustomCategories:   cfg.CustomCategories,
 		entityExtractor:    extractor,
 		graphCfg:           gmCfg,
 	}

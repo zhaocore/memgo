@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/zhao-core/memgo/core/config"
 )
 
 // PastMessageTruncationLimit: Python PAST_MESSAGE_TRUNCATION_LIMIT = 300。
@@ -205,4 +207,39 @@ func formatSummary(summary any) string {
 	}
 	s, _ := summary.(string)
 	return s
+}
+
+// CATEGORY_CLASSIFICATION_SYSTEM_PROMPT 分类打标 system prompt。
+// memgo 扩展 (custom-categories 分类打标), 非 parity 锁定。
+const CATEGORY_CLASSIFICATION_SYSTEM_PROMPT = `You classify memories into categories.
+
+You will receive a category catalog (name and description) and a numbered list of memories. For each memory, pick the single closest matching category from the catalog. Every memory must be classified: always choose the closest category even if the match is imperfect.
+
+Respond with JSON only — no markdown, no extra text — in exactly this shape:
+{"categories": [{"id": 1, "category": "<category name>"}]}
+
+"id" is the memory number from the input. Output exactly one entry per memory, in input order, using category names exactly as given in the catalog.`
+
+// GenerateCategoryClassificationParams 分类打标 user prompt 参数。
+type GenerateCategoryClassificationParams struct {
+	Memories   []string          // 待打标记忆文本 (按序, 编号 1..n)
+	Categories []config.Category // 生效分类目录
+}
+
+// GenerateCategoryClassificationPrompt 拼装分类打标 user prompt (目录 + 编号记忆列表)。
+func GenerateCategoryClassificationPrompt(p GenerateCategoryClassificationParams) string {
+	var b strings.Builder
+	b.WriteString("## Categories\n")
+	for _, c := range p.Categories {
+		b.WriteString("- " + c.Name)
+		if c.Description != "" {
+			b.WriteString(": " + c.Description)
+		}
+		b.WriteString("\n")
+	}
+	b.WriteString("\n## Memories\n")
+	for i, text := range p.Memories {
+		fmt.Fprintf(&b, "%d. %s\n", i+1, text)
+	}
+	return strings.TrimRight(b.String(), "\n")
 }

@@ -76,3 +76,36 @@ func TestParseMemoryConfigDefaults(t *testing.T) {
 		t.Errorf("非法 vector_store 必须报错")
 	}
 }
+
+// TestParseCategories: wire 形态 [{"分类名": "描述"}] 的合法/非法面。
+func TestParseCategories(t *testing.T) {
+	ok, err := ParseCategories([]any{
+		map[string]any{"lifestyle_management": "Tracks daily routines"},
+		map[string]any{"seeking_structure": "Documents goals"},
+	})
+	if err != nil || len(ok) != 2 || ok[0].Name != "lifestyle_management" {
+		t.Fatalf("合法输入应解析: %v %v", ok, err)
+	}
+	if ok[1].Description != "Documents goals" {
+		t.Errorf("描述应回填: %v", ok[1])
+	}
+	empty, err := ParseCategories([]any{})
+	if err != nil || len(empty) != 0 {
+		t.Fatalf("空列表合法 (显式清空): %v %v", empty, err)
+	}
+	if _, err := ParseCategories("not-a-list"); err == nil {
+		t.Errorf("非列表必须报错")
+	}
+	if _, err := ParseCategories([]any{"item"}); err == nil {
+		t.Errorf("列表内非对象必须报错")
+	}
+	if _, err := ParseCategories([]any{map[string]any{"a": "1", "b": "2"}}); err == nil {
+		t.Errorf("多项对象必须报错 (恰好一个键)")
+	}
+	if _, err := ParseCategories([]any{map[string]any{"cat": 42}}); err == nil {
+		t.Errorf("非字符串描述必须报错")
+	}
+	if _, err := ParseCategories([]any{map[string]any{"  ": "desc"}}); err == nil {
+		t.Errorf("空白分类名必须报错")
+	}
+}

@@ -22,7 +22,7 @@
 | `core/config/` | `MemoryConfig` 解析、深合并、敏感配置脱敏及 `GraphMemoryConfig` 多跳参数。 |
 | `core/llm/`、`core/embedder/` | LLM/embedder 端口与 openai、anthropic、gemini 客户端。 |
 | `core/prompts/` | 上游 prompt 常量及消息拼装；`prompts_gen.go` 是生成文件。 |
-| `core/memory/`、`core/entity/` | 记忆流水线（add/search/get/update/delete/history/reset）与实体抽取/加成。 |
+| `core/memory/`、`core/entity/` | 记忆流水线（add/search/get/update/delete/history/reset）与实体抽取/加成；add 含 custom_categories 分类打标（规则见 `docs/REQUIREMENTS.md`）。 |
 | `core/graph/` | 内存图索引 `GraphIndex`：双邻接表 + BFS 多跳遍历, 不依赖外部图数据库。 |
 | `core/vectorstore/`、`core/history/` | pgvector 实现（含过滤翻译）与 SQLite 历史库。 |
 | `server/` | HTTP 层（doc-02 合同）：store+goose 迁移、auth 三层依赖、middleware、api、errpkg。 |
